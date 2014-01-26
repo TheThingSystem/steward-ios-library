@@ -47,8 +47,20 @@ Incoming messages from the steward will trigger the `recievedEventMessage` callb
 
 Messages will be in JSON format. This is a firehose of all messages broadcast by the steward, e.g.
 
-    {".updates":[{"updated":1390766348015,"level":"alert","message":"please push pairing button on Hue bridge","whoami":"device/2","name":"Phillips hue (192.168.1.100)","info":{"whatami":"/device/gateway/hue/bridge","whoami":"device/2","name":"Phillips hue (192.168.1.100)","status":"reset","info":{}}}]}
-
+    { ".updates":[{
+          "updated":1390766348015,
+          "level":"alert",
+          "message":"please push pairing button on Hue bridge",
+          "whoami":"device/2",
+          "name":"Phillips hue (192.168.1.100)",
+          "info":{
+            "whatami":"/device/gateway/hue/bridge",
+            "whoami":"device/2",
+            "name":"Phillips hue (192.168.1.100)",
+            "status":"reset",
+            "info":{}
+       }}]
+    }
 would be an alert message to indicate that while the steward can see a Philips Hue hub on the network, it is not yet authorised to connect to it to manage the lights.
 
 If the steward is not found you will recieve a `stewardNotFoundWithError:` callback,
