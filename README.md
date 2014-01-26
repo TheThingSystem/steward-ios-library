@@ -246,7 +246,7 @@ _The above copyright notice and this permission notice shall be included in all 
 
 _THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE._
 
-##Third-party software
+###Socket Rocket
 
 This library makes use of the [Socket Rocket](https://github.com/square/SocketRocket) library from Square which is released under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
@@ -255,6 +255,8 @@ _Copyright (c) 2012 Square Inc._
 _Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)._
 
 _Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License._
+
+###Cocoa Async Socket
 
 This library makes use of the [Cocoa Async Socket](https://github.com/robbiehanson/CocoaAsyncSocket) library, an asynchronous socket networking library for OS X and iOS.
 
