@@ -3,8 +3,9 @@ The Thing System iOS Library
 
 This library is a draft release of [The Thing System](http://thethingsystem.com) iOS Library. It serves as a convenience layer ad is intended to simplify common tasks when [developing](http://thethingsystem.com/dev/Developer.html) both [things](http://thethingsystem.com/dev/Things.html) and [clients](http://thethingsystem.com/dev/Clients.html) on iOS devices which talk to The Thing System [steward software](https://github.com/TheThingSystem/steward).
 
-_*Note:* This library should be considered a draft release. It's likely that the API will evolve considerably over time. Right now for instance JSON is passed back to your code by the library in many places. Future releases may pre-parse the JSON messages and pass them as `NSDictionary` objects instead. Pull requests for enhancements, refactoring and bug fixes are welcome._
+Pull requests for enhancements, refactoring and bug fixes are welcome.
 
+_*Note:* This library should be considered a draft release. It's likely that the API will evolve considerably over time. Right now for instance JSON is passed back to your code by the library in many places. Future releases may pre-parse the JSON messages and pass them as `NSDictionary` objects instead._
 
 ##Installation
 
