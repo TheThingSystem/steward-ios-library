@@ -61,6 +61,7 @@ Messages will be in JSON format. This is a firehose of all messages broadcast by
             "info":{}
        }}]
     }
+
 would be an alert message to indicate that while the steward can see a Philips Hue hub on the network, it is not yet authorised to connect to it to manage the lights.
 
 If the steward is not found you will recieve a `stewardNotFoundWithError:` callback,
