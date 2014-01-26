@@ -9,7 +9,11 @@ _*Note:* This library should be considered a draft release. It's likely that the
 
 ##Installation
 
-You can either copy all the files for the relevant library into your porject, or include the appropriate static library as a subproject with either `libThing.a` or `libClient.a`. Alternatively you could use the bianry release and drop the [pre-built binary for the latest release](https://github.com/TheThingSystem/steward-ios-library/releases/tag/0.1) into your project. If you do this, you must add `-ObjC` to the "Other Linker Flags" option in your project settings.
+You can either copy all the files for the relevant library into your porject, or include the appropriate static library as a subproject with either `libThing.a` or `libClient.a` as targets. 
+
+However the easiest method is to use the bianry release and drop the [pre-built binaries](https://github.com/TheThingSystem/steward-ios-library/releases/tag/0.1) along with the asociated header files for the static libraries into your project. 
+
+*Note:* If you do this, you must add `-ObjC` to the "Other Linker Flags" option in your project settings.
 
 ###Dependencies
 
@@ -26,7 +30,7 @@ and the following additional frameworks and dynamic libraries for the Client lib
 
 ##Building Things
 
-This library is synactic sugar over the top of the [Socket Rocket](https://github.com/square/SocketRocket) web socket library and [Cocoa Async Socket](https://github.com/robbiehanson/CocoaAsyncSocket) library and is intended to simplify common tasks when building things for the steward under iOS.
+This library is synactic sugar over the top of the [Cocoa Async Socket](https://github.com/robbiehanson/CocoaAsyncSocket) library and is intended to simplify common tasks when building things for the steward under iOS.
 
 ###Building a TSRP things
 
