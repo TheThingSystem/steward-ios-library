@@ -279,6 +279,17 @@ We've deliberately left the `ScanController` out of the main `Client` library bu
 
 You may want to grab the latest version of the [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC) library directly their GitHub project, although it currently needs a [small fix](https://github.com/TheLevelUp/ZXingObjC/pull/112) to work correctly.
 
+In either case you will need to add the following frameworks to your project
+
+* AVFoundation.framework
+* CoreGraphics.framework
+* CoreMedia.framework
+* CoreVideo.framework
+* ImageIO.framework
+* QuartzCore.framework
+
+if they are not already present.
+
 ##Example Code
 
 The library ships with [example code](https://github.com/TheThingSystem/steward-ios-library/tree/master/Examples) illustrating use of both the Thing and Client portions of the library.
