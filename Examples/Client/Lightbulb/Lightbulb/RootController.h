@@ -8,12 +8,14 @@
 
 #import <UIKit/UIKit.h>
 #import "Client.h"
+#import "ScanController.h"
 
-@interface RootController : UIViewController <ClientDelegate>
+@interface RootController : UIViewController <ClientDelegate, ScanControllerDelegate>
 
 @property (weak, nonatomic) IBOutlet UISwitch *lightswitch;
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
 
 - (IBAction)switched:(id)sender;
+- (IBAction)scanQRcode:(id)sender;
 
 @end

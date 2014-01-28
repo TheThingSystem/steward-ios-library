@@ -122,6 +122,8 @@
 @property (nonatomic, strong) NSString *device;
 @property (nonatomic, strong) NSString *request;
 @property (nonatomic, strong) NSString *parameters;
+@property (nonatomic) BOOL authenticate;
+@property (nonatomic) BOOL opened;
 
 
 - (id)initWithAddress:(NSString *)ipAddress;
@@ -154,6 +156,8 @@
 @property (nonatomic, strong) Perform *perform;
 @property (nonatomic) BOOL debug;
 @property (nonatomic) int requestCounter;
+
+@property (nonatomic, strong) NSString *secret;
 
 + (Client *)sharedClient;
 + (NSString *)version;

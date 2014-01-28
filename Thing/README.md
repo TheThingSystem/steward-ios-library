@@ -68,4 +68,4 @@ you can then dispatch a sensor report to the steward using the `dispatchWithInfo
                                                     @"z rotation":[NSNumber numberWithDouble:rotate.z]
                                                    } ];
 
-
+[![Analytics](https://ga-beacon.appspot.com/UA-44378714-2/TheThingSystem/steward-ios-library/thing/README)](https://github.com/igrigorik/ga-beacon)

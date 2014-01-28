@@ -25,9 +25,16 @@
 		006ABB4C189559D900D97EBF /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 006ABB49189559D900D97EBF /* Util.m */; };
 		006ABB4D189559D900D97EBF /* Client.m in Sources */ = {isa = PBXBuildFile; fileRef = 006ABB4A189559D900D97EBF /* Client.m */; };
 		006ABB4E189559D900D97EBF /* Steward.m in Sources */ = {isa = PBXBuildFile; fileRef = 006ABB4B189559D900D97EBF /* Steward.m */; };
+		008203751896F53A00B05498 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 008203741896F53A00B05498 /* AudioToolbox.framework */; };
 		00A990601895985B00A0B580 /* Monitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A9905E1895985B00A0B580 /* Monitor.m */; };
 		00A990AC1895A70700A0B580 /* Devices.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A990AA1895A70700A0B580 /* Devices.m */; };
 		00A990BC1895AEBA00A0B580 /* Perform.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A990BA1895AEBA00A0B580 /* Perform.m */; };
+		00A9946C1896ECAB00A0B580 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A9946B1896ECAB00A0B580 /* AVFoundation.framework */; };
+		00A9946E1896ECB400A0B580 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A9946D1896ECB400A0B580 /* CoreGraphics.framework */; };
+		00A994701896ECBC00A0B580 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A9946F1896ECBC00A0B580 /* CoreMedia.framework */; };
+		00A994721896ECC200A0B580 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A994711896ECC200A0B580 /* CoreVideo.framework */; };
+		00A994741896ECC700A0B580 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A994731896ECC700A0B580 /* ImageIO.framework */; };
+		00A994761896ECCC00A0B580 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A994751896ECCC00A0B580 /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -65,9 +72,16 @@
 		006ABB49189559D900D97EBF /* Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Util.m; sourceTree = "<group>"; };
 		006ABB4A189559D900D97EBF /* Client.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Client.m; sourceTree = "<group>"; };
 		006ABB4B189559D900D97EBF /* Steward.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Steward.m; sourceTree = "<group>"; };
+		008203741896F53A00B05498 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		00A9905E1895985B00A0B580 /* Monitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Monitor.m; sourceTree = "<group>"; };
 		00A990AA1895A70700A0B580 /* Devices.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Devices.m; sourceTree = "<group>"; };
 		00A990BA1895AEBA00A0B580 /* Perform.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Perform.m; sourceTree = "<group>"; };
+		00A9946B1896ECAB00A0B580 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		00A9946D1896ECB400A0B580 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		00A9946F1896ECBC00A0B580 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		00A994711896ECC200A0B580 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		00A994731896ECC700A0B580 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		00A994751896ECCC00A0B580 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +89,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				008203751896F53A00B05498 /* AudioToolbox.framework in Frameworks */,
+				00A994761896ECCC00A0B580 /* QuartzCore.framework in Frameworks */,
+				00A994741896ECC700A0B580 /* ImageIO.framework in Frameworks */,
+				00A994721896ECC200A0B580 /* CoreVideo.framework in Frameworks */,
+				00A994701896ECBC00A0B580 /* CoreMedia.framework in Frameworks */,
+				00A9946E1896ECB400A0B580 /* CoreGraphics.framework in Frameworks */,
+				00A9946C1896ECAB00A0B580 /* AVFoundation.framework in Frameworks */,
 				006ABB2E189558C200D97EBF /* libicucore.dylib in Frameworks */,
 				006ABB2C189558B500D97EBF /* Security.framework in Frameworks */,
 				006ABB2A189558AE00D97EBF /* CFNetwork.framework in Frameworks */,
@@ -110,6 +131,13 @@
 		006ABAFE1895583300D97EBF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				008203741896F53A00B05498 /* AudioToolbox.framework */,
+				00A994751896ECCC00A0B580 /* QuartzCore.framework */,
+				00A994731896ECC700A0B580 /* ImageIO.framework */,
+				00A994711896ECC200A0B580 /* CoreVideo.framework */,
+				00A9946F1896ECBC00A0B580 /* CoreMedia.framework */,
+				00A9946D1896ECB400A0B580 /* CoreGraphics.framework */,
+				00A9946B1896ECAB00A0B580 /* AVFoundation.framework */,
 				006ABB2B189558B500D97EBF /* Security.framework */,
 				006ABB29189558AE00D97EBF /* CFNetwork.framework */,
 				006ABB27189558A500D97EBF /* SystemConfiguration.framework */,

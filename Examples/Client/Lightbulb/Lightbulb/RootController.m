@@ -8,6 +8,7 @@
 
 #import "RootController.h"
 #import "Client.h"
+#import "ScanController.h"
 
 @interface RootController ()
 
@@ -60,6 +61,12 @@
     
 }
 
+- (IBAction)scanQRcode:(id)sender {
+    ScanController *scanner = [[ScanController alloc] initWithNibName:@"ScanController" bundle:nil];
+    scanner.delegate = self;
+    [self presentViewController:scanner animated:YES completion:NULL];
+}
+
 #pragma mark - Client Delegate Methods
 
 - (void)stewardFoundWithAddress:(NSString *)ipAddress {
@@ -89,6 +96,18 @@
 -(void)recievedPerformResponse:(NSString *)message {
     NSLog(@"RESPONSE = %@", message);
   
+}
+
+#pragma mark - ScanController Methods
+
+- (void)closedWithSecret:(NSString *)secret {
+    NSLog(@"DELEGATE CALLBACK = %@", secret);
+    
+}
+
+- (void)closedWithoutSecret {
+    NSLog(@"CANCELLED");
+    
 }
 
 @end

@@ -16,6 +16,7 @@
         NSString *request = [NSString stringWithFormat:@"wss://%@:8888/manage", ipAddress];
         self.webSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:request]]];
         self.webSocket.delegate = self;
+        self.authenticate = NO;
     }
     return self;
 }
@@ -38,16 +39,22 @@
     if ( [self.delegate respondsToSelector:@selector(recievedPerformResponse:)]  ) {
         [self.delegate recievedPerformResponse:(NSString *)message];
     }
-    [webSocket close];
+    //[webSocket close];
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
     NSLog(@"webSocketDidOpen: %@", webSocket);
-    NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
-    
-    NSLog(@"json = %@", json);
-    [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
-    [webSocket send:json];
+    if (self.authenticate == YES && self.opened == NO ) {
+        
+        
+    } else {
+        NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
+        
+        NSLog(@"json = %@", json);
+        [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
+        [webSocket send:json];
+        self.opened = YES;
+    }
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {

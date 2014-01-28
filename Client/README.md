@@ -131,3 +131,4 @@ The response message from the steward, including any error messages, will be dis
     }
 
 in JSON format.
+[![Analytics](https://ga-beacon.appspot.com/UA-44378714-2/TheThingSystem/steward-ios-library/client/README)](https://github.com/igrigorik/ga-beacon)
