@@ -273,7 +273,7 @@ delegate callback.
 
 We've deliberately left the `ScanController` out of the main `Client` library bundle to minimise the size of library for other use cases. If you want to make use of it in your project just drag-and-drop all the files in the `Bootstrap/` directory into your project. This includes the`ScanController` code as well as a copy of the [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC) library itself. 
 
-You may want to grab the latest version of the [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC)] library directly their GitHub project, although it currently needs a [small fix](https://github.com/TheLevelUp/ZXingObjC/pull/112) to work correctly.
+You may want to grab the latest version of the [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC) library directly their GitHub project, although it currently needs a [small fix](https://github.com/TheLevelUp/ZXingObjC/pull/112) to work correctly.
 
 ##Example Code
 
