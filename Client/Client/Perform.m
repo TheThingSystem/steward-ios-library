@@ -39,6 +39,13 @@
     if ( [self.delegate respondsToSelector:@selector(recievedPerformResponse:)]  ) {
         [self.delegate recievedPerformResponse:(NSString *)message];
     }
+    if ( self.authenticate == YES && self.opened == YES ) {
+        NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
+        NSLog(@"json = %@", json);
+        [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
+        [webSocket send:json];
+    }
+    
     //[webSocket close];
 }
 
