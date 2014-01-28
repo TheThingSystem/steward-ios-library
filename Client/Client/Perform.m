@@ -27,7 +27,7 @@
     if ( parameters.length == 0 ) {
        self.parameters = @"\"\"";
     } else {
-       self.parameters = parameters;
+       self.parameters = [NSString stringWithFormat:@"\"%@\"",parameters];
     }
     [self.webSocket open];
 }

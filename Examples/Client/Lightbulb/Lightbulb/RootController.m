@@ -8,7 +8,6 @@
 
 #import "RootController.h"
 #import "Client.h"
-#import "ScanController.h"
 
 @interface RootController ()
 
@@ -47,7 +46,7 @@
         
         NSString *device = @"device/lighting";
         NSString *request = @"on";
-        NSString *parameters = @"{ \"brightness\": 100, \"color\": { \"model\": \"rgb\", \"rgb\": { \"r\": 255, \"g\": 255, \"b\": 255 }}}";
+        NSString *parameters = @"{ \\\"brightness\\\": 100, \\\"color\\\": { \\\"model\\\": \\\"rgb\\\", \\\"rgb\\\": { \\\"r\\\": 255, \\\"g\\\": 255, \\\"b\\\": 255 }}}";
         [client performWithDevice:device andRequest:request andParameters:parameters];
         
     } else {
@@ -59,12 +58,6 @@
         
     }
     
-}
-
-- (IBAction)scanQRcode:(id)sender {
-    ScanController *scanner = [[ScanController alloc] initWithNibName:@"ScanController" bundle:nil];
-    scanner.delegate = self;
-    [self presentViewController:scanner animated:YES completion:NULL];
 }
 
 #pragma mark - Client Delegate Methods
@@ -82,32 +75,9 @@
     
 }
 
-/*
-- (void)recievedEventMessage:(NSString *)message {
-    NSLog(@"json = %@", message);
-}
-
-- (void)receivedDeviceList:(NSString *)message {
-    NSLog(@"Device List = %@", message);
-}
- */
-
-
 -(void)recievedPerformResponse:(NSString *)message {
-    NSLog(@"RESPONSE = %@", message);
+    NSLog(@"json = %@", message);
   
-}
-
-#pragma mark - ScanController Methods
-
-- (void)closedWithSecret:(NSString *)secret {
-    NSLog(@"DELEGATE CALLBACK = %@", secret);
-    
-}
-
-- (void)closedWithoutSecret {
-    NSLog(@"CANCELLED");
-    
 }
 
 @end

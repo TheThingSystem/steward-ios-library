@@ -26,6 +26,7 @@
 
 #import "Client.h"
 #import "GCDAsyncUdpSocket.h"
+#import "TOTPGenerator.h"
 
 @implementation Client
 
@@ -77,6 +78,21 @@
     self.perform  = [[Perform alloc] initWithAddress:self.steward.ipAddress];
     self.perform.delegate = self;
     [self.perform performWithDevice:device andRequest:request andParameters:parameters];
+}
+
+- (NSString *)generateTOTP {
+    TOTPGenerator *generator  = [[TOTPGenerator alloc] initWithSecret:[self.secret dataUsingEncoding:NSASCIIStringEncoding] algorithm:[TOTPGenerator defaultAlgorithm] digits:[TOTPGenerator defaultDigits] period:[TOTPGenerator defaultPeriod]];
+    NSString *totp = [generator generateOTPForDate:[NSDate date]];
+    
+    return totp;
+
+}
+
+- (NSString *)generateTOTPwithSecret:(NSString *)secret {
+    self.secret = secret;
+    NSString *totp = [self generateTOTP];
+    
+    return totp;
 }
 
 

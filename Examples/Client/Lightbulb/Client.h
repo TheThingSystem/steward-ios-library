@@ -122,6 +122,8 @@
 @property (nonatomic, strong) NSString *device;
 @property (nonatomic, strong) NSString *request;
 @property (nonatomic, strong) NSString *parameters;
+@property (nonatomic) BOOL authenticate;
+@property (nonatomic) BOOL opened;
 
 
 - (id)initWithAddress:(NSString *)ipAddress;
@@ -168,6 +170,10 @@
 - (void)availableDevices;
 
 - (void)performWithDevice:(NSString *)device andRequest:(NSString *)request andParameters:(NSString *)parameters;
+
+- (NSString *)generateTOTP;
+- (NSString *)generateTOTPwithSecret:(NSString *)secret;
+
 
 @end
 

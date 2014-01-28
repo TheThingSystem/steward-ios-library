@@ -171,6 +171,10 @@
 
 - (void)performWithDevice:(NSString *)device andRequest:(NSString *)request andParameters:(NSString *)parameters;
 
+- (NSString *)generateTOTP;
+- (NSString *)generateTOTPwithSecret:(NSString *)secret;
+
+
 @end
 
 

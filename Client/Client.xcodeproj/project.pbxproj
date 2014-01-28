@@ -26,6 +26,11 @@
 		006ABB4D189559D900D97EBF /* Client.m in Sources */ = {isa = PBXBuildFile; fileRef = 006ABB4A189559D900D97EBF /* Client.m */; };
 		006ABB4E189559D900D97EBF /* Steward.m in Sources */ = {isa = PBXBuildFile; fileRef = 006ABB4B189559D900D97EBF /* Steward.m */; };
 		008203751896F53A00B05498 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 008203741896F53A00B05498 /* AudioToolbox.framework */; };
+		008209001897CC4F00B05498 /* GTMDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 008208FF1897CC4F00B05498 /* GTMDefines.h */; };
+		008209051897CC5400B05498 /* TOTPGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 008209011897CC5400B05498 /* TOTPGenerator.h */; };
+		008209061897CC5400B05498 /* TOTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 008209021897CC5400B05498 /* TOTPGenerator.m */; };
+		008209071897CC5400B05498 /* OTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 008209031897CC5400B05498 /* OTPGenerator.m */; };
+		008209081897CC5400B05498 /* OTPGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 008209041897CC5400B05498 /* OTPGenerator.h */; };
 		00A990601895985B00A0B580 /* Monitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A9905E1895985B00A0B580 /* Monitor.m */; };
 		00A990AC1895A70700A0B580 /* Devices.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A990AA1895A70700A0B580 /* Devices.m */; };
 		00A990BC1895AEBA00A0B580 /* Perform.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A990BA1895AEBA00A0B580 /* Perform.m */; };
@@ -73,6 +78,11 @@
 		006ABB4A189559D900D97EBF /* Client.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Client.m; sourceTree = "<group>"; };
 		006ABB4B189559D900D97EBF /* Steward.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Steward.m; sourceTree = "<group>"; };
 		008203741896F53A00B05498 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		008208FF1897CC4F00B05498 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMDefines.h; sourceTree = "<group>"; };
+		008209011897CC5400B05498 /* TOTPGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TOTPGenerator.h; sourceTree = "<group>"; };
+		008209021897CC5400B05498 /* TOTPGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TOTPGenerator.m; sourceTree = "<group>"; };
+		008209031897CC5400B05498 /* OTPGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OTPGenerator.m; sourceTree = "<group>"; };
+		008209041897CC5400B05498 /* OTPGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OTPGenerator.h; sourceTree = "<group>"; };
 		00A9905E1895985B00A0B580 /* Monitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Monitor.m; sourceTree = "<group>"; };
 		00A990AA1895A70700A0B580 /* Devices.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Devices.m; sourceTree = "<group>"; };
 		00A990BA1895AEBA00A0B580 /* Perform.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Perform.m; sourceTree = "<group>"; };
@@ -183,6 +193,8 @@
 		006ABB331895596800D97EBF /* External */ = {
 			isa = PBXGroup;
 			children = (
+				008208FE1897CC3C00B05498 /* Google Toolbox for Mac */,
+				008208FD1897CC2C00B05498 /* OTPAuth */,
 				006ABB341895597C00D97EBF /* SocketRocket */,
 				006ABB351895598F00D97EBF /* GCDAsyncUdpSocket.h */,
 				006ABB361895598F00D97EBF /* GCDAsyncUdpSocket.m */,
@@ -206,6 +218,25 @@
 			name = SocketRocket;
 			sourceTree = "<group>";
 		};
+		008208FD1897CC2C00B05498 /* OTPAuth */ = {
+			isa = PBXGroup;
+			children = (
+				008209011897CC5400B05498 /* TOTPGenerator.h */,
+				008209021897CC5400B05498 /* TOTPGenerator.m */,
+				008209031897CC5400B05498 /* OTPGenerator.m */,
+				008209041897CC5400B05498 /* OTPGenerator.h */,
+			);
+			name = OTPAuth;
+			sourceTree = "<group>";
+		};
+		008208FE1897CC3C00B05498 /* Google Toolbox for Mac */ = {
+			isa = PBXGroup;
+			children = (
+				008208FF1897CC4F00B05498 /* GTMDefines.h */,
+			);
+			name = "Google Toolbox for Mac";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -213,10 +244,13 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				008209051897CC5400B05498 /* TOTPGenerator.h in Headers */,
 				006ABB48189559D100D97EBF /* Client.h in Headers */,
 				006ABB461895599D00D97EBF /* SRWebSocket.h in Headers */,
 				006ABB431895599D00D97EBF /* NSData+SRB64Additions.h in Headers */,
 				006ABB421895599D00D97EBF /* base64.h in Headers */,
+				008209001897CC4F00B05498 /* GTMDefines.h in Headers */,
+				008209081897CC5400B05498 /* OTPGenerator.h in Headers */,
 				006ABB371895598F00D97EBF /* GCDAsyncUdpSocket.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -291,11 +325,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				006ABB4C189559D900D97EBF /* Util.m in Sources */,
+				008209061897CC5400B05498 /* TOTPGenerator.m in Sources */,
 				006ABB4E189559D900D97EBF /* Steward.m in Sources */,
 				006ABB441895599D00D97EBF /* NSData+SRB64Additions.m in Sources */,
 				006ABB4D189559D900D97EBF /* Client.m in Sources */,
 				00A990601895985B00A0B580 /* Monitor.m in Sources */,
 				00A990AC1895A70700A0B580 /* Devices.m in Sources */,
+				008209071897CC5400B05498 /* OTPGenerator.m in Sources */,
 				006ABB381895598F00D97EBF /* GCDAsyncUdpSocket.m in Sources */,
 				006ABB451895599D00D97EBF /* SRWebSocket.m in Sources */,
 				006ABB411895599D00D97EBF /* base64.c in Sources */,
