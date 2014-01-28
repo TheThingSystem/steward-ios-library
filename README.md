@@ -334,9 +334,9 @@ _Unless required by applicable law or agreed to in writing, software  distribute
 
 ###Google Toolbox for Mac
 
-This library makes use of code from the [Google Toolbox for Mac](http://code.google.com/p/google-toolbox-for-mac/) and the [Google Authenticator](http://code.google.com/p/google-authenticator/) example applicatio. Both of these projects have been released under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+This library makes use of code from the [Google Toolbox for Mac](http://code.google.com/p/google-toolbox-for-mac/) and the [Google Authenticator](http://code.google.com/p/google-authenticator/) example application. Both of these projects have been released under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
-_Copyright (c) 2013 LevelUp._
+_Copyright (c) 2011 Google, Inc._
 
 _Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)._
 
