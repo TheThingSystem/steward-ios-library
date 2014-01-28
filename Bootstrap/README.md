@@ -37,6 +37,8 @@ If the user hits the cancel button in the view controller without a QR code bein
 
 delegate callback.
 
+_Note: Authenticated calls to the steward are not yet fully supported._
+
 ###Installation
 
 We've deliberately left the `ScanController` out of the main `Client` library bundle to minimise the size of library for other use cases. If you want to make use of it in your project just drag-and-drop all the files in the `Bootstrap/` directory into your project. This includes the`ScanController` code as well as a copy of the [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC) library itself. 
