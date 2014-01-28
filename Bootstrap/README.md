@@ -37,12 +37,23 @@ If the user hits the cancel button in the view controller without a QR code bein
 
 delegate callback.
 
-_Note: Authenticated calls to the steward are not yet fully supported._
+_**Note:** Authenticated calls to the steward are not yet fully supported._
 
 ###Installation
 
 We've deliberately left the `ScanController` out of the main `Client` library bundle to minimise the size of library for other use cases. If you want to make use of it in your project just drag-and-drop all the files in the `Bootstrap/` directory into your project. This includes the`ScanController` code as well as a copy of the [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC) library itself. 
 
 You may want to grab the latest version of the [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC) library directly their GitHub project, although it currently needs a [small fix](https://github.com/TheLevelUp/ZXingObjC/pull/112) to work correctly.
+
+In either case you will need to add the following frameworks to your project
+
+* AVFoundation.framework
+* CoreGraphics.framework
+* CoreMedia.framework
+* CoreVideo.framework
+* ImageIO.framework
+* QuartzCore.framework
+
+if they are not already present.
 
 [![Analytics](https://ga-beacon.appspot.com/UA-44378714-2/TheThingSystem/steward-ios-library/bootstrap/README)](https://github.com/igrigorik/ga-beacon)
