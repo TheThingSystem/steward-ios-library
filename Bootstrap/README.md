@@ -37,6 +37,12 @@ If the user hits the cancel button in the view controller without a QR code bein
 
 delegate callback.
 
+As well as the authentication secret you will have to tell the client library about the client identity associated with this secret, e.g.
+
+    client.clientID = @"iphone/2"
+
+as both bits of information are necessary to authenticate to the steward.
+
 _**Note:** Authenticated calls to the steward are not yet fully supported._
 
 ###Installation

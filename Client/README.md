@@ -132,6 +132,15 @@ The response message from the steward, including any error messages, will be dis
 
 in JSON format.
 
+If you wish to make an authenticated request, then you should instead,
+
+    client.authenticate = YES;
+    client.clientID = clientIdentity;
+    client.secret = ClientAuthenticationSecret;
+    [client performWithDevice:device andRequest:request andParameters:nil];	
+
+where the client ID and the authentication secret can be obtained from the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html). See the next section for more details.
+
 _**Note:** At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
 
 [![Analytics](https://ga-beacon.appspot.com/UA-44378714-2/TheThingSystem/steward-ios-library/client/README)](https://github.com/igrigorik/ga-beacon)

@@ -16,7 +16,7 @@
         NSString *request = [NSString stringWithFormat:@"wss://%@:8888/manage", ipAddress];
         self.webSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:request]]];
         self.webSocket.delegate = self;
-        self.authenticate = NO;
+        self.authenticate = [Client sharedClient].authenticate;
         self.opened = NO;
     }
     return self;

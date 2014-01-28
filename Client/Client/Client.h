@@ -157,6 +157,7 @@
 @property (nonatomic) BOOL debug;
 @property (nonatomic) int requestCounter;
 
+@property (nonatomic) BOOL authenticate;
 @property (nonatomic, strong) NSString *secret;
 @property (nonatomic, strong) NSString *clientID;
 

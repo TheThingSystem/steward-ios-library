@@ -230,7 +230,16 @@ The response message from the steward, including any error messages, will be dis
 
 in JSON format.
 
-_**Note:** At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
+If you wish to make an authenticated request, then you should instead,
+
+    client.authenticate = YES;
+    client.clientID = clientIdentity;
+    client.secret = ClientAuthenticationSecret;
+    [client performWithDevice:device andRequest:request andParameters:nil];	
+
+where the client ID and the authentication secret can be obtained from the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html). See the next section for more details.
+
+_**Note:** At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting if you do not want to use authentication, or it is not working for you at this time. This step turns secure connections on your local LAN off for clients and authentication for read/write is no longer required on the LAN._
 
 ##Bootstrapping Authentication
 
@@ -270,6 +279,12 @@ If the user hits the cancel button in the view controller without a QR code bein
 	}
 
 delegate callback.
+
+As well as the authentication secret you will have to tell the client library about the client identity associated with this secret, e.g.
+
+    client.clientID = @"iphone/2"
+
+as both bits of information are necessary to authenticate to the steward.
 
 _**Note:** Authenticated calls to the steward are not yet fully supported._
 
