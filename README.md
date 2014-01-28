@@ -232,6 +232,8 @@ The response message from the steward, including any error messages, will be dis
 
 in JSON format.
 
+_Note: At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
+
 ##Bootstrapping Authentication
 
 If you want to provide authentication capabilities to your [Thing System](http://thethingsystem.com) client the easiest way to do this is to create a client id and the associated authentication token using the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html).
@@ -312,6 +314,16 @@ _These classes have been placed into the public domain by their author, Robbie H
 ###ZXingObjC
 
 This library makes use of the [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC) port from LevelUp of the [ZXing](http://code.google.com/p/zxing/) ("Zebra Crossing") library which is released under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+_Copyright (c) 2013 LevelUp._
+
+_Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)._
+
+_Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License._
+
+###Google Toolbox for Mac
+
+This library makes use of code from the [Google Toolbox for Mac](http://code.google.com/p/google-toolbox-for-mac/) and the [Google Authenticator](http://code.google.com/p/google-authenticator/) example applicatio. Both of these projects have been released under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 _Copyright (c) 2013 LevelUp._
 

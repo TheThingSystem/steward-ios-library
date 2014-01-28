@@ -131,4 +131,7 @@ The response message from the steward, including any error messages, will be dis
     }
 
 in JSON format.
+
+_Note: At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
+
 [![Analytics](https://ga-beacon.appspot.com/UA-44378714-2/TheThingSystem/steward-ios-library/client/README)](https://github.com/igrigorik/ga-beacon)

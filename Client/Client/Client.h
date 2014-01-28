@@ -158,6 +158,7 @@
 @property (nonatomic) int requestCounter;
 
 @property (nonatomic, strong) NSString *secret;
+@property (nonatomic, strong) NSString *clientID;
 
 + (Client *)sharedClient;
 + (NSString *)version;
