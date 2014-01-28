@@ -15,7 +15,7 @@ You can either copy all the files for the relevant library into your porject, or
 
 However the easiest method is to use the binary release and drop the [pre-built binaries](https://github.com/TheThingSystem/steward-ios-library/releases/) along with the asociated header files for the static libraries into your project. 
 
-_**Note:** If you do this, you must add `-ObjC` to the "Other Linker Flags" option in your project settings.__
+_**Note:** If you add the libraries to your project as a static library `.a` and associated headers, you must also add `-ObjC` to the "Other Linker Flags" option in your project settings (see the [example code](https://github.com/TheThingSystem/steward-ios-library/tree/master/Examples)).__
 
 ###Dependencies
 
