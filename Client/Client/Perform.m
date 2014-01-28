@@ -17,6 +17,7 @@
         self.webSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:request]]];
         self.webSocket.delegate = self;
         self.authenticate = NO;
+        self.opened = NO;
     }
     return self;
 }
@@ -44,26 +45,28 @@
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
     NSLog(@"webSocketDidOpen: %@", webSocket);
+    NSString *json;
     if (self.authenticate == YES && self.opened == NO ) {
-        
-        
+        json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/user/authenticate/%@\",\"requestID\":\"%d\",\"response\":\"%@\"}", [Client sharedClient].clientID, [Client sharedClient].requestCounter, [[Client sharedClient] generateTOTP]];
     } else {
-        NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
-        
-        NSLog(@"json = %@", json);
-        [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
-        [webSocket send:json];
-        self.opened = YES;
+        json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
     }
+    NSLog(@"json = %@", json);
+    [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
+    [webSocket send:json];
+    self.opened = YES;
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
     NSLog(@"webSocket: %@ didFailWithError:%@", webSocket, error);
     [webSocket close];
+    self.opened = NO;
+
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     NSLog(@"webSocket: %@ didCloseWithCode:%ld reason:'%@' wasClean:%d", webSocket, (long)code, reason, wasClean);
+    self.opened = NO;
     
 }
 
