@@ -15,7 +15,7 @@ You can either copy all the files for the relevant library into your porject, or
 
 However the easiest method is to use the binary release and drop the [pre-built binaries](https://github.com/TheThingSystem/steward-ios-library/releases/) along with the asociated header files for the static libraries into your project. 
 
-__**Note:** If you do this, you must add `-ObjC` to the "Other Linker Flags" option in your project settings.__
+_**Note:** If you do this, you must add `-ObjC` to the "Other Linker Flags" option in your project settings.__
 
 ###Dependencies
 
@@ -271,7 +271,7 @@ If the user hits the cancel button in the view controller without a QR code bein
 
 delegate callback.
 
-_Note: Authenticated calls to the steward are not yet fully supported._
+_**Note:** Authenticated calls to the steward are not yet fully supported._
 
 ###Installation
 
