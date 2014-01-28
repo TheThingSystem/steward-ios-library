@@ -7,7 +7,7 @@ The iOS library has been divided into two seperate static libraries, a `libClien
 
 Pull requests for enhancements, refactoring and bug fixes are welcome.
 
-_*Note:* This library should be considered a draft release. It's likely that the API will evolve considerably over time. Right now for instance JSON is passed back to your code by the library in many places. Future releases may pre-parse the JSON messages and pass them as `NSDictionary` objects instead._
+_**Note:** This library should be considered a draft release. It's likely that the API will evolve considerably over time. Right now for instance JSON is passed back to your code by the library in many places. Future releases may pre-parse the JSON messages and pass them as `NSDictionary` objects instead._
 
 ##Installation
 
@@ -15,7 +15,7 @@ You can either copy all the files for the relevant library into your porject, or
 
 However the easiest method is to use the binary release and drop the [pre-built binaries](https://github.com/TheThingSystem/steward-ios-library/releases/) along with the asociated header files for the static libraries into your project. 
 
-*Note:* If you do this, you must add `-ObjC` to the "Other Linker Flags" option in your project settings.
+__**Note:** If you do this, you must add `-ObjC` to the "Other Linker Flags" option in your project settings.__
 
 ###Dependencies
 
@@ -191,8 +191,6 @@ the message will be in JSON format.
 
 ###Calling 'Perform' on a device or devices
 
-_Note: Unless you authenticate to the steward _
-
 If you want to control a device—ask it to perform an action—you can do so by, 
 
     #import "Client.h"
@@ -232,7 +230,7 @@ The response message from the steward, including any error messages, will be dis
 
 in JSON format.
 
-_Note: At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
+_**Note:** At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
 
 ##Bootstrapping Authentication
 

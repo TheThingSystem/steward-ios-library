@@ -30,7 +30,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define LIBRARY_VERSION @"0.1.1"
+#define LIBRARY_VERSION @"0.1.2"
 #define ISO_TIMEZONE_UTC_FORMAT @"Z"
 #define ISO_TIMEZONE_OFFSET_FORMAT @"+%02d%02d"
 

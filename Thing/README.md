@@ -2,7 +2,7 @@
 
 This library is synactic sugar over the top of the [Cocoa Async Socket](https://github.com/robbiehanson/CocoaAsyncSocket) library and is intended to simplify common tasks when building [things](http://thethingsystem.com/dev/Things.html) for the [steward](https://github.com/TheThingSystem/steward) under iOS.
 
-_Note: This library should be considered a draft release. It's likely that the API will evolve considerably over time. Right now for instance JSON is passed back to your code by the library. Future releases may pre-parse the JSON messages and pass them as `NSDictionary` objects instead. Pull requests for enhancements, refactoring and bug fixes are welcome._
+_**Note:** This library should be considered a draft release. It's likely that the API will evolve considerably over time. Right now for instance JSON is passed back to your code by the library. Future releases may pre-parse the JSON messages and pass them as `NSDictionary` objects instead. Pull requests for enhancements, refactoring and bug fixes are welcome._
 
 ###Building a TSRP things
 

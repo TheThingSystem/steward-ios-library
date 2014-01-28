@@ -2,7 +2,7 @@
 
 This library is synactic sugar over the top of the [Socket Rocket](https://github.com/square/SocketRocket) web socket library and is intended to simplify common tasks when building [clients](http://thethingsystem.com/dev/Clients.html) for the [steward](https://github.com/TheThingSystem/steward) under iOS.
 
-_Note: This library should be considered a draft release. It's likely that the API will evolve considerably over time. Right now for instance JSON is passed back to your code by the library. Future releases may pre-parse the JSON messages and pass them as `NSDictionary` objects instead. Pull requests for enhancements, refactoring and bug fixes are welcome._
+_**Note:** This library should be considered a draft release. It's likely that the API will evolve considerably over time. Right now for instance JSON is passed back to your code by the library. Future releases may pre-parse the JSON messages and pass them as `NSDictionary` objects instead. Pull requests for enhancements, refactoring and bug fixes are welcome._
 
 ###Monitoring the event stream
 
@@ -132,6 +132,6 @@ The response message from the steward, including any error messages, will be dis
 
 in JSON format.
 
-_Note: At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
+_**Note:** At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
 
 [![Analytics](https://ga-beacon.appspot.com/UA-44378714-2/TheThingSystem/steward-ios-library/client/README)](https://github.com/igrigorik/ga-beacon)
