@@ -10,7 +10,6 @@
 
 @implementation Perform
 
-
 - (id)initWithAddress:(NSString *)ipAddress {
 	if( (self = [super init]) ) {
         NSString *request = [NSString stringWithFormat:@"wss://%@:8888/manage", ipAddress];
