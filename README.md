@@ -13,7 +13,7 @@ _**Note:** This library should be considered a draft release. It's likely that t
 
 ##Installation
 
-You can either copy all the files for the relevant library into your porject, or include the appropriate static library as a subproject with either `libThing.a` or `libClient.a` as targets. 
+You can either copy all the files for the relevant library into your project, or include the appropriate static library as a subproject with either `libThing.a` or `libClient.a` as targets. 
 
 However the easiest method is to use the binary release and drop the [pre-built binaries](https://github.com/TheThingSystem/steward-ios-library/releases/) along with the asociated header files for the static libraries into your project. 
 
