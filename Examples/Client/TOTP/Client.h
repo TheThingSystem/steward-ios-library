@@ -147,7 +147,10 @@
 
 @end
 
-@interface Client : NSObject <StewardDelegate, MonitorDelegate, DevicesDelegate, PerformDelegate>
+@interface Client : NSObject <StewardDelegate, MonitorDelegate, DevicesDelegate, PerformDelegate> {
+    
+    NSURL *authURL;
+}
 
 @property (nonatomic, weak) id <ClientDelegate> delegate;
 
@@ -159,12 +162,15 @@
 @property (nonatomic) int requestCounter;
 
 @property (nonatomic) BOOL authenticate;
-@property (nonatomic, strong) NSURL *authURL;
 @property (nonatomic, strong) NSString *secret;
 @property (nonatomic, strong) NSString *clientID;
+@property (nonatomic, strong) NSURL *authURL;
 
 + (Client *)sharedClient;
 + (NSString *)version;
+
+- (NSURL *)authURL;
+- (void)setAuthURL:(NSURL *)url;
 
 - (void)findSteward;
 

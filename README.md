@@ -212,7 +212,7 @@ Here for instance we ask the steward to talk to `device/lighting`, short hand fo
 		Client *client = [Client sharedClient];
         NSString *device = @"device/lighting";
         NSString *request = @"on";
-        NSString *parameters = @"{ \\\"brightness\\\": 100, \\\"color\\\": { \\\"model\\\": \\\"rgb\\\", \\\"rgb\\\": { \\\"r\\\": 255, \\\"g\\\": 255, \\\"b\\\": 255 }}}";
+        NSString *parameters = @"{ \"brightness\": 100, \"color\": { \"model\": \"rgb\", \"rgb\": { \"r\": 255, \"g\": 255, \"b\": 255 }}}";
         [client performWithDevice:device andRequest:request andParameters:parameters];
     }	
 
@@ -239,11 +239,11 @@ If you wish to make an authenticated request, then you should instead,
 
 where the client ID and the authentication secret can be obtained from the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html). See the next section for more details.
 
-_**Note:** At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting if you do not want to use authentication, or it is not working for you at this time. This step turns secure connections on your local LAN off for clients and authentication for read/write is no longer required on the LAN._
+_**Note:** To make an un-authenticated call to the steward you will need to go to your steward settings and turn "Security Services" to the "No" setting. This step turns secure connections on your local LAN off for clients and authentication for read/write is no longer required on the LAN._
 
 ##Bootstrapping Authentication
 
-If you want to provide authentication capabilities to your [Thing System](http://thethingsystem.com) client the easiest way to do this is to create a client id and the associated authentication token using the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html).
+If you want to provide authentication capabilities to your [Thing System](http://thethingsystem.com) client the easiest way to do this is to create a client ID and the associated authentication secret using the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html).
 
 ![steward console](https://github.com/thethingsystem/steward/wiki/images/client.bootstrap.png)
 
@@ -261,27 +261,21 @@ and declare your class as a `<ScanControllerDelegate>`, and then present the vie
 	scanner.delegate = self;
 	[self presentViewController:scanner animated:YES completion:NULL];
 
-This will present a (back) camera view. The user simply has to point the phone at the QR code—possibly tapping the screen to focus the camera depening on lighting and distance—and the controller will detect the QR code and return the secret via the
+This will present a (back) camera view. The user simply has to point the phone at the QR code—possibly tapping the screen to focus the camera depening on lighting and distance—and the controller will detect the QR code and return the OTP authentication URL via the
 
-    - (void)closedWithSecret:(NSString *)secret {
+    - (void)closedWithURL:(NSURL *)url {
         
 	}
 
-delegate callback. You can then pass the authentication secret back to the main `Client` class by,
+delegate callback. You can then pass the authentication URL back to the main `Client` class by,
 
     Client *client = [Client sharedClient];
-    client.secret = secret;
+    client.authURL = url;
 
-Alternatively you can use the, 
+This will populate both the `clientID` and `secret` properties in the client allowing you to make an authenticated call directly afterwards,
 
-	    - (void)closedWithURL:(NSURL *)url {
-        
-		}
-
-	delegate callback which passes the entire OTPAuth URL instead of just the secret. You can then pass the authentication secret back to the main `Client` class by,
-
-	    Client *client = [Client sharedClient];
-	    client.authURL = url;
+    client.authenticate = YES;
+    [client performWithDevice:device andRequest:request andParameters:nil];	
 
 If the user hits the cancel button in the view controller without a QR code being scanned then you will recieve a
 
@@ -290,14 +284,6 @@ If the user hits the cancel button in the view controller without a QR code bein
 	}
 
 delegate callback.
-
-As well as the authentication secret you will have to tell the client library about the client identity associated with this secret, e.g.
-
-    client.clientID = @"iphone/2"
-
-as both bits of information are necessary to authenticate to the steward.
-
-_**Note:** Authenticated calls to the steward are not yet fully supported._
 
 ###Installation
 

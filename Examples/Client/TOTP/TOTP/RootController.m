@@ -62,19 +62,10 @@
     Client *client = [Client sharedClient];
     NSString *totp = client.generateTOTP;
     self.totpLabel.text = totp;
+    self.userLabel.text = client.clientID;
 }
 
 #pragma mark - ScanController Delegate Methods
-
-/*
-- (void)closedWithSecret:(NSString *)secret {
-    NSLog(@"closedWithSecret: %@", secret);
-    Client *client = [Client sharedClient];
-    client.secret = secret;
-    NSTimer * timer = [NSTimer scheduledTimerWithTimeInterval:2.0f target:self selector:@selector(displayTOTP) userInfo:nil repeats:YES];
-    
-}
- */
 
 - (void)closedWithURL:(NSURL*)url {
     NSLog(@"closedWithURL: %@", url);

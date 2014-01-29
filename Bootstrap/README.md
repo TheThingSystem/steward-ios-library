@@ -1,6 +1,6 @@
 ##Bootstrapping Authentication
 
-If you want to provide authentication capabilities to your [Thing System](http://thethingsystem.com) client the easiest way to do this is to create a client id and the associated authentication token using the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html).
+If you want to provide authentication capabilities to your [Thing System](http://thethingsystem.com) client the easiest way to do this is to create a client ID and the associated authentication secret using the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html).
 
 ![steward console](https://github.com/thethingsystem/steward/wiki/images/client.bootstrap.png)
 
@@ -18,27 +18,21 @@ and declare your class as a `<ScanControllerDelegate>`, and then present the vie
 	scanner.delegate = self;
 	[self presentViewController:scanner animated:YES completion:NULL];
 
-This will present a (back) camera view. The user simply has to point the phone at the QR code—possibly tapping the screen to focus the camera depening on lighting and distance—and the controller will detect the QR code and return the secret via the
-
-    - (void)closedWithSecret:(NSString *)secret {
-        
-	}
-
-delegate callback. You can then pass the authentication secret back to the main `Client` class by,
-
-    Client *client = [Client sharedClient];
-    client.secret = secret;
-
-Alternatively you can use the, 
+This will present a (back) camera view. The user simply has to point the phone at the QR code—possibly tapping the screen to focus the camera depening on lighting and distance—and the controller will detect the QR code and return the OTP authentication URL via the
 
     - (void)closedWithURL:(NSURL *)url {
         
 	}
 
-delegate callback which passes the entire OTPAuth URL instead of just the secret. You can then pass the authentication secret back to the main `Client` class by,
+delegate callback. You can then pass the authentication URL back to the main `Client` class by,
 
     Client *client = [Client sharedClient];
     client.authURL = url;
+
+This will populate both the `clientID` and `secret` properties in the client allowing you to make an authenticated call directly afterwards,
+
+    client.authenticate = YES;
+    [client performWithDevice:device andRequest:request andParameters:nil];	
 
 If the user hits the cancel button in the view controller without a QR code being scanned then you will recieve a
 
@@ -47,14 +41,6 @@ If the user hits the cancel button in the view controller without a QR code bein
 	}
 
 delegate callback.
-
-As well as the authentication secret you will have to tell the client library about the client identity associated with this secret, e.g.
-
-    client.clientID = @"iphone/2"
-
-as both bits of information are necessary to authenticate to the steward.
-
-_**Note:** Authenticated calls to the steward are not yet fully supported._
 
 ###Installation
 

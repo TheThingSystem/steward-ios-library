@@ -103,6 +103,29 @@
     return totp;
 }
 
+#pragma mark - Overridden Getter and Setter Methods
+
+- (NSURL *)authURL {
+    return authURL;
+}
+
+- (void)setAuthURL:(NSURL *)url {
+    NSLog(@"Setting authURL to %@", url);
+    authURL = url;
+    
+    NSArray *array = [url.absoluteString componentsSeparatedByString:@"="];
+    self.secret = array[1];
+    NSLog(@"URL to String, secret = %@", self.secret);
+    
+    array = [url.absoluteString componentsSeparatedByString:@"?"];
+    NSString *pre = array[0];
+    array = [pre componentsSeparatedByString:@"/"];
+    NSString *user = [NSString stringWithFormat:@"%@/%@",array[5],array[6]];
+    NSLog(@"URL to String, clientID = %@", user);
+    self.clientID = user;
+    
+}
+
 
 // -----------------------------------------------------------------------------
 #pragma mark - Steward Delegate Methods

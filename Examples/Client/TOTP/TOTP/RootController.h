@@ -14,6 +14,7 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
 @property (weak, nonatomic) IBOutlet UILabel *totpLabel;
+@property (weak, nonatomic) IBOutlet UILabel *userLabel;
 
 - (IBAction)scanQRcode:(id)sender;
 

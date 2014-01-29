@@ -139,8 +139,8 @@ If you wish to make an authenticated request, then you should instead,
     client.secret = ClientAuthenticationSecret;
     [client performWithDevice:device andRequest:request andParameters:nil];	
 
-where the client ID and the authentication secret can be obtained from the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html). See the next section for more details.
+where the client ID and the authentication secret can be obtained from the steward's own [Client Bootstrapping web service](http://thethingsystem.com/dev/Instructions-for-starting-the-Steward.html). 
 
-_**Note:** At the moment authentication is only partially supported. You will need to go to your steward settings and turn "Security Services" to the "No" setting. This turns secure connections on your local LAN off for clients—authentication for read/write is no longer required._
+_**Note:** To make an un-authenticated call to the steward you will need to go to your steward settings and turn "Security Services" to the "No" setting. This step turns secure connections on your local LAN off for clients and authentication for read/write is no longer required on the LAN._
 
 [![Analytics](https://ga-beacon.appspot.com/UA-44378714-2/TheThingSystem/steward-ios-library/client/README)](https://github.com/igrigorik/ga-beacon)

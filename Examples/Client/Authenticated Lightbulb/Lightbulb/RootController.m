@@ -93,11 +93,13 @@
 
 #pragma mark - ScanController Delegate Methods
 
-- (void)closedWithSecret:(NSString *)secret {
-    NSLog(@"closedWithSecret: %@", secret);
+- (void)closedWithURL:(NSURL*)url {
+    NSLog(@"closedWithURL: %@", url);
     Client *client = [Client sharedClient];
-    client.secret = secret;
+    client.authURL = url;
     self.gotAuthLabel.textColor = [UIColor greenColor];
+    self.gotClientIDLabel.textColor = [UIColor greenColor];
+    self.clientField.text = client.clientID;
     
 }
 
