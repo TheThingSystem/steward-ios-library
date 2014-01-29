@@ -81,7 +81,7 @@
 }
 
 - (NSString *)generateTOTP {
-    TOTPGenerator *generator  = [[TOTPGenerator alloc] initWithSecret:[self.secret dataUsingEncoding:NSASCIIStringEncoding] algorithm:[TOTPGenerator defaultAlgorithm] digits:[TOTPGenerator defaultDigits] period:[TOTPGenerator defaultPeriod]];
+    TOTPGenerator *generator  = [[TOTPGenerator alloc] initWithSecret:[self.secret dataUsingEncoding:NSASCIIStringEncoding] algorithm:kOTPGeneratorSHA1Algorithm digits:[TOTPGenerator defaultDigits] period:[TOTPGenerator defaultPeriod]];
     NSString *totp = [generator generateOTPForDate:[NSDate date]];
     
     return totp;

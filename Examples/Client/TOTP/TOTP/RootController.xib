@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="4514" systemVersion="12F45" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3747"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="RootController">
+            <connections>
+                <outlet property="statusLabel" destination="6Ot-4M-yQg" id="Kec-hh-WGi"/>
+                <outlet property="totpLabel" destination="ypi-Ya-YLN" id="vPI-KR-SmN"/>
+                <outlet property="view" destination="1" id="3"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="1">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Ot-4M-yQg">
+                    <rect key="frame" x="91" y="473" width="208" height="33"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="208" id="OdA-uh-MOR"/>
+                        <constraint firstAttribute="height" constant="33" id="ZgZ-yn-Cx7"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Status: " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bnZ-Cq-Ogg">
+                    <rect key="frame" x="14" y="473" width="64" height="33"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="64" id="GYj-1m-rvW"/>
+                        <constraint firstAttribute="height" constant="33" id="eKc-fg-IH4"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="F7h-j0-1lG">
+                    <rect key="frame" x="0.0" y="524" width="320" height="44"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <items>
+                        <barButtonItem title="Scan Code" id="84V-hu-Mks">
+                            <connections>
+                                <action selector="scanQRcode:" destination="-1" id="f26-uc-m5A"/>
+                            </connections>
+                        </barButtonItem>
+                    </items>
+                </toolbar>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ThingSystemLogo" translatesAutoresizingMaskIntoConstraints="NO" id="E18-Lh-mA9">
+                    <rect key="frame" x="22" y="47" width="277" height="38"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="38" id="QiD-X7-kGG"/>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="38" id="R21-8Q-QIS"/>
+                    </constraints>
+                </imageView>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="000000" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ypi-Ya-YLN">
+                    <rect key="frame" x="76" y="171" width="169" height="43"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="E18-Lh-mA9" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="22" id="37N-hh-HfV"/>
+                <constraint firstItem="F7h-j0-1lG" firstAttribute="top" secondItem="bnZ-Cq-Ogg" secondAttribute="bottom" constant="18" id="3G0-U5-Hgj"/>
+                <constraint firstItem="ypi-Ya-YLN" firstAttribute="top" secondItem="E18-Lh-mA9" secondAttribute="bottom" constant="86" id="DCB-HH-KrF"/>
+                <constraint firstItem="ypi-Ya-YLN" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="76" id="JHm-Bf-lAb"/>
+                <constraint firstItem="6Ot-4M-yQg" firstAttribute="leading" secondItem="bnZ-Cq-Ogg" secondAttribute="trailing" constant="13" id="ZFo-Os-ssn"/>
+                <constraint firstAttribute="bottom" secondItem="F7h-j0-1lG" secondAttribute="bottom" id="ZTY-W0-T8l"/>
+                <constraint firstAttribute="trailing" secondItem="ypi-Ya-YLN" secondAttribute="trailing" constant="75" id="ZYt-Kd-Q5d"/>
+                <constraint firstItem="F7h-j0-1lG" firstAttribute="leading" secondItem="1" secondAttribute="leading" id="dwN-6N-sE1"/>
+                <constraint firstAttribute="trailing" secondItem="E18-Lh-mA9" secondAttribute="trailing" constant="21" id="ffs-bv-Cc3"/>
+                <constraint firstItem="F7h-j0-1lG" firstAttribute="top" secondItem="bnZ-Cq-Ogg" secondAttribute="bottom" constant="18" id="hDL-nV-XkI"/>
+                <constraint firstItem="6Ot-4M-yQg" firstAttribute="leading" secondItem="bnZ-Cq-Ogg" secondAttribute="trailing" constant="13" id="hHg-4R-kxZ"/>
+                <constraint firstItem="bnZ-Cq-Ogg" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="14" id="k6x-UY-1WP"/>
+                <constraint firstAttribute="trailing" secondItem="F7h-j0-1lG" secondAttribute="trailing" id="loa-0a-gOt"/>
+                <constraint firstAttribute="trailing" secondItem="6Ot-4M-yQg" secondAttribute="trailing" constant="21" id="p0p-hA-lMH"/>
+                <constraint firstItem="F7h-j0-1lG" firstAttribute="top" secondItem="6Ot-4M-yQg" secondAttribute="bottom" constant="18" id="pq4-Ix-42S"/>
+                <constraint firstItem="E18-Lh-mA9" firstAttribute="top" secondItem="1" secondAttribute="top" constant="47" id="sg2-3Q-ED7"/>
+                <constraint firstItem="F7h-j0-1lG" firstAttribute="top" secondItem="6Ot-4M-yQg" secondAttribute="bottom" constant="18" id="tOp-YX-onf"/>
+            </constraints>
+            <simulatedStatusBarMetrics key="simulatedStatusBarMetrics"/>
+            <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="ThingSystemLogo" width="325" height="45"/>
+    </resources>
+</document>
