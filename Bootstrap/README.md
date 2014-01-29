@@ -29,6 +29,17 @@ delegate callback. You can then pass the authentication secret back to the main 
     Client *client = [Client sharedClient];
     client.secret = secret;
 
+Alternatively you can use the, 
+
+    - (void)closedWithURL:(NSURL *)url {
+        
+	}
+
+delegate callback which passes the entire OTPAuth URL instead of just the secret. You can then pass the authentication secret back to the main `Client` class by,
+
+    Client *client = [Client sharedClient];
+    client.authURL = url;
+
 If the user hits the cancel button in the view controller without a QR code being scanned then you will recieve a
 
     - (void)closedWithoutSecret {
