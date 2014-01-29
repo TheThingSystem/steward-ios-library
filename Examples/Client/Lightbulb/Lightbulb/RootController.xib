@@ -17,7 +17,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cgs-IT-ABC">
-                    <rect key="frame" x="86" y="486" width="208" height="33"/>
+                    <rect key="frame" x="91" y="473" width="208" height="33"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="33" id="99v-i3-j7b"/>
@@ -28,7 +28,7 @@
                     <nil key="highlightedColor"/>
                 </label>
                 <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Status: " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="II5-OK-CKB">
-                    <rect key="frame" x="14" y="486" width="64" height="33"/>
+                    <rect key="frame" x="22" y="473" width="64" height="33"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="33" id="6Za-tb-Ykc"/>
@@ -39,14 +39,14 @@
                     <nil key="highlightedColor"/>
                 </label>
                 <switch opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="MIP-Ou-6Eh">
-                    <rect key="frame" x="251" y="447" width="51" height="31"/>
+                    <rect key="frame" x="190" y="116" width="51" height="31"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <connections>
                         <action selector="switched:" destination="-1" eventType="valueChanged" id="pBD-Vr-nRt"/>
                     </connections>
                 </switch>
                 <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Lightbulbs:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WOh-HA-WDl">
-                    <rect key="frame" x="14" y="452" width="107" height="22"/>
+                    <rect key="frame" x="81" y="121" width="107" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="107" id="rnY-Ku-wDa"/>
@@ -55,27 +55,43 @@
                     <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="l1a-XL-Bey">
+                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="l1a-XL-Bey">
                     <rect key="frame" x="0.0" y="524" width="320" height="44"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <items/>
                 </toolbar>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ThingSystemLogo" translatesAutoresizingMaskIntoConstraints="NO" id="AqO-Gr-hkg">
+                    <rect key="frame" x="22" y="39" width="277" height="38"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="38" id="JsN-DB-DNr"/>
+                    </constraints>
+                </imageView>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
             <constraints>
-                <constraint firstItem="WOh-HA-WDl" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="14" id="8oh-I5-55W"/>
-                <constraint firstItem="WOh-HA-WDl" firstAttribute="top" secondItem="1" secondAttribute="top" constant="452" id="AcM-u0-Z3f"/>
-                <constraint firstItem="MIP-Ou-6Eh" firstAttribute="top" secondItem="1" secondAttribute="top" constant="447" id="bFC-Hg-xMq"/>
-                <constraint firstAttribute="bottom" secondItem="II5-OK-CKB" secondAttribute="bottom" constant="49" id="cbf-Oo-RUs"/>
-                <constraint firstAttribute="trailing" secondItem="cgs-IT-ABC" secondAttribute="trailing" constant="26" id="dRR-q9-Aww"/>
-                <constraint firstItem="II5-OK-CKB" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="14" id="eAO-ph-dzh"/>
-                <constraint firstItem="MIP-Ou-6Eh" firstAttribute="leading" secondItem="WOh-HA-WDl" secondAttribute="trailing" constant="130" id="iIE-1j-9Ha"/>
-                <constraint firstAttribute="bottom" secondItem="cgs-IT-ABC" secondAttribute="bottom" constant="49" id="oJ6-IG-e9P"/>
-                <constraint firstItem="WOh-HA-WDl" firstAttribute="centerY" secondItem="MIP-Ou-6Eh" secondAttribute="centerY" id="oi4-le-JKJ"/>
-                <constraint firstAttribute="trailing" secondItem="MIP-Ou-6Eh" secondAttribute="trailing" constant="20" id="w9Z-Qr-pya"/>
+                <constraint firstAttribute="trailing" secondItem="cgs-IT-ABC" secondAttribute="trailing" constant="21" id="1Le-yx-6mf"/>
+                <constraint firstAttribute="trailing" secondItem="l1a-XL-Bey" secondAttribute="trailing" id="37l-Yt-ARg"/>
+                <constraint firstAttribute="trailing" secondItem="MIP-Ou-6Eh" secondAttribute="trailing" constant="81" id="87N-vT-x7i"/>
+                <constraint firstItem="MIP-Ou-6Eh" firstAttribute="top" secondItem="AqO-Gr-hkg" secondAttribute="bottom" constant="39" id="JBu-vJ-9Lx"/>
+                <constraint firstItem="cgs-IT-ABC" firstAttribute="leading" secondItem="II5-OK-CKB" secondAttribute="trailing" constant="5" id="KZP-xs-zsG"/>
+                <constraint firstItem="AqO-Gr-hkg" firstAttribute="top" secondItem="1" secondAttribute="top" constant="39" id="MdR-Xx-aY2"/>
+                <constraint firstAttribute="trailing" secondItem="AqO-Gr-hkg" secondAttribute="trailing" constant="21" id="RHs-NJ-27o"/>
+                <constraint firstItem="l1a-XL-Bey" firstAttribute="top" secondItem="cgs-IT-ABC" secondAttribute="bottom" constant="18" id="SKx-4k-GYM"/>
+                <constraint firstItem="l1a-XL-Bey" firstAttribute="top" secondItem="II5-OK-CKB" secondAttribute="bottom" constant="18" id="TkL-p7-9is"/>
+                <constraint firstItem="WOh-HA-WDl" firstAttribute="top" secondItem="AqO-Gr-hkg" secondAttribute="bottom" constant="44" id="Zy8-Dn-boI"/>
+                <constraint firstItem="AqO-Gr-hkg" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="22" id="bAc-Yz-w1a"/>
+                <constraint firstItem="WOh-HA-WDl" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="81" id="bre-cl-ld5"/>
+                <constraint firstAttribute="bottom" secondItem="l1a-XL-Bey" secondAttribute="bottom" id="nsS-QU-GZ3"/>
+                <constraint firstItem="l1a-XL-Bey" firstAttribute="leading" secondItem="1" secondAttribute="leading" id="uFP-71-dlD"/>
+                <constraint firstItem="II5-OK-CKB" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="22" id="y71-ho-hcY"/>
+                <constraint firstItem="cgs-IT-ABC" firstAttribute="leading" secondItem="II5-OK-CKB" secondAttribute="trailing" constant="5" id="z7G-Se-ysA"/>
             </constraints>
             <simulatedStatusBarMetrics key="simulatedStatusBarMetrics"/>
             <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
         </view>
     </objects>
+    <resources>
+        <image name="ThingSystemLogo" width="325" height="45"/>
+    </resources>
 </document>
