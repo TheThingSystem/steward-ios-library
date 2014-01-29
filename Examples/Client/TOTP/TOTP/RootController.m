@@ -67,10 +67,20 @@
 
 #pragma mark - ScanController Delegate Methods
 
+/*
 - (void)closedWithSecret:(NSString *)secret {
     NSLog(@"closedWithSecret: %@", secret);
     Client *client = [Client sharedClient];
     client.secret = secret;
+    NSTimer * timer = [NSTimer scheduledTimerWithTimeInterval:2.0f target:self selector:@selector(displayTOTP) userInfo:nil repeats:YES];
+    
+}
+ */
+
+- (void)closedWithURL:(NSURL*)url {
+    NSLog(@"closedWithURL: %@", url);
+    Client *client = [Client sharedClient];
+    client.authURL = url;
     NSTimer * timer = [NSTimer scheduledTimerWithTimeInterval:2.0f target:self selector:@selector(displayTOTP) userInfo:nil repeats:YES];
     
 }

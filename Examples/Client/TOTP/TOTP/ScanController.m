@@ -79,7 +79,14 @@
 - (void)captureResult:(ZXCapture*)capture result:(ZXResult*)result {
     
     if (result) {
+        
+        // dispatch URL
         NSLog(@"Result = %@", result.text);
+        if ( [self.delegate respondsToSelector:@selector(closedWithURL:)] ) {
+            [self.delegate closedWithURL:[NSURL URLWithString:result.text]];
+        }
+        
+        // dispatch secret only
         NSArray *array = [result.text componentsSeparatedByString:@"="];
         NSLog(@"Secret = %@", array[1]);
         if ( [self.delegate respondsToSelector:@selector(closedWithSecret:)] ) {

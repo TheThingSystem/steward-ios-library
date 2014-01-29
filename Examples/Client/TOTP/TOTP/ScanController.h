@@ -13,6 +13,7 @@
 
 @optional
 - (void)closedWithSecret:(NSString *)secret;
+- (void)closedWithURL:(NSURL *)url;
 - (void)closedWithoutSecret;
 
 @end
