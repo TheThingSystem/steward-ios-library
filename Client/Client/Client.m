@@ -27,6 +27,7 @@
 #import "Client.h"
 #import "GCDAsyncUdpSocket.h"
 #import "TOTPGenerator.h"
+#import "OTPAuthURL.h"
 
 @implementation Client
 
@@ -81,7 +82,11 @@
 }
 
 - (NSString *)generateTOTP {
-    TOTPGenerator *generator  = [[TOTPGenerator alloc] initWithSecret:[self.secret dataUsingEncoding:NSASCIIStringEncoding] algorithm:kOTPGeneratorSHA1Algorithm digits:[TOTPGenerator defaultDigits] period:[TOTPGenerator defaultPeriod]];
+    
+    //NSData * secret = [self.secret dataUsingEncoding:NSASCIIStringEncoding];
+    NSData * secret = [OTPAuthURL base32Decode:self.secret ];
+    
+    TOTPGenerator *generator  = [[TOTPGenerator alloc] initWithSecret:secret algorithm:kOTPGeneratorSHA1Algorithm digits:[TOTPGenerator defaultDigits] period:[TOTPGenerator defaultPeriod]];
     NSString *totp = [generator generateOTPForDate:[NSDate date]];
     
     return totp;

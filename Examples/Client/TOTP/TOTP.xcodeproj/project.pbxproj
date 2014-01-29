@@ -240,7 +240,7 @@
 		00820C5F1899227A00B05498 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C5E1899227A00B05498 /* CFNetwork.framework */; };
 		00820C611899228000B05498 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C601899228000B05498 /* Security.framework */; };
 		00820C631899228900B05498 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C621899228900B05498 /* libicucore.dylib */; };
-		00820C7B1899245900B05498 /* libClient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C781899245900B05498 /* libClient.a */; };
+		00820CB4189933A900B05498 /* libClient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820CB1189933A900B05498 /* libClient.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -707,11 +707,11 @@
 		00820C5E1899227A00B05498 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		00820C601899228000B05498 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		00820C621899228900B05498 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
-		00820C761899245900B05498 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
-		00820C771899245900B05498 /* Client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Client.h; sourceTree = "<group>"; };
-		00820C781899245900B05498 /* libClient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libClient.a; sourceTree = "<group>"; };
-		00820C791899245900B05498 /* NSData+SRB64Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+SRB64Additions.h"; sourceTree = "<group>"; };
-		00820C7A1899245900B05498 /* SRWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SRWebSocket.h; sourceTree = "<group>"; };
+		00820CAF189933A900B05498 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
+		00820CB0189933A900B05498 /* Client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Client.h; sourceTree = "<group>"; };
+		00820CB1189933A900B05498 /* libClient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libClient.a; sourceTree = "<group>"; };
+		00820CB2189933A900B05498 /* NSData+SRB64Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+SRB64Additions.h"; sourceTree = "<group>"; };
+		00820CB3189933A900B05498 /* SRWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SRWebSocket.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -725,7 +725,7 @@
 				00820C5D1899227400B05498 /* SystemConfiguration.framework in Frameworks */,
 				00820C5B1899226C00B05498 /* AudioToolbox.framework in Frameworks */,
 				00820C591899226600B05498 /* AVFoundation.framework in Frameworks */,
-				00820C7B1899245900B05498 /* libClient.a in Frameworks */,
+				00820CB4189933A900B05498 /* libClient.a in Frameworks */,
 				00820C571899225F00B05498 /* QuartzCore.framework in Frameworks */,
 				00820C551899225900B05498 /* ImageIO.framework in Frameworks */,
 				00820C531899225400B05498 /* CoreVideo.framework in Frameworks */,
@@ -742,11 +742,11 @@
 		0082095D18991D8400B05498 = {
 			isa = PBXGroup;
 			children = (
-				00820C761899245900B05498 /* base64.h */,
-				00820C771899245900B05498 /* Client.h */,
-				00820C781899245900B05498 /* libClient.a */,
-				00820C791899245900B05498 /* NSData+SRB64Additions.h */,
-				00820C7A1899245900B05498 /* SRWebSocket.h */,
+				00820CAF189933A900B05498 /* base64.h */,
+				00820CB0189933A900B05498 /* Client.h */,
+				00820CB1189933A900B05498 /* libClient.a */,
+				00820CB2189933A900B05498 /* NSData+SRB64Additions.h */,
+				00820CB3189933A900B05498 /* SRWebSocket.h */,
 				0082096F18991D8400B05498 /* TOTP */,
 				0082096818991D8400B05498 /* Frameworks */,
 				0082096718991D8400B05498 /* Products */,

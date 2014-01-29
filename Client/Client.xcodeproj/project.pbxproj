@@ -25,11 +25,27 @@
 		006ABB4C189559D900D97EBF /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 006ABB49189559D900D97EBF /* Util.m */; };
 		006ABB4D189559D900D97EBF /* Client.m in Sources */ = {isa = PBXBuildFile; fileRef = 006ABB4A189559D900D97EBF /* Client.m */; };
 		006ABB4E189559D900D97EBF /* Steward.m in Sources */ = {isa = PBXBuildFile; fileRef = 006ABB4B189559D900D97EBF /* Steward.m */; };
-		008209001897CC4F00B05498 /* GTMDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 008208FF1897CC4F00B05498 /* GTMDefines.h */; };
 		008209051897CC5400B05498 /* TOTPGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 008209011897CC5400B05498 /* TOTPGenerator.h */; };
 		008209061897CC5400B05498 /* TOTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 008209021897CC5400B05498 /* TOTPGenerator.m */; };
 		008209071897CC5400B05498 /* OTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 008209031897CC5400B05498 /* OTPGenerator.m */; };
 		008209081897CC5400B05498 /* OTPGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 008209041897CC5400B05498 /* OTPGenerator.h */; };
+		00820C7F18992F1E00B05498 /* OTPAuthURL.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820C7D18992F1E00B05498 /* OTPAuthURL.h */; };
+		00820C8018992F1E00B05498 /* OTPAuthURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 00820C7E18992F1E00B05498 /* OTPAuthURL.m */; };
+		00820C8F18992F8D00B05498 /* HOTPGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820C8D18992F8C00B05498 /* HOTPGenerator.h */; };
+		00820C9018992F8D00B05498 /* HOTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 00820C8E18992F8D00B05498 /* HOTPGenerator.m */; };
+		00820C961899313700B05498 /* GTMDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820C951899313700B05498 /* GTMDefines.h */; };
+		00820C991899315F00B05498 /* GTMNSDictionary+URLArguments.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820C971899315F00B05498 /* GTMNSDictionary+URLArguments.h */; };
+		00820C9A1899315F00B05498 /* GTMNSDictionary+URLArguments.m in Sources */ = {isa = PBXBuildFile; fileRef = 00820C981899315F00B05498 /* GTMNSDictionary+URLArguments.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		00820C9D1899316C00B05498 /* GTMNSString+URLArguments.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820C9B1899316C00B05498 /* GTMNSString+URLArguments.h */; };
+		00820C9E1899316C00B05498 /* GTMNSString+URLArguments.m in Sources */ = {isa = PBXBuildFile; fileRef = 00820C9C1899316C00B05498 /* GTMNSString+URLArguments.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		00820CA11899318000B05498 /* GTMNSScanner+Unsigned.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820C9F1899318000B05498 /* GTMNSScanner+Unsigned.h */; };
+		00820CA21899318000B05498 /* GTMNSScanner+Unsigned.m in Sources */ = {isa = PBXBuildFile; fileRef = 00820CA01899318000B05498 /* GTMNSScanner+Unsigned.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		00820CA51899319000B05498 /* GTMStringEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820CA31899319000B05498 /* GTMStringEncoding.h */; };
+		00820CA61899319000B05498 /* GTMStringEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 00820CA41899319000B05498 /* GTMStringEncoding.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		00820CA9189931E000B05498 /* GTMMethodCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 00820CA7189931DF00B05498 /* GTMMethodCheck.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		00820CAA189931E000B05498 /* GTMMethodCheck.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820CA8189931DF00B05498 /* GTMMethodCheck.h */; };
+		00820CAD1899321700B05498 /* GTMObjC2Runtime.m in Sources */ = {isa = PBXBuildFile; fileRef = 00820CAB1899321700B05498 /* GTMObjC2Runtime.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		00820CAE1899321700B05498 /* GTMObjC2Runtime.h in Headers */ = {isa = PBXBuildFile; fileRef = 00820CAC1899321700B05498 /* GTMObjC2Runtime.h */; };
 		00A990601895985B00A0B580 /* Monitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A9905E1895985B00A0B580 /* Monitor.m */; };
 		00A990AC1895A70700A0B580 /* Devices.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A990AA1895A70700A0B580 /* Devices.m */; };
 		00A990BC1895AEBA00A0B580 /* Perform.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A990BA1895AEBA00A0B580 /* Perform.m */; };
@@ -70,11 +86,27 @@
 		006ABB49189559D900D97EBF /* Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Util.m; sourceTree = "<group>"; };
 		006ABB4A189559D900D97EBF /* Client.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Client.m; sourceTree = "<group>"; };
 		006ABB4B189559D900D97EBF /* Steward.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Steward.m; sourceTree = "<group>"; };
-		008208FF1897CC4F00B05498 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMDefines.h; sourceTree = "<group>"; };
 		008209011897CC5400B05498 /* TOTPGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TOTPGenerator.h; sourceTree = "<group>"; };
 		008209021897CC5400B05498 /* TOTPGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TOTPGenerator.m; sourceTree = "<group>"; };
 		008209031897CC5400B05498 /* OTPGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OTPGenerator.m; sourceTree = "<group>"; };
 		008209041897CC5400B05498 /* OTPGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OTPGenerator.h; sourceTree = "<group>"; };
+		00820C7D18992F1E00B05498 /* OTPAuthURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OTPAuthURL.h; sourceTree = "<group>"; };
+		00820C7E18992F1E00B05498 /* OTPAuthURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OTPAuthURL.m; sourceTree = "<group>"; };
+		00820C8D18992F8C00B05498 /* HOTPGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HOTPGenerator.h; sourceTree = "<group>"; };
+		00820C8E18992F8D00B05498 /* HOTPGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HOTPGenerator.m; sourceTree = "<group>"; };
+		00820C951899313700B05498 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMDefines.h; sourceTree = "<group>"; };
+		00820C971899315F00B05498 /* GTMNSDictionary+URLArguments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSDictionary+URLArguments.h"; sourceTree = "<group>"; };
+		00820C981899315F00B05498 /* GTMNSDictionary+URLArguments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSDictionary+URLArguments.m"; sourceTree = "<group>"; };
+		00820C9B1899316C00B05498 /* GTMNSString+URLArguments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSString+URLArguments.h"; sourceTree = "<group>"; };
+		00820C9C1899316C00B05498 /* GTMNSString+URLArguments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSString+URLArguments.m"; sourceTree = "<group>"; };
+		00820C9F1899318000B05498 /* GTMNSScanner+Unsigned.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSScanner+Unsigned.h"; sourceTree = "<group>"; };
+		00820CA01899318000B05498 /* GTMNSScanner+Unsigned.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSScanner+Unsigned.m"; sourceTree = "<group>"; };
+		00820CA31899319000B05498 /* GTMStringEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMStringEncoding.h; sourceTree = "<group>"; };
+		00820CA41899319000B05498 /* GTMStringEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMStringEncoding.m; sourceTree = "<group>"; };
+		00820CA7189931DF00B05498 /* GTMMethodCheck.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMMethodCheck.m; sourceTree = "<group>"; };
+		00820CA8189931DF00B05498 /* GTMMethodCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMMethodCheck.h; sourceTree = "<group>"; };
+		00820CAB1899321700B05498 /* GTMObjC2Runtime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMObjC2Runtime.m; sourceTree = "<group>"; };
+		00820CAC1899321700B05498 /* GTMObjC2Runtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMObjC2Runtime.h; sourceTree = "<group>"; };
 		00A9905E1895985B00A0B580 /* Monitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Monitor.m; sourceTree = "<group>"; };
 		00A990AA1895A70700A0B580 /* Devices.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Devices.m; sourceTree = "<group>"; };
 		00A990BA1895AEBA00A0B580 /* Perform.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Perform.m; sourceTree = "<group>"; };
@@ -195,8 +227,12 @@
 			children = (
 				008209011897CC5400B05498 /* TOTPGenerator.h */,
 				008209021897CC5400B05498 /* TOTPGenerator.m */,
-				008209031897CC5400B05498 /* OTPGenerator.m */,
 				008209041897CC5400B05498 /* OTPGenerator.h */,
+				008209031897CC5400B05498 /* OTPGenerator.m */,
+				00820C8D18992F8C00B05498 /* HOTPGenerator.h */,
+				00820C8E18992F8D00B05498 /* HOTPGenerator.m */,
+				00820C7D18992F1E00B05498 /* OTPAuthURL.h */,
+				00820C7E18992F1E00B05498 /* OTPAuthURL.m */,
 			);
 			name = OTPAuth;
 			sourceTree = "<group>";
@@ -204,7 +240,19 @@
 		008208FE1897CC3C00B05498 /* Google Toolbox for Mac */ = {
 			isa = PBXGroup;
 			children = (
-				008208FF1897CC4F00B05498 /* GTMDefines.h */,
+				00820C951899313700B05498 /* GTMDefines.h */,
+				00820C971899315F00B05498 /* GTMNSDictionary+URLArguments.h */,
+				00820C981899315F00B05498 /* GTMNSDictionary+URLArguments.m */,
+				00820C9B1899316C00B05498 /* GTMNSString+URLArguments.h */,
+				00820C9C1899316C00B05498 /* GTMNSString+URLArguments.m */,
+				00820C9F1899318000B05498 /* GTMNSScanner+Unsigned.h */,
+				00820CA01899318000B05498 /* GTMNSScanner+Unsigned.m */,
+				00820CA31899319000B05498 /* GTMStringEncoding.h */,
+				00820CA41899319000B05498 /* GTMStringEncoding.m */,
+				00820CA7189931DF00B05498 /* GTMMethodCheck.m */,
+				00820CA8189931DF00B05498 /* GTMMethodCheck.h */,
+				00820CAC1899321700B05498 /* GTMObjC2Runtime.h */,
+				00820CAB1899321700B05498 /* GTMObjC2Runtime.m */,
 			);
 			name = "Google Toolbox for Mac";
 			sourceTree = "<group>";
@@ -218,12 +266,20 @@
 			files = (
 				008209051897CC5400B05498 /* TOTPGenerator.h in Headers */,
 				006ABB48189559D100D97EBF /* Client.h in Headers */,
+				00820C961899313700B05498 /* GTMDefines.h in Headers */,
+				00820CAE1899321700B05498 /* GTMObjC2Runtime.h in Headers */,
 				006ABB461895599D00D97EBF /* SRWebSocket.h in Headers */,
+				00820C9D1899316C00B05498 /* GTMNSString+URLArguments.h in Headers */,
 				006ABB431895599D00D97EBF /* NSData+SRB64Additions.h in Headers */,
+				00820C8F18992F8D00B05498 /* HOTPGenerator.h in Headers */,
 				006ABB421895599D00D97EBF /* base64.h in Headers */,
-				008209001897CC4F00B05498 /* GTMDefines.h in Headers */,
+				00820CAA189931E000B05498 /* GTMMethodCheck.h in Headers */,
+				00820C991899315F00B05498 /* GTMNSDictionary+URLArguments.h in Headers */,
+				00820CA51899319000B05498 /* GTMStringEncoding.h in Headers */,
 				008209081897CC5400B05498 /* OTPGenerator.h in Headers */,
 				006ABB371895598F00D97EBF /* GCDAsyncUdpSocket.h in Headers */,
+				00820CA11899318000B05498 /* GTMNSScanner+Unsigned.h in Headers */,
+				00820C7F18992F1E00B05498 /* OTPAuthURL.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -296,18 +352,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				00820C8018992F1E00B05498 /* OTPAuthURL.m in Sources */,
 				006ABB4C189559D900D97EBF /* Util.m in Sources */,
+				00820CA21899318000B05498 /* GTMNSScanner+Unsigned.m in Sources */,
 				008209061897CC5400B05498 /* TOTPGenerator.m in Sources */,
+				00820CAD1899321700B05498 /* GTMObjC2Runtime.m in Sources */,
 				006ABB4E189559D900D97EBF /* Steward.m in Sources */,
 				006ABB441895599D00D97EBF /* NSData+SRB64Additions.m in Sources */,
 				006ABB4D189559D900D97EBF /* Client.m in Sources */,
 				00A990601895985B00A0B580 /* Monitor.m in Sources */,
 				00A990AC1895A70700A0B580 /* Devices.m in Sources */,
+				00820C9A1899315F00B05498 /* GTMNSDictionary+URLArguments.m in Sources */,
+				00820C9E1899316C00B05498 /* GTMNSString+URLArguments.m in Sources */,
+				00820C9018992F8D00B05498 /* HOTPGenerator.m in Sources */,
 				008209071897CC5400B05498 /* OTPGenerator.m in Sources */,
 				006ABB381895598F00D97EBF /* GCDAsyncUdpSocket.m in Sources */,
+				00820CA61899319000B05498 /* GTMStringEncoding.m in Sources */,
 				006ABB451895599D00D97EBF /* SRWebSocket.m in Sources */,
 				006ABB411895599D00D97EBF /* base64.c in Sources */,
 				00A990BC1895AEBA00A0B580 /* Perform.m in Sources */,
+				00820CA9189931E000B05498 /* GTMMethodCheck.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
