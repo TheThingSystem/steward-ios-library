@@ -1,6 +1,8 @@
 The Thing System iOS Library
 ===================
 
+_The latest bianry release is [version 0.2.0](https://github.com/TheThingSystem/steward-ios-library/releases/tag/0.2) and includes authentication support._
+
 This library is a draft release of [The Thing System](http://thethingsystem.com) iOS Library. It serves as a convenience layer ad is intended to simplify common tasks when [developing](http://thethingsystem.com/dev/Developer.html) both [things](http://thethingsystem.com/dev/Things.html) and [clients](http://thethingsystem.com/dev/Clients.html) on iOS devices which talk to The Thing System [steward software](https://github.com/TheThingSystem/steward).
 
 The iOS library has been divided into two seperate static libraries, a `libClient.a` and a`libThing.a`. This is intended to minimise the addition of redundant code to your application. However there is no reason why both libraries cannot be used inside a single application.
