@@ -82,8 +82,6 @@
 }
 
 - (NSString *)generateTOTP {
-    //OTPAuthURL *url = [OTPAuthURL authURLWithURL:self.authURL secret:nil];
-    //NSString *totp = url.otpCode;
     
     if ( self.authURL ) {
         NSArray *array = [self.authURL.absoluteString componentsSeparatedByString:@"="];
@@ -91,13 +89,10 @@
         NSLog(@"URL to String, secret = %@", self.secret);
     }
     
-    //NSData * secret = [self.secret dataUsingEncoding:NSASCIIStringEncoding];
     NSData * secret = [OTPAuthURL base32Decode:self.secret ];
     TOTPGenerator *generator  = [[TOTPGenerator alloc] initWithSecret:secret algorithm:kOTPGeneratorSHA1Algorithm digits:[TOTPGenerator defaultDigits] period:[TOTPGenerator defaultPeriod]];
     
-    NSString *totp = [generator generateOTPForDate:[NSDate date]];
-    
-    return totp;
+    return [generator generateOTP];
 
 }
 
