@@ -17,6 +17,8 @@
         self.webSocket.delegate = self;
         self.authenticate = [Client sharedClient].authenticate;
         self.opened = NO;
+        self.followup = NO;
+        [self.webSocket open];
     }
     return self;
 }
@@ -29,7 +31,6 @@
     } else {
        self.parameters = [NSString stringWithFormat:@"\"%@\"",parameters];
     }
-    [self.webSocket open];
 }
 
 #pragma mark - SRWebSocketDelegate Methods
@@ -39,13 +40,21 @@
     if ( [self.delegate respondsToSelector:@selector(recievedPerformResponse:)]  ) {
         [self.delegate recievedPerformResponse:(NSString *)message];
     }
-    if ( self.authenticate == YES && self.opened == YES ) {
-        NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
-        NSLog(@"json = %@", json);
-        [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
-        [webSocket send:json];
-    }
     
+    // Will only trigger if we're authenticating,
+    // we've opened the socket (and got a auth response back)
+    // and we haven't yet made the request
+    if ( self.authenticate == YES && self.opened == YES && self.followup == NO ) {
+        if ( [message rangeOfString:@"error"].location == NSNotFound ) {
+            NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
+            NSLog(@"json = %@", json);
+            [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
+            [webSocket send:json];
+            self.followup = YES;
+        } else {
+            [NSException raise:@"Error" format:@"%@", message];
+        }
+    }
     //[webSocket close];
 }
 
@@ -67,13 +76,15 @@
     NSLog(@"webSocket: %@ didFailWithError:%@", webSocket, error);
     [webSocket close];
     self.opened = NO;
+    self.followup = NO;
 
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     NSLog(@"webSocket: %@ didCloseWithCode:%ld reason:'%@' wasClean:%d", webSocket, (long)code, reason, wasClean);
     self.opened = NO;
-    
+    self.followup = NO;
+   
 }
 
 @end

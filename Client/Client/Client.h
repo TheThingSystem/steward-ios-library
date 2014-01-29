@@ -124,6 +124,7 @@
 @property (nonatomic, strong) NSString *parameters;
 @property (nonatomic) BOOL authenticate;
 @property (nonatomic) BOOL opened;
+@property (nonatomic) BOOL followup;
 
 
 - (id)initWithAddress:(NSString *)ipAddress;
