@@ -114,7 +114,7 @@ Here for instance we ask the steward to talk to `device/lighting`, short hand fo
 		Client *client = [Client sharedClient];
         NSString *device = @"device/lighting";
         NSString *request = @"on";
-        NSString *parameters = @"{ \"brightness\": 100, \"color\": { \"model\": \"rgb\", \"rgb\": { \"r\": 255, \"g\": 255, \"b\": 255 }}}";
+        NSString *parameters = @"{ \\\"brightness\\\": 100, \\\"color\\\": { \\\"model\\\": \\\"rgb\\\", \\\"rgb\\\": { \\\"r\\\": 255, \\\"g\\\": 255, \\\"b\\\": 255 }}}";
         [client performWithDevice:device andRequest:request andParameters:parameters];
     }	
 
