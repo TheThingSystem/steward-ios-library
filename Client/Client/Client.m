@@ -148,9 +148,9 @@
 // -----------------------------------------------------------------------------
 #pragma mark - Monitor Delegate Methods
 
-- (void)recievedEventMessage:(NSString *)message {
-    if ( [self.delegate respondsToSelector:@selector(recievedEventMessage:)] ) {
-        [self.delegate recievedEventMessage:(NSString *)message];
+- (void)receivedEventMessage:(NSString *)message {
+    if ( [self.delegate respondsToSelector:@selector(receivedEventMessage:)] ) {
+        [self.delegate receivedEventMessage:(NSString *)message];
     }
 }
 
@@ -163,9 +163,9 @@
     }
 }
 
-- (void)recievedPerformResponse:(NSString *)message {
-    if ( [self.delegate respondsToSelector:@selector(recievedPerformResponse:)] ) {
-        [self.delegate recievedPerformResponse:(NSString *)message];
+- (void)receivedPerformResponse:(NSString *)message {
+    if ( [self.delegate respondsToSelector:@selector(receivedPerformResponse:)] ) {
+        [self.delegate receivedPerformResponse:(NSString *)message];
     }
 }
 

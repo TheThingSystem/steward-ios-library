@@ -36,9 +36,9 @@
 #pragma mark - SRWebSocketDelegate Methods
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    NSLog(@"webSocket: %@ didRecieveMessage:", webSocket);
-    if ( [self.delegate respondsToSelector:@selector(recievedPerformResponse:)]  ) {
-        [self.delegate recievedPerformResponse:(NSString *)message];
+    NSLog(@"webSocket: %@ didReceiveMessage:", webSocket);
+    if ( [self.delegate respondsToSelector:@selector(receivedPerformResponse:)]  ) {
+        [self.delegate receivedPerformResponse:(NSString *)message];
     }
     
     // Will only trigger if we're authenticating,

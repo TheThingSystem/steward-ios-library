@@ -1,0 +1,34 @@
+PODS:
+  - CocoaAsyncSocket (7.3.5)
+  - CocoaHTTPServer (2.3):
+    - CocoaAsyncSocket
+    - CocoaLumberjack
+  - CocoaLumberjack (1.8.1):
+    - CocoaLumberjack/Extensions
+  - CocoaLumberjack/Core (1.8.1)
+  - CocoaLumberjack/Extensions (1.8.1):
+    - CocoaLumberjack/Core
+  - Reachability (3.1.1)
+  - RequestUtils (1.0.2)
+  - THPinViewController (1.1.2)
+  - ZXingObjC (3.0.1):
+    - ZXingObjC/All
+  - ZXingObjC/All (3.0.1)
+
+DEPENDENCIES:
+  - CocoaHTTPServer (~> 2.3)
+  - Reachability (~> 3.0)
+  - RequestUtils (~> 1.0.2)
+  - THPinViewController (~> 1.1.2)
+  - ZXingObjC (~> 3.0)
+
+SPEC CHECKSUMS:
+  CocoaAsyncSocket: a3b6de9958961578b36eabb8e921efd95b13d80c
+  CocoaHTTPServer: 7c2fce6617f7fda0e3f4fc34f96e562caa7c7bd8
+  CocoaLumberjack: 020378ec400d658923bf5887178394f65f052c90
+  Reachability: be4883bb93f31e38266ae3365e5600a317aae735
+  RequestUtils: a21a610c663a9c6c710a5ed8e16396a13dd42ee6
+  THPinViewController: 2f20fe0201dfd593e3033e28b7d7799652918967
+  ZXingObjC: 67d88ac35105840d63fed764db83e06fd7c6093e
+
+COCOAPODS: 0.32.1

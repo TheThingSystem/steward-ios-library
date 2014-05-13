@@ -1,0 +1,635 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0082096A18991D8400B05498 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0082096918991D8400B05498 /* Foundation.framework */; };
+		0082096C18991D8400B05498 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0082096B18991D8400B05498 /* CoreGraphics.framework */; };
+		0082096E18991D8400B05498 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0082096D18991D8400B05498 /* UIKit.framework */; };
+		0082097418991D8400B05498 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0082097218991D8400B05498 /* InfoPlist.strings */; };
+		0082097618991D8400B05498 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0082097518991D8400B05498 /* main.m */; };
+		0082097A18991D8400B05498 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0082097918991D8400B05498 /* AppDelegate.m */; };
+		0082097C18991D8500B05498 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0082097B18991D8400B05498 /* Images.xcassets */; };
+		0082099B18991DD600B05498 /* RootController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0082099918991DD600B05498 /* RootController.m */; };
+		0082099C18991DD600B05498 /* RootController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0082099A18991DD600B05498 /* RootController.xib */; };
+		008209A618991F6600B05498 /* ScanController.m in Sources */ = {isa = PBXBuildFile; fileRef = 008209A418991F6600B05498 /* ScanController.m */; };
+		008209A718991F6600B05498 /* ScanController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 008209A518991F6600B05498 /* ScanController.xib */; };
+		00820C511899224E00B05498 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C501899224E00B05498 /* CoreMedia.framework */; };
+		00820C531899225400B05498 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C521899225400B05498 /* CoreVideo.framework */; };
+		00820C551899225900B05498 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C541899225900B05498 /* ImageIO.framework */; };
+		00820C571899225F00B05498 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C561899225F00B05498 /* QuartzCore.framework */; };
+		00820C591899226600B05498 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C581899226600B05498 /* AVFoundation.framework */; };
+		00820C5B1899226C00B05498 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C5A1899226C00B05498 /* AudioToolbox.framework */; };
+		00820C5D1899227400B05498 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C5C1899227400B05498 /* SystemConfiguration.framework */; };
+		00820C5F1899227A00B05498 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C5E1899227A00B05498 /* CFNetwork.framework */; };
+		00820C611899228000B05498 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C601899228000B05498 /* Security.framework */; };
+		00820C631899228900B05498 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C621899228900B05498 /* libicucore.dylib */; };
+		5F1F93D5191D7DED0026A14A /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1F93D4191D7DED0026A14A /* libxml2.dylib */; };
+		5F1F943A191D86120026A14A /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9425191D86120026A14A /* Util.m */; };
+		5F1F943B191D86120026A14A /* Client.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9426191D86120026A14A /* Client.m */; };
+		5F1F943C191D86120026A14A /* Monitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9427191D86120026A14A /* Monitor.m */; };
+		5F1F943D191D86120026A14A /* Devices.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9428191D86120026A14A /* Devices.m */; };
+		5F1F943E191D86120026A14A /* Perform.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9429191D86120026A14A /* Perform.m */; };
+		5F1F943F191D86120026A14A /* Steward.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F942A191D86120026A14A /* Steward.m */; };
+		5F1F9460191D896C0026A14A /* GTMNSDictionary+URLArguments.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9455191D896C0026A14A /* GTMNSDictionary+URLArguments.m */; };
+		5F1F9461191D896C0026A14A /* GTMNSString+URLArguments.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9457191D896C0026A14A /* GTMNSString+URLArguments.m */; };
+		5F1F9462191D896C0026A14A /* GTMNSScanner+Unsigned.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9459191D896C0026A14A /* GTMNSScanner+Unsigned.m */; };
+		5F1F9463191D896C0026A14A /* GTMStringEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F945B191D896C0026A14A /* GTMStringEncoding.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		5F1F9464191D896C0026A14A /* GTMMethodCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F945C191D896C0026A14A /* GTMMethodCheck.m */; };
+		5F1F9465191D896C0026A14A /* GTMObjC2Runtime.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F945F191D896C0026A14A /* GTMObjC2Runtime.m */; };
+		5F1F946E191D897C0026A14A /* TOTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9467191D897C0026A14A /* TOTPGenerator.m */; };
+		5F1F946F191D897C0026A14A /* OTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9469191D897C0026A14A /* OTPGenerator.m */; };
+		5F1F9470191D897C0026A14A /* HOTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F946B191D897C0026A14A /* HOTPGenerator.m */; };
+		5F1F9471191D897C0026A14A /* OTPAuthURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F946D191D897C0026A14A /* OTPAuthURL.m */; };
+		5F1F947A191D898E0026A14A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 5F1F9472191D898E0026A14A /* README.md */; };
+		5F1F947B191D898E0026A14A /* LICENCE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5F1F9473191D898E0026A14A /* LICENCE.txt */; };
+		5F1F947C191D898E0026A14A /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9475191D898E0026A14A /* base64.c */; };
+		5F1F947D191D898E0026A14A /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9477191D898E0026A14A /* SRWebSocket.m */; };
+		5F1F947E191D898E0026A14A /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9479191D898E0026A14A /* NSData+SRB64Additions.m */; };
+		5F1F948B191D97610026A14A /* Web in Resources */ = {isa = PBXBuildFile; fileRef = 5F1F9489191D974B0026A14A /* Web */; };
+		5F1F948F191D9D020026A14A /* TAASConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F948E191D9D020026A14A /* TAASConnection.m */; };
+		5F1F9492191D9F7D0026A14A /* TAASWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9491191D9F7D0026A14A /* TAASWebSocket.m */; };
+		5F1F949B191DC4770026A14A /* TAASProxyResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F949A191DC4770026A14A /* TAASProxyResponse.m */; };
+		5F1F949E191DD5090026A14A /* TAASErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F949D191DD5090026A14A /* TAASErrorResponse.m */; };
+		FC96CB0E622F4EF9955F11A5 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D413B9A16D8C461791A3C5B8 /* libPods.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0082096618991D8400B05498 /* TAAS-proxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "TAAS-proxy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0082096918991D8400B05498 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		0082096B18991D8400B05498 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		0082096D18991D8400B05498 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		0082097118991D8400B05498 /* TAAS-proxy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TAAS-proxy-Info.plist"; sourceTree = "<group>"; };
+		0082097318991D8400B05498 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0082097518991D8400B05498 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		0082097718991D8400B05498 /* TAAS-proxy-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TAAS-proxy-Prefix.pch"; sourceTree = "<group>"; };
+		0082097818991D8400B05498 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		0082097918991D8400B05498 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		0082097B18991D8400B05498 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		0082099818991DD600B05498 /* RootController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RootController.h; sourceTree = "<group>"; };
+		0082099918991DD600B05498 /* RootController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RootController.m; sourceTree = "<group>"; };
+		0082099A18991DD600B05498 /* RootController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RootController.xib; sourceTree = "<group>"; };
+		008209A318991F6600B05498 /* ScanController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScanController.h; sourceTree = "<group>"; };
+		008209A418991F6600B05498 /* ScanController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScanController.m; sourceTree = "<group>"; };
+		008209A518991F6600B05498 /* ScanController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ScanController.xib; sourceTree = "<group>"; };
+		00820C501899224E00B05498 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		00820C521899225400B05498 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		00820C541899225900B05498 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		00820C561899225F00B05498 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		00820C581899226600B05498 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		00820C5A1899226C00B05498 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		00820C5C1899227400B05498 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		00820C5E1899227A00B05498 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		00820C601899228000B05498 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		00820C621899228900B05498 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
+		5F1F93D4191D7DED0026A14A /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		5F1F9424191D86120026A14A /* Client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Client.h; path = ../../../../Client/Client/Client.h; sourceTree = "<group>"; };
+		5F1F9425191D86120026A14A /* Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Util.m; path = ../../../../Client/Client/Util.m; sourceTree = "<group>"; };
+		5F1F9426191D86120026A14A /* Client.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Client.m; path = ../../../../Client/Client/Client.m; sourceTree = "<group>"; };
+		5F1F9427191D86120026A14A /* Monitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Monitor.m; path = ../../../../Client/Client/Monitor.m; sourceTree = "<group>"; };
+		5F1F9428191D86120026A14A /* Devices.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Devices.m; path = ../../../../Client/Client/Devices.m; sourceTree = "<group>"; };
+		5F1F9429191D86120026A14A /* Perform.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Perform.m; path = ../../../../Client/Client/Perform.m; sourceTree = "<group>"; };
+		5F1F942A191D86120026A14A /* Steward.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Steward.m; path = ../../../../Client/Client/Steward.m; sourceTree = "<group>"; };
+		5F1F944E191D89030026A14A /* Client-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Client-Prefix.pch"; path = "../../../../Client/Client/Client-Prefix.pch"; sourceTree = "<group>"; };
+		5F1F9453191D896C0026A14A /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMDefines.h; path = ../../../../Client/Client/GTMDefines.h; sourceTree = "<group>"; };
+		5F1F9454191D896C0026A14A /* GTMNSDictionary+URLArguments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "GTMNSDictionary+URLArguments.h"; path = "../../../../Client/Client/GTMNSDictionary+URLArguments.h"; sourceTree = "<group>"; };
+		5F1F9455191D896C0026A14A /* GTMNSDictionary+URLArguments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "GTMNSDictionary+URLArguments.m"; path = "../../../../Client/Client/GTMNSDictionary+URLArguments.m"; sourceTree = "<group>"; };
+		5F1F9456191D896C0026A14A /* GTMNSString+URLArguments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "GTMNSString+URLArguments.h"; path = "../../../../Client/Client/GTMNSString+URLArguments.h"; sourceTree = "<group>"; };
+		5F1F9457191D896C0026A14A /* GTMNSString+URLArguments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "GTMNSString+URLArguments.m"; path = "../../../../Client/Client/GTMNSString+URLArguments.m"; sourceTree = "<group>"; };
+		5F1F9458191D896C0026A14A /* GTMNSScanner+Unsigned.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "GTMNSScanner+Unsigned.h"; path = "../../../../Client/Client/GTMNSScanner+Unsigned.h"; sourceTree = "<group>"; };
+		5F1F9459191D896C0026A14A /* GTMNSScanner+Unsigned.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "GTMNSScanner+Unsigned.m"; path = "../../../../Client/Client/GTMNSScanner+Unsigned.m"; sourceTree = "<group>"; };
+		5F1F945A191D896C0026A14A /* GTMStringEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMStringEncoding.h; path = ../../../../Client/Client/GTMStringEncoding.h; sourceTree = "<group>"; };
+		5F1F945B191D896C0026A14A /* GTMStringEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMStringEncoding.m; path = ../../../../Client/Client/GTMStringEncoding.m; sourceTree = "<group>"; };
+		5F1F945C191D896C0026A14A /* GTMMethodCheck.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMMethodCheck.m; path = ../../../../Client/Client/GTMMethodCheck.m; sourceTree = "<group>"; };
+		5F1F945D191D896C0026A14A /* GTMMethodCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMMethodCheck.h; path = ../../../../Client/Client/GTMMethodCheck.h; sourceTree = "<group>"; };
+		5F1F945E191D896C0026A14A /* GTMObjC2Runtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMObjC2Runtime.h; path = ../../../../Client/Client/GTMObjC2Runtime.h; sourceTree = "<group>"; };
+		5F1F945F191D896C0026A14A /* GTMObjC2Runtime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMObjC2Runtime.m; path = ../../../../Client/Client/GTMObjC2Runtime.m; sourceTree = "<group>"; };
+		5F1F9466191D897C0026A14A /* TOTPGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TOTPGenerator.h; path = ../../../../Client/Client/TOTPGenerator.h; sourceTree = "<group>"; };
+		5F1F9467191D897C0026A14A /* TOTPGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TOTPGenerator.m; path = ../../../../Client/Client/TOTPGenerator.m; sourceTree = "<group>"; };
+		5F1F9468191D897C0026A14A /* OTPGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OTPGenerator.h; path = ../../../../Client/Client/OTPGenerator.h; sourceTree = "<group>"; };
+		5F1F9469191D897C0026A14A /* OTPGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OTPGenerator.m; path = ../../../../Client/Client/OTPGenerator.m; sourceTree = "<group>"; };
+		5F1F946A191D897C0026A14A /* HOTPGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HOTPGenerator.h; path = ../../../../Client/Client/HOTPGenerator.h; sourceTree = "<group>"; };
+		5F1F946B191D897C0026A14A /* HOTPGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HOTPGenerator.m; path = ../../../../Client/Client/HOTPGenerator.m; sourceTree = "<group>"; };
+		5F1F946C191D897C0026A14A /* OTPAuthURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OTPAuthURL.h; path = ../../../../Client/Client/OTPAuthURL.h; sourceTree = "<group>"; };
+		5F1F946D191D897C0026A14A /* OTPAuthURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OTPAuthURL.m; path = ../../../../Client/Client/OTPAuthURL.m; sourceTree = "<group>"; };
+		5F1F9472191D898E0026A14A /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.md; path = ../../../../Client/Client/README.md; sourceTree = "<group>"; };
+		5F1F9473191D898E0026A14A /* LICENCE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = LICENCE.txt; path = ../../../../Client/Client/LICENCE.txt; sourceTree = "<group>"; };
+		5F1F9474191D898E0026A14A /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = base64.h; path = ../../../../Client/Client/base64.h; sourceTree = "<group>"; };
+		5F1F9475191D898E0026A14A /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = base64.c; path = ../../../../Client/Client/base64.c; sourceTree = "<group>"; };
+		5F1F9476191D898E0026A14A /* SRWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SRWebSocket.h; path = ../../../../Client/Client/SRWebSocket.h; sourceTree = "<group>"; };
+		5F1F9477191D898E0026A14A /* SRWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SRWebSocket.m; path = ../../../../Client/Client/SRWebSocket.m; sourceTree = "<group>"; };
+		5F1F9478191D898E0026A14A /* NSData+SRB64Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+SRB64Additions.h"; path = "../../../../Client/Client/NSData+SRB64Additions.h"; sourceTree = "<group>"; };
+		5F1F9479191D898E0026A14A /* NSData+SRB64Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+SRB64Additions.m"; path = "../../../../Client/Client/NSData+SRB64Additions.m"; sourceTree = "<group>"; };
+		5F1F9489191D974B0026A14A /* Web */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Web; sourceTree = "<group>"; };
+		5F1F948D191D9D020026A14A /* TAASConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASConnection.h; sourceTree = "<group>"; };
+		5F1F948E191D9D020026A14A /* TAASConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASConnection.m; sourceTree = "<group>"; };
+		5F1F9490191D9F7D0026A14A /* TAASWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASWebSocket.h; sourceTree = "<group>"; };
+		5F1F9491191D9F7D0026A14A /* TAASWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASWebSocket.m; sourceTree = "<group>"; };
+		5F1F9499191DC4770026A14A /* TAASProxyResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASProxyResponse.h; sourceTree = "<group>"; };
+		5F1F949A191DC4770026A14A /* TAASProxyResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASProxyResponse.m; sourceTree = "<group>"; };
+		5F1F949C191DD5090026A14A /* TAASErrorResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASErrorResponse.h; sourceTree = "<group>"; };
+		5F1F949D191DD5090026A14A /* TAASErrorResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASErrorResponse.m; sourceTree = "<group>"; };
+		9EB7B3215C314A9784C32F94 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		D413B9A16D8C461791A3C5B8 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0082096318991D8400B05498 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F1F93D5191D7DED0026A14A /* libxml2.dylib in Frameworks */,
+				00820C631899228900B05498 /* libicucore.dylib in Frameworks */,
+				00820C611899228000B05498 /* Security.framework in Frameworks */,
+				00820C5F1899227A00B05498 /* CFNetwork.framework in Frameworks */,
+				00820C5D1899227400B05498 /* SystemConfiguration.framework in Frameworks */,
+				00820C5B1899226C00B05498 /* AudioToolbox.framework in Frameworks */,
+				00820C591899226600B05498 /* AVFoundation.framework in Frameworks */,
+				00820C571899225F00B05498 /* QuartzCore.framework in Frameworks */,
+				00820C551899225900B05498 /* ImageIO.framework in Frameworks */,
+				00820C531899225400B05498 /* CoreVideo.framework in Frameworks */,
+				00820C511899224E00B05498 /* CoreMedia.framework in Frameworks */,
+				0082096C18991D8400B05498 /* CoreGraphics.framework in Frameworks */,
+				0082096E18991D8400B05498 /* UIKit.framework in Frameworks */,
+				0082096A18991D8400B05498 /* Foundation.framework in Frameworks */,
+				FC96CB0E622F4EF9955F11A5 /* libPods.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0082095D18991D8400B05498 = {
+			isa = PBXGroup;
+			children = (
+				0082096F18991D8400B05498 /* TAAS-proxy */,
+				5F1F9482191D93630026A14A /* Resources */,
+				0082096818991D8400B05498 /* Frameworks */,
+				0082096718991D8400B05498 /* Products */,
+				9EB7B3215C314A9784C32F94 /* Pods.xcconfig */,
+			);
+			sourceTree = "<group>";
+		};
+		0082096718991D8400B05498 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0082096618991D8400B05498 /* TAAS-proxy.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0082096818991D8400B05498 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				00820C601899228000B05498 /* Security.framework */,
+				00820C5E1899227A00B05498 /* CFNetwork.framework */,
+				00820C5C1899227400B05498 /* SystemConfiguration.framework */,
+				00820C5A1899226C00B05498 /* AudioToolbox.framework */,
+				00820C581899226600B05498 /* AVFoundation.framework */,
+				00820C561899225F00B05498 /* QuartzCore.framework */,
+				00820C541899225900B05498 /* ImageIO.framework */,
+				00820C521899225400B05498 /* CoreVideo.framework */,
+				00820C501899224E00B05498 /* CoreMedia.framework */,
+				0082096918991D8400B05498 /* Foundation.framework */,
+				0082096B18991D8400B05498 /* CoreGraphics.framework */,
+				0082096D18991D8400B05498 /* UIKit.framework */,
+				00820C621899228900B05498 /* libicucore.dylib */,
+				5F1F93D4191D7DED0026A14A /* libxml2.dylib */,
+				D413B9A16D8C461791A3C5B8 /* libPods.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0082096F18991D8400B05498 /* TAAS-proxy */ = {
+			isa = PBXGroup;
+			children = (
+				0082097818991D8400B05498 /* AppDelegate.h */,
+				0082097918991D8400B05498 /* AppDelegate.m */,
+				0082099818991DD600B05498 /* RootController.h */,
+				0082099918991DD600B05498 /* RootController.m */,
+				008209A318991F6600B05498 /* ScanController.h */,
+				008209A418991F6600B05498 /* ScanController.m */,
+				5F1F948C191D9CBD0026A14A /* HTTP server */,
+				5F1F9423191D85D60026A14A /* Client */,
+				0082097018991D8400B05498 /* Supporting Files */,
+				0082097B18991D8400B05498 /* Images.xcassets */,
+			);
+			path = "TAAS-proxy";
+			sourceTree = "<group>";
+		};
+		0082097018991D8400B05498 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				0082097518991D8400B05498 /* main.m */,
+				0082097718991D8400B05498 /* TAAS-proxy-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		5F1F9423191D85D60026A14A /* Client */ = {
+			isa = PBXGroup;
+			children = (
+				5F1F9449191D88AA0026A14A /* Headers */,
+				5F1F9425191D86120026A14A /* Util.m */,
+				5F1F9426191D86120026A14A /* Client.m */,
+				5F1F9427191D86120026A14A /* Monitor.m */,
+				5F1F9428191D86120026A14A /* Devices.m */,
+				5F1F9429191D86120026A14A /* Perform.m */,
+				5F1F942A191D86120026A14A /* Steward.m */,
+				5F1F944D191D88F50026A14A /* Other Sources */,
+				5F1F944F191D89240026A14A /* External */,
+			);
+			name = Client;
+			sourceTree = "<group>";
+		};
+		5F1F9449191D88AA0026A14A /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				5F1F9424191D86120026A14A /* Client.h */,
+			);
+			name = Headers;
+			sourceTree = "<group>";
+		};
+		5F1F944D191D88F50026A14A /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				5F1F944E191D89030026A14A /* Client-Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		5F1F944F191D89240026A14A /* External */ = {
+			isa = PBXGroup;
+			children = (
+				5F1F9450191D893D0026A14A /* Google Toolbox for Mac */,
+				5F1F9451191D89480026A14A /* OTPAuth */,
+				5F1F9452191D89570026A14A /* SocketRocket */,
+			);
+			name = External;
+			sourceTree = "<group>";
+		};
+		5F1F9450191D893D0026A14A /* Google Toolbox for Mac */ = {
+			isa = PBXGroup;
+			children = (
+				5F1F9453191D896C0026A14A /* GTMDefines.h */,
+				5F1F9454191D896C0026A14A /* GTMNSDictionary+URLArguments.h */,
+				5F1F9455191D896C0026A14A /* GTMNSDictionary+URLArguments.m */,
+				5F1F9456191D896C0026A14A /* GTMNSString+URLArguments.h */,
+				5F1F9457191D896C0026A14A /* GTMNSString+URLArguments.m */,
+				5F1F9458191D896C0026A14A /* GTMNSScanner+Unsigned.h */,
+				5F1F9459191D896C0026A14A /* GTMNSScanner+Unsigned.m */,
+				5F1F945A191D896C0026A14A /* GTMStringEncoding.h */,
+				5F1F945B191D896C0026A14A /* GTMStringEncoding.m */,
+				5F1F945C191D896C0026A14A /* GTMMethodCheck.m */,
+				5F1F945D191D896C0026A14A /* GTMMethodCheck.h */,
+				5F1F945E191D896C0026A14A /* GTMObjC2Runtime.h */,
+				5F1F945F191D896C0026A14A /* GTMObjC2Runtime.m */,
+			);
+			name = "Google Toolbox for Mac";
+			sourceTree = "<group>";
+		};
+		5F1F9451191D89480026A14A /* OTPAuth */ = {
+			isa = PBXGroup;
+			children = (
+				5F1F9466191D897C0026A14A /* TOTPGenerator.h */,
+				5F1F9467191D897C0026A14A /* TOTPGenerator.m */,
+				5F1F9468191D897C0026A14A /* OTPGenerator.h */,
+				5F1F9469191D897C0026A14A /* OTPGenerator.m */,
+				5F1F946A191D897C0026A14A /* HOTPGenerator.h */,
+				5F1F946B191D897C0026A14A /* HOTPGenerator.m */,
+				5F1F946C191D897C0026A14A /* OTPAuthURL.h */,
+				5F1F946D191D897C0026A14A /* OTPAuthURL.m */,
+			);
+			name = OTPAuth;
+			sourceTree = "<group>";
+		};
+		5F1F9452191D89570026A14A /* SocketRocket */ = {
+			isa = PBXGroup;
+			children = (
+				5F1F9472191D898E0026A14A /* README.md */,
+				5F1F9473191D898E0026A14A /* LICENCE.txt */,
+				5F1F9474191D898E0026A14A /* base64.h */,
+				5F1F9475191D898E0026A14A /* base64.c */,
+				5F1F9476191D898E0026A14A /* SRWebSocket.h */,
+				5F1F9477191D898E0026A14A /* SRWebSocket.m */,
+				5F1F9478191D898E0026A14A /* NSData+SRB64Additions.h */,
+				5F1F9479191D898E0026A14A /* NSData+SRB64Additions.m */,
+			);
+			name = SocketRocket;
+			sourceTree = "<group>";
+		};
+		5F1F9482191D93630026A14A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0082097118991D8400B05498 /* TAAS-proxy-Info.plist */,
+				0082097218991D8400B05498 /* InfoPlist.strings */,
+				0082099A18991DD600B05498 /* RootController.xib */,
+				008209A518991F6600B05498 /* ScanController.xib */,
+				5F1F9489191D974B0026A14A /* Web */,
+			);
+			name = Resources;
+			path = "TAAS-proxy";
+			sourceTree = "<group>";
+		};
+		5F1F948C191D9CBD0026A14A /* HTTP server */ = {
+			isa = PBXGroup;
+			children = (
+				5F1F948D191D9D020026A14A /* TAASConnection.h */,
+				5F1F948E191D9D020026A14A /* TAASConnection.m */,
+				5F1F9499191DC4770026A14A /* TAASProxyResponse.h */,
+				5F1F949A191DC4770026A14A /* TAASProxyResponse.m */,
+				5F1F9490191D9F7D0026A14A /* TAASWebSocket.h */,
+				5F1F9491191D9F7D0026A14A /* TAASWebSocket.m */,
+				5F1F949C191DD5090026A14A /* TAASErrorResponse.h */,
+				5F1F949D191DD5090026A14A /* TAASErrorResponse.m */,
+			);
+			name = "HTTP server";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0082096518991D8400B05498 /* TAAS-proxy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0082099218991D8500B05498 /* Build configuration list for PBXNativeTarget "TAAS-proxy" */;
+			buildPhases = (
+				9E564DF9CC264D15B144DE5D /* Check Pods Manifest.lock */,
+				0082096218991D8400B05498 /* Sources */,
+				0082096318991D8400B05498 /* Frameworks */,
+				0082096418991D8400B05498 /* Resources */,
+				EACB911CC3674C8090FE967A /* Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "TAAS-proxy";
+			productName = "TAAS-proxy";
+			productReference = 0082096618991D8400B05498 /* TAAS-proxy.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0082095E18991D8400B05498 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "The Thing System";
+				TargetAttributes = {
+					0082096518991D8400B05498 = {
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = 0082096118991D8400B05498 /* Build configuration list for PBXProject "TAAS-proxy" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 0082095D18991D8400B05498;
+			productRefGroup = 0082096718991D8400B05498 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0082096518991D8400B05498 /* TAAS-proxy */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0082096418991D8400B05498 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F1F948B191D97610026A14A /* Web in Resources */,
+				5F1F947B191D898E0026A14A /* LICENCE.txt in Resources */,
+				008209A718991F6600B05498 /* ScanController.xib in Resources */,
+				0082097418991D8400B05498 /* InfoPlist.strings in Resources */,
+				5F1F947A191D898E0026A14A /* README.md in Resources */,
+				0082099C18991DD600B05498 /* RootController.xib in Resources */,
+				0082097C18991D8500B05498 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		9E564DF9CC264D15B144DE5D /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		EACB911CC3674C8090FE967A /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0082096218991D8400B05498 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F1F9464191D896C0026A14A /* GTMMethodCheck.m in Sources */,
+				5F1F943D191D86120026A14A /* Devices.m in Sources */,
+				5F1F9462191D896C0026A14A /* GTMNSScanner+Unsigned.m in Sources */,
+				5F1F947D191D898E0026A14A /* SRWebSocket.m in Sources */,
+				008209A618991F6600B05498 /* ScanController.m in Sources */,
+				5F1F947E191D898E0026A14A /* NSData+SRB64Additions.m in Sources */,
+				5F1F946E191D897C0026A14A /* TOTPGenerator.m in Sources */,
+				5F1F9463191D896C0026A14A /* GTMStringEncoding.m in Sources */,
+				5F1F949B191DC4770026A14A /* TAASProxyResponse.m in Sources */,
+				5F1F948F191D9D020026A14A /* TAASConnection.m in Sources */,
+				0082099B18991DD600B05498 /* RootController.m in Sources */,
+				5F1F9460191D896C0026A14A /* GTMNSDictionary+URLArguments.m in Sources */,
+				5F1F9465191D896C0026A14A /* GTMObjC2Runtime.m in Sources */,
+				5F1F943B191D86120026A14A /* Client.m in Sources */,
+				5F1F946F191D897C0026A14A /* OTPGenerator.m in Sources */,
+				5F1F9461191D896C0026A14A /* GTMNSString+URLArguments.m in Sources */,
+				5F1F943A191D86120026A14A /* Util.m in Sources */,
+				5F1F943F191D86120026A14A /* Steward.m in Sources */,
+				5F1F943C191D86120026A14A /* Monitor.m in Sources */,
+				5F1F943E191D86120026A14A /* Perform.m in Sources */,
+				5F1F949E191DD5090026A14A /* TAASErrorResponse.m in Sources */,
+				0082097A18991D8400B05498 /* AppDelegate.m in Sources */,
+				5F1F9471191D897C0026A14A /* OTPAuthURL.m in Sources */,
+				0082097618991D8400B05498 /* main.m in Sources */,
+				5F1F9470191D897C0026A14A /* HOTPGenerator.m in Sources */,
+				5F1F9492191D9F7D0026A14A /* TAASWebSocket.m in Sources */,
+				5F1F947C191D898E0026A14A /* base64.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		0082097218991D8400B05498 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0082097318991D8400B05498 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0082099018991D8500B05498 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		0082099118991D8500B05498 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0082099318991D8500B05498 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9EB7B3215C314A9784C32F94 /* Pods.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "TAAS-proxy/TAAS-proxy-Prefix.pch";
+				INFOPLIST_FILE = "TAAS-proxy/TAAS-proxy-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		0082099418991D8500B05498 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9EB7B3215C314A9784C32F94 /* Pods.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "TAAS-proxy/TAAS-proxy-Prefix.pch";
+				INFOPLIST_FILE = "TAAS-proxy/TAAS-proxy-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0082096118991D8400B05498 /* Build configuration list for PBXProject "TAAS-proxy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0082099018991D8500B05498 /* Debug */,
+				0082099118991D8500B05498 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0082099218991D8500B05498 /* Build configuration list for PBXNativeTarget "TAAS-proxy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0082099318991D8500B05498 /* Debug */,
+				0082099418991D8500B05498 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0082095E18991D8400B05498 /* Project object */;
+}

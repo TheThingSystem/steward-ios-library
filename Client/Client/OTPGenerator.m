@@ -114,6 +114,7 @@ NSString *const kOTPGeneratorSHAMD5Algorithm = @"MD5";
 
   NSMutableData *hash = [NSMutableData dataWithLength:hashLength];
 
+  _GTMDevLog(@"counter: %llu", counter);
   counter = NSSwapHostLongLongToBig(counter);
   NSData *counterData = [NSData dataWithBytes:&counter
                                        length:sizeof(counter)];
@@ -129,7 +130,6 @@ NSString *const kOTPGeneratorSHAMD5Algorithm = @"MD5";
   unsigned long pinValue = truncatedHash % kPinModTable[digits_];
 
   _GTMDevLog(@"secret: %@", secret_);
-  _GTMDevLog(@"counter: %llu", counter);
   _GTMDevLog(@"hash: %@", hash);
   _GTMDevLog(@"offset: %d", offset);
   _GTMDevLog(@"truncatedHash: %d", truncatedHash);

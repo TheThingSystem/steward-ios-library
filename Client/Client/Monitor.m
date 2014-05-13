@@ -34,10 +34,10 @@
 #pragma mark - SRWebSocketDelegate Methods
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    //NSLog(@"eventSocket: %@ didRecieveMessage: %@", webSocket, message);
-    NSLog(@"webSocket: %@ didRecieveMessage:", webSocket);
-    if ( [self.delegate respondsToSelector:@selector(recievedEventMessage:)] ) {
-        [self.delegate recievedEventMessage:(NSString *)message];
+    //NSLog(@"eventSocket: %@ didReceiveMessage: %@", webSocket, message);
+    NSLog(@"webSocket: %@ didReceiveMessage:", webSocket);
+    if ( [self.delegate respondsToSelector:@selector(receivedEventMessage:)] ) {
+        [self.delegate receivedEventMessage:(NSString *)message];
     }
 }
 

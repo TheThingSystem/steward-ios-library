@@ -1,7 +1,7 @@
 The Thing System iOS Library
 ===================
 
-_The latest bianry release is [version 0.2.0](https://github.com/TheThingSystem/steward-ios-library/releases/tag/0.2) and includes authentication support._
+_The latest binary release is [version 0.2.0](https://github.com/TheThingSystem/steward-ios-library/releases/tag/0.2) and includes authentication support._
 
 This library is a draft release of [The Thing System](http://thethingsystem.com) iOS Library. It serves as a convenience layer and is intended to simplify common tasks when [developing](http://thethingsystem.com/dev/Developer.html) both [things](http://thethingsystem.com/dev/Things.html) and [clients](http://thethingsystem.com/dev/Clients.html) on iOS devices which talk to The Thing System [steward software](https://github.com/TheThingSystem/steward).
 
@@ -126,9 +126,9 @@ which will start the process of looking for an active steward via [mDNS](http://
         [client startMonitoringEvents];
 	}
 
-Incoming messages from the steward will trigger the `recievedEventMessage` callback,
+Incoming messages from the steward will trigger the `receivedEventMessage` callback,
 
-    - (void)recievedEventMessage:(NSString *)message {
+    - (void)receivedEventMessage:(NSString *)message {
         NSLog(@"json = %@", message);
     }
 
@@ -183,9 +183,9 @@ which will start the process of looking for an active steward via [mDNS](http://
         [client availableDevices];
     }
 
-The response from the steward will trigger the `recievedDeviceList` callback,
+The response from the steward will trigger the `receivedDeviceList` callback,
 
-	    - (void)recievedDeviceList:(NSString *)message {
+	    - (void)receivedDeviceList:(NSString *)message {
 	        NSLog(@"json = %@", message);
 	    }
 
@@ -224,9 +224,9 @@ if at a future point we want to turn all the lightbulbs back off then we would c
     NSString *request = @"off";
     [client performWithDevice:device andRequest:request andParameters:nil];	
 
-The response message from the steward, including any error messages, will be dispatched to the `recievedPerformResponse:` callback
+The response message from the steward, including any error messages, will be dispatched to the `receivedPerformResponse:` callback
 
-    -(void)recievedPerformResponse:(NSString *)message {
+    -(void)receivedPerformResponse:(NSString *)message {
         NSLog(@"json = %@", message);
     }
 

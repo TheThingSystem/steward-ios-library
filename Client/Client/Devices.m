@@ -27,7 +27,7 @@
 #pragma mark - SRWebSocketDelegate Methods
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    NSLog(@"webSocket: %@ didRecieveMessage:", webSocket);
+    NSLog(@"webSocket: %@ didReceiveMessage:", webSocket);
     if ( [self.delegate respondsToSelector:@selector(receivedDeviceList:)]  ) {
         [self.delegate receivedDeviceList:(NSString *)message];
     }

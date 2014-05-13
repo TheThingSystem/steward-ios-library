@@ -32,7 +32,7 @@
 
 #import "SRWebSocket.h"
 
-#define LIBRARY_VERSION @"0.2.0"
+#define LIBRARY_VERSION @"0.3.0"
 #define ISO_TIMEZONE_UTC_FORMAT @"Z"
 #define ISO_TIMEZONE_OFFSET_FORMAT @"+%02d%02d"
 
@@ -67,7 +67,7 @@
 @protocol MonitorDelegate <NSObject>
 
 @required
-- (void)recievedEventMessage:(NSString *)message;
+- (void)receivedEventMessage:(NSString *)message;
 
 @end
 
@@ -110,7 +110,7 @@
 @protocol PerformDelegate <NSObject>
 
 @required
-- (void)recievedPerformResponse:(NSString *)message;
+- (void)receivedPerformResponse:(NSString *)message;
 
 @end
 
@@ -141,9 +141,9 @@
 @optional
 - (void)stewardNotFoundWithError:(NSError *)error;
 - (void)stewardFoundWithAddress:(NSString *)ipAddress;
-- (void)recievedEventMessage:(NSString *)message;
+- (void)receivedEventMessage:(NSString *)message;
 - (void)receivedDeviceList:(NSString *)message;
-- (void)recievedPerformResponse:(NSString *)message;
+- (void)receivedPerformResponse:(NSString *)message;
 
 @end
 
