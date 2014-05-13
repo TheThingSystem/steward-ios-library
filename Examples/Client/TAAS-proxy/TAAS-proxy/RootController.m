@@ -42,8 +42,6 @@
 - (void)stewardFoundWithAddress:(NSString *)ipAddress {
     NSLog(@"stewardFoundWithAddress: %@", ipAddress);
     self.statusLabel.text = [NSString stringWithFormat:@"steward at %@", ipAddress];
-[self closedWithURL:[NSURL URLWithString:@"otpauth://totp//user/mrose/13?secret=MZYTIMRRJZSDCY2QOFIWMVTZPJ3ESRZXMVJGS5KGI5TTG33PO54EKSSII5JGWWCD"]];
-[self displayTOTP];
 }
 
 - (void)stewardNotFoundWithError:(NSError *)error {
