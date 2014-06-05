@@ -12,12 +12,6 @@
 
 @interface TAASWebSocket : WebSocket <SRWebSocketDelegate>
 
-@property (strong, nonatomic) NSURLRequest      *resource;
-@property (strong, nonatomic) SRWebSocket       *downstream;
-@property (        nonatomic) BOOL               authenticate;
-@property (        nonatomic) BOOL               opened;
-@property (        nonatomic) BOOL               followup;
-
 - (id)initWithRequest:(HTTPMessage *)request
             andSocket:(GCDAsyncSocket *)socket
           forResource:(NSURLRequest *)resource;

@@ -14,13 +14,11 @@ The TODO list is:
 
 - fill-in the error response bodies in TAASConnection.m
 
-- update the app to run in the background
-
-    - keep track of foreground/background status
-
-    - do not upgrade the main screen in the background
+- do not upgrade the main screen in the background
 
 - repurpose the main screen to show status and console notices from the steward
+
+- use the "betterthansiri" PAC approach
 
 - test, test, and test!
 

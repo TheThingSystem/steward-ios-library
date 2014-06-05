@@ -12,18 +12,6 @@
 
 @interface TAASProxyResponse : NSObject <HTTPResponse>
 
-@property (        nonatomic) BOOL               oneshotP;
-@property (strong, nonatomic) NSString          *behavior;
-@property (strong, nonatomic) NSMutableData     *body;
-
-@property (strong, nonatomic) HTTPConnection    *upstream;
-@property (strong, nonatomic) NSURLConnection   *downstream;
-@property (        nonatomic) UInt64             dataOffset;
-@property (        nonatomic) NSInteger          statusCode;
-@property (strong, nonatomic) NSMutableDictionary
-                                                *headerFields;
-@property (strong, nonatomic) NSMutableData     *data;
-
 - (id)initWithURI:(NSString *)URI
     forConnection:(HTTPConnection *)connection;
 

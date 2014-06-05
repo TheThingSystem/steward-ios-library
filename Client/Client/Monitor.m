@@ -13,10 +13,16 @@
 
 
 - (id)initWithAddress:(NSString *)ipAddress {
-	if( (self = [super init]) ) {
-        NSString *request = [NSString stringWithFormat:@"wss://%@:8888/console", ipAddress];
+  return [self initWithAddress:ipAddress andPort:8888 andServiceType:NSURLNetworkServiceTypeDefault];
+}
+
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port andServiceType:(NSURLRequestNetworkServiceType)serviceType {
+    if( (self = [super init]) ) {
+      NSString *request = [NSString stringWithFormat:@"wss://%@:%ld/console", ipAddress, port];
         NSLog(@"Address is %@", request);
-        self.webSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:request]]];
+        NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:request]];
+        [urlRequest setNetworkServiceType:serviceType];
+        self.webSocket = [[SRWebSocket alloc] initWithURLRequest:urlRequest];
         self.webSocket.delegate = self;
     }
     return self;
@@ -34,8 +40,7 @@
 #pragma mark - SRWebSocketDelegate Methods
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    //NSLog(@"eventSocket: %@ didReceiveMessage: %@", webSocket, message);
-    NSLog(@"webSocket: %@ didReceiveMessage:", webSocket);
+//  NSLog(@"webSocket: %@ didReceiveMessage:", webSocket);
     if ( [self.delegate respondsToSelector:@selector(receivedEventMessage:)] ) {
         [self.delegate receivedEventMessage:(NSString *)message];
     }
@@ -43,17 +48,26 @@
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
     NSLog(@"webSocketDidOpen: %@", webSocket);
+    if ( [self.delegate respondsToSelector:@selector(startedMonitoring)] ) {
+        [self.delegate startedMonitoring];
+    }
     
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
     NSLog(@"webSocket: %@ didFailWithError:%@", webSocket, error);
     [webSocket close];
+    if ( [self.delegate respondsToSelector:@selector(monitoringFailedWithError:)] ) {
+        [self.delegate monitoringFailedWithError:error];
+    }
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     NSLog(@"webSocket: %@ didCloseWithCode:%ld reason:'%@' wasClean:%d", webSocket, (long)code, reason, wasClean);
-    
+    if ( [self.delegate respondsToSelector:@selector(monitoringClosedWithCode:)] ) {
+        [self.delegate monitoringClosedWithCode:code];
+    }
+   
 }
 
 

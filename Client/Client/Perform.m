@@ -11,8 +11,12 @@
 @implementation Perform
 
 - (id)initWithAddress:(NSString *)ipAddress {
+  return [self initWithAddress:ipAddress andPort:8888];
+}
+
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port {
 	if( (self = [super init]) ) {
-        NSString *request = [NSString stringWithFormat:@"wss://%@:8888/manage", ipAddress];
+        NSString *request = [NSString stringWithFormat:@"wss://%@:%ld/manage", ipAddress, port];
         self.webSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:request]]];
         self.webSocket.delegate = self;
         self.authenticate = [Client sharedClient].authenticate;

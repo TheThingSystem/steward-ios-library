@@ -7,13 +7,8 @@
 //
 
 #import "HTTPConnection.h"
-#import "TAASProxyResponse.h"
-#import "TAASWebSocket.h"
 
 
 @interface TAASConnection : HTTPConnection
-
-@property (strong, nonatomic) TAASProxyResponse *response;
-@property (strong, nonatomic) TAASWebSocket     *ws;
 
 @end

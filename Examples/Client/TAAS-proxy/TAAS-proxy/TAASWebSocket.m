@@ -7,8 +7,9 @@
 //
 
 #import "TAASWebSocket.h"
-#import "Client.h"
+#import "AppDelegate.h"
 #import "HTTPMessage.h"
+#import "TAASClient.h"
 #import "DDLog.h"
 
 
@@ -17,12 +18,23 @@
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
 
+@interface TAASWebSocket ()
+
+@property (strong, nonatomic) NSURLRequest              *resource;
+@property (strong, nonatomic) SRWebSocket               *downstream;
+@property (        nonatomic) BOOL                       authenticate;
+@property (        nonatomic) BOOL                       opened;
+@property (        nonatomic) BOOL                       followup;
+
+@end
+
+
 @implementation TAASWebSocket
 
 - (id)initWithRequest:(HTTPMessage *)message
             andSocket:(GCDAsyncSocket *)socket
           forResource:(NSURLRequest *)resource {
-  if ((self = [super initWithRequest:message socket:socket])) {
+  if ((self = [super initWithRequest:message socket:socket]) != nil) {
     self.resource = resource;
   }
 
@@ -34,7 +46,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
     self.downstream = [[SRWebSocket alloc] initWithURLRequest:self.resource];
     self.downstream.delegate = self;
-    self.authenticate = [Client sharedClient].authenticate;
+    TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
+    self.authenticate = service.authenticate;
     self.opened = NO;
     [self.downstream open];
 }
@@ -57,9 +70,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark - SRWebSocket delegate methods
 
-#define AUTHENTICATE_USER \
-        @"{\"path\":\"/api/v1/user/authenticate/%@\",\"requestID\":\"%d\",\"response\":\"%@\"}"
-
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
     DDLogInfo(@"webSocketDidOpen:%@", webSocket);
 
@@ -69,15 +79,14 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
       return;
     }
 
-    Client *client = [Client sharedClient];
-    NSString *json = [NSString stringWithFormat:AUTHENTICATE_USER,
-                               client.clientID, client.requestCounter, [client generateTOTP]];
+    TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
+    NSString *json = [service authenticatorJSON];
     DDLogInfo(@"send downstream %@", json);
-    client.requestCounter++;
     [self.downstream send:json];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+- (void)webSocket:(SRWebSocket *)webSocket
+didReceiveMessage:(id)message {
     if (!self.authenticate) {
         DDLogVerbose(@"webSocket:%@ didReceiveMessage:%@", webSocket, message);
         [self sendMessage:(NSString *)message];
@@ -107,7 +116,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
                                                                userInfo:dictionary]];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+- (void)webSocket:(SRWebSocket *)webSocket
+ didFailWithError:(NSError *)error {
     DDLogInfo(@"webSocket:%@ didFailWithError:%@", webSocket, error);
 
     [self.downstream close];
@@ -115,8 +125,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [self stop];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
-    DDLogInfo(@"webSocket:%@ didCloseWithCode:%ld reason:%@ wasClean:%d", webSocket, (long)code, reason, wasClean);
+- (void)webSocket:(SRWebSocket *)webSocket
+ didCloseWithCode:(NSInteger)code
+           reason:(NSString *)reason
+         wasClean:(BOOL)wasClean {
+    DDLogInfo(@"webSocket:%@ didCloseWithCode:%ld reason:%@ wasClean:%d",
+              webSocket, (long)code, reason, wasClean);
 
     self.opened = NO;
     [self stop];

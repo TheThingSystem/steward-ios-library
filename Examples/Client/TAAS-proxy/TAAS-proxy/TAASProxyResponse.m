@@ -17,11 +17,26 @@
 static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE | HTTP_LOG_FLAG_TRACE;
 
 
+@interface TAASProxyResponse ()
+
+@property (        nonatomic) BOOL                       oneshotP;
+@property (strong, nonatomic) NSString                  *behavior;
+@property (strong, nonatomic) NSMutableData             *body;
+
+@property (strong, nonatomic) HTTPConnection            *upstream;
+@property (strong, nonatomic) NSURLConnection           *downstream;
+@property (        nonatomic) UInt64                     dataOffset;
+@property (        nonatomic) NSInteger                  statusCode;
+@property (strong, nonatomic) NSMutableDictionary       *headerFields;
+@property (strong, nonatomic) NSMutableData             *data;
+
+@end
+
+
 @implementation TAASProxyResponse
 
 - (id)initWithURI:(NSString *)URI
     forConnection:(HTTPConnection *)parent {
-
     if ((self = [super init]))  {
         HTTPLogInfo(@"%@[%p]: initwithURI:%@", THIS_FILE, self, URI);
 

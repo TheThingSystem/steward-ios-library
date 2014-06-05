@@ -32,7 +32,7 @@
 
 #import "SRWebSocket.h"
 
-#define LIBRARY_VERSION @"0.3.0"
+#define LIBRARY_VERSION @"0.4.0"
 #define ISO_TIMEZONE_UTC_FORMAT @"Z"
 #define ISO_TIMEZONE_OFFSET_FORMAT @"+%02d%02d"
 
@@ -46,6 +46,10 @@
 
 @optional
 - (void)stewardNotFoundWithError:(NSError *)error;
+- (void)stewardFoundAtService:(NSNetService *)service;
+- (void)stewardDidStopSearching;
+- (void)stewardNotSearchedWithErrorDict:(NSDictionary *)errorDict;
+- (void)stewardNotResolvedWithErrorDict:(NSDictionary *)errorDict;
 
 @end
 
@@ -69,6 +73,11 @@
 @required
 - (void)receivedEventMessage:(NSString *)message;
 
+@optional
+- (void)startedMonitoring;
+- (void)monitoringFailedWithError:(NSError *)error;
+- (void)monitoringClosedWithCode:(NSInteger)code;
+
 @end
 
 @interface Monitor : NSObject <SRWebSocketDelegate>
@@ -78,6 +87,7 @@
 @property (nonatomic, strong) SRWebSocket *webSocket;
 
 - (id)initWithAddress:(NSString *)ipAddress;
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port andServiceType:(NSURLRequestNetworkServiceType)serviceType;
 - (void)startMonitoringEvents;
 - (void)stopMonitoringEvents;
 
@@ -92,6 +102,11 @@
 @required
 - (void)receivedDeviceList:(NSString *)message;
 
+@optional
+- (void)startedListing;
+- (void)listingFailedWithError:(NSError *)error;
+- (void)listingClosedWithCode:(NSInteger)code;
+
 @end
 
 @interface Devices : NSObject <SRWebSocketDelegate>
@@ -100,6 +115,7 @@
 @property (nonatomic, strong) SRWebSocket *webSocket;
 
 - (id)initWithAddress:(NSString *)ipAddress;
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port;
 - (void)listAllDevices;
 
 @end
@@ -128,6 +144,7 @@
 
 
 - (id)initWithAddress:(NSString *)ipAddress;
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port;
 - (void)performWithDevice:(NSString *)device andRequest:(NSString *)request andParameters:(NSString *)parameters;
 
 @end
@@ -140,6 +157,10 @@
 
 @optional
 - (void)stewardNotFoundWithError:(NSError *)error;
+- (void)stewardDidStopSearching;
+- (void)stewardNotSearchedWithErrorDict:(NSDictionary *)errorDict;
+- (void)stewardNotResolvedWithErrorDict:(NSDictionary *)errorDict;
+- (void)stewardFoundAtService:(NSNetService *)service;
 - (void)stewardFoundWithAddress:(NSString *)ipAddress;
 - (void)receivedEventMessage:(NSString *)message;
 - (void)receivedDeviceList:(NSString *)message;
@@ -210,3 +231,9 @@
 
 @end
 
+
+@interface NSNetService(ipAddresses)
+
+- (NSArray *)ipAddresses;
+
+@end

@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="4514" systemVersion="12F45" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="5056" systemVersion="12F45" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3747"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="RootController">
             <connections>
                 <outlet property="statusLabel" destination="6Ot-4M-yQg" id="Kec-hh-WGi"/>
-                <outlet property="totpLabel" destination="ypi-Ya-YLN" id="vPI-KR-SmN"/>
                 <outlet property="userLabel" destination="h64-4T-qqn" id="8hU-7x-Kxg"/>
                 <outlet property="view" destination="1" id="3"/>
             </connections>
@@ -58,13 +57,6 @@
                         <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="38" id="R21-8Q-QIS"/>
                     </constraints>
                 </imageView>
-                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="000000" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ypi-Ya-YLN">
-                    <rect key="frame" x="76" y="171" width="169" height="43"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="36"/>
-                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                    <nil key="highlightedColor"/>
-                </label>
                 <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h64-4T-qqn">
                     <rect key="frame" x="105" y="222" width="111" height="21"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -76,11 +68,8 @@
             <constraints>
                 <constraint firstItem="E18-Lh-mA9" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="22" id="37N-hh-HfV"/>
                 <constraint firstItem="F7h-j0-1lG" firstAttribute="top" secondItem="bnZ-Cq-Ogg" secondAttribute="bottom" constant="18" id="3G0-U5-Hgj"/>
-                <constraint firstItem="ypi-Ya-YLN" firstAttribute="top" secondItem="E18-Lh-mA9" secondAttribute="bottom" constant="86" id="DCB-HH-KrF"/>
-                <constraint firstItem="ypi-Ya-YLN" firstAttribute="leading" secondItem="1" secondAttribute="leading" constant="76" id="JHm-Bf-lAb"/>
                 <constraint firstItem="6Ot-4M-yQg" firstAttribute="leading" secondItem="bnZ-Cq-Ogg" secondAttribute="trailing" constant="13" id="ZFo-Os-ssn"/>
                 <constraint firstAttribute="bottom" secondItem="F7h-j0-1lG" secondAttribute="bottom" id="ZTY-W0-T8l"/>
-                <constraint firstAttribute="trailing" secondItem="ypi-Ya-YLN" secondAttribute="trailing" constant="75" id="ZYt-Kd-Q5d"/>
                 <constraint firstItem="F7h-j0-1lG" firstAttribute="leading" secondItem="1" secondAttribute="leading" id="dwN-6N-sE1"/>
                 <constraint firstAttribute="trailing" secondItem="E18-Lh-mA9" secondAttribute="trailing" constant="21" id="ffs-bv-Cc3"/>
                 <constraint firstItem="F7h-j0-1lG" firstAttribute="top" secondItem="bnZ-Cq-Ogg" secondAttribute="bottom" constant="18" id="hDL-nV-XkI"/>

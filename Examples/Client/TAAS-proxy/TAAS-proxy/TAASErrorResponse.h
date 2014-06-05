@@ -11,8 +11,6 @@
 
 @interface TAASErrorResponse : HTTPDataResponse
 
-@property (nonatomic)         NSInteger          statusCode;
-
 - (id)initWithStatusCode:(int)statusCode andBody:(NSData *)body;
 
 @end

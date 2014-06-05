@@ -51,11 +51,19 @@
 // Sent when browsing stops
 - (void)netServiceBrowserDidStopSearch:(NSNetServiceBrowser *)browser {
     NSLog(@"Stopped Searching");
+
+    if ( [self.delegate respondsToSelector:@selector(stewardDidStopSearching)] ) {
+        [self.delegate stewardDidStopSearching];
+    }
 }
 
 // Sent if browsing fails
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didNotSearch:(NSDictionary *)errorDict {
     NSLog(@"Did not search with error %@", errorDict);
+
+    if ( [self.delegate respondsToSelector:@selector(stewardNotSearchedWithErrorDict:)] ) {
+        [self.delegate stewardNotSearchedWithErrorDict:errorDict];
+    }
 }
 
 // Sent when a service appears
@@ -91,17 +99,50 @@
 }
 
 - (void)netServiceDidResolveAddress:(NSNetService *)sender {
-    NSLog(@"Service resolved. Host name: %@ Port number: %@", [sender hostName], [NSNumber numberWithLong:[sender port]]);
-    struct hostent *host_entry = gethostbyname([[sender hostName] cStringUsingEncoding:NSASCIIStringEncoding] );
-    NSString *ip = [NSString stringWithCString:inet_ntoa(*((struct in_addr *)host_entry->h_addr_list[0])) encoding:NSASCIIStringEncoding];
-    NSLog(@"IP address is %@", ip);
-    self.ipAddress = ip;
-    [self.delegate stewardFoundWithAddress:ip];
+    NSLog(@"Service resolved. Host name: %@, Port number: %@, Addresses: %@", [sender hostName],
+          [NSNumber numberWithUnsignedShort:[sender port]], [sender ipAddresses]);
+
+    NSArray *ipAddresses = [sender ipAddresses];
+    self.ipAddress = ipAddresses.count > 0 ? [ipAddresses objectAtIndex:0] : nil;
+    if ( [self.delegate respondsToSelector:@selector(stewardFoundAtService:)] ) {
+        [self.delegate stewardFoundAtService:sender];
+        return;
+    }
+    [self.delegate stewardFoundWithAddress:self.ipAddress];
 
 }
 
 - (void)netService:(NSNetService *)sender didNotResolve:(NSDictionary *)errorDict {
     NSLog(@"Could not resolve service. %@", errorDict);
+
+    if ( [self.delegate respondsToSelector:@selector(stewardNotResolvedWithErrorDict:)] ) {
+        [self.delegate stewardNotResolvedWithErrorDict:errorDict];
+    }
+}
+
+@end
+
+
+@implementation NSNetService(ipAddresses)
+
+#include <arpa/inet.h>
+
+- (NSArray *)ipAddresses {
+    NSArray *addrs = [self addresses];
+    NSMutableArray *ipaddrs = [NSMutableArray arrayWithCapacity:addrs.count];
+
+    for (NSData *a in addrs) {
+        struct sockaddr *addr = (struct sockaddr *)[a bytes];
+        if (addr->sa_family != AF_INET) continue;
+
+        struct sockaddr_in *sin = (struct sockaddr_in *)addr;
+
+        char ipaddr[16];
+        if (!inet_ntop(sin->sin_family, &sin->sin_addr, ipaddr, sizeof ipaddr)) continue;
+        [ipaddrs addObject:[NSString stringWithFormat:@"%s", ipaddr]];
+    }
+
+    return ipaddrs;
 }
 
 @end

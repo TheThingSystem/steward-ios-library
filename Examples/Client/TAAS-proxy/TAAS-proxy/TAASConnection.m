@@ -7,9 +7,12 @@
 //
 
 #import "TAASConnection.h"
-#import "Client.h"
+#import "AppDelegate.h"
 #import "HTTPFileResponse.h"
+#import "TAASClient.h"
 #import "TAASErrorResponse.h"
+#import "TAASProxyResponse.h"
+#import "TAASWebSocket.h"
 #import "DDLog.h"
 
 
@@ -18,11 +21,20 @@
 static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 
+@interface TAASConnection ()
+
+@property (strong, nonatomic) TAASProxyResponse         *response;
+@property (strong, nonatomic) TAASWebSocket             *ws;
+
+@end
+
+
 @implementation TAASConnection
 
 // TODO: create error response bodies
 
-- (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
+- (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method
+                                              URI:(NSString *)path {
     NSString *filePath = [self filePathForURI:path allowDirectory:NO];
     NSString *documentRoot = [config documentRoot];
 
@@ -39,22 +51,22 @@ return [[TAASErrorResponse alloc] initWithStatusCode:403 andBody:nil];
       }
     }
 
-    Client *client = [Client sharedClient];
-    if ((client == nil) || (client.steward == nil) || (client.steward.ipAddress == nil)) {
+    TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
+    NSString *serviceURI = [service serviceURI:path];
+    if (serviceURI == nil) {
 
 return [[TAASErrorResponse alloc] initWithStatusCode:504 andBody:nil];
     }
 
-    self.response = [[TAASProxyResponse alloc]
-                         initWithURI:[NSString stringWithFormat:@"http://%@:8887%@",
-                                               client.steward.ipAddress, path]
-                       forConnection:self];
+    self.response = [[TAASProxyResponse alloc] initWithURI:serviceURI
+                                             forConnection:self];
     return self.response;
 }
 
 - (WebSocket *)webSocketForURI:(NSString *)path {
-    Client *client = [Client sharedClient];
-    if ((client == nil) || (client.steward == nil) || (client.steward.ipAddress == nil)) {
+    TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
+    NSString *serviceURI = [service serviceURI:path];
+    if (serviceURI == nil) {
 
       return nil;
     }
@@ -63,9 +75,7 @@ return [[TAASErrorResponse alloc] initWithStatusCode:504 andBody:nil];
       return [super webSocketForURI:path];
     }
 
-    NSString *string = [NSString stringWithFormat:@"ws://%@:8887%@",
-                                 client.steward.ipAddress, path];
-    NSURLRequest *URLrequest = [NSURLRequest requestWithURL:[NSURL URLWithString:string]];
+    NSURLRequest *URLrequest = [NSURLRequest requestWithURL:[NSURL URLWithString:serviceURI]];
     self.ws = [[TAASWebSocket alloc] initWithRequest:request
                                            andSocket:asyncSocket
                                          forResource:URLrequest];

@@ -15,9 +15,17 @@
 static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE | HTTP_LOG_FLAG_TRACE;
 
 
+@interface TAASErrorResponse ()
+
+@property (        nonatomic) NSInteger                  statusCode;
+
+@end
+
+
 @implementation TAASErrorResponse
 
-- (id)initWithStatusCode:(int)statusCode andBody:(NSData *)body {
+- (id)initWithStatusCode:(int)statusCode
+                 andBody:(NSData *)body {
     if (body == nil) body = [NSData data];
 
     if ((self = [super initWithData:body])) {
