@@ -42,8 +42,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             DDLogVerbose(@"lastSteward: %@", info);
             NSString *string = [info objectForKey:@"authURL"];
 
+            self.sharedInfo = info;
             self.rememberedP = YES;
-            [self connectToSteward:[info objectForKey:@"ipAddress"]
+            [self connectToSteward:[[info objectForKey:@"ipAddresses"] objectAtIndex:0]
                           withPort:[info objectForKey:@"port"]
                         andAuthURL:((string.length > 0) ? [NSURL URLWithString:string] : nil)];
         }
@@ -135,8 +136,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     [self notifyUser:[NSString stringWithFormat:@"Found %@", [info objectForKey:@"hostName"]]
            withTitle:@"Found"];
-    self.sharedInfo = info;
 
+    self.sharedInfo = info;
     self.rememberedP = NO;
     [self connectToSteward:[ipaddrs objectAtIndex:0]
                   withPort:[self.sharedInfo objectForKey:@"port"]
@@ -181,7 +182,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)failedToMonitor:(NSError *)error {
     [self resetSteward];
 
-    [self notifyUser:@"unable to monitor" withTitle:@"Error"];
+    [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", [self.sharedInfo objectForKey:@"name"]]
+                               withTitle:@"Error"];
 }
 
 - (void)doneMonitoring:(NSInteger)code {
@@ -198,7 +200,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if (!self.sharedInfo) return;
 
     self.rememberedP = NO;
-    [self connectToSteward:[self.sharedInfo objectForKey:@"ipAddress"]
+    [self connectToSteward:[[self.sharedInfo objectForKey:@"ipAddresses"] objectAtIndex:0]
                   withPort:[self.sharedInfo objectForKey:@"port"]
                 andAuthURL:self.authURL];
 }
