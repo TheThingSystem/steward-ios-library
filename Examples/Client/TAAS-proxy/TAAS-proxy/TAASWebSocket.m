@@ -42,7 +42,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)didOpen {
-    DDLogInfo(@"didOpen: %@", [[request url] relativeString]);
+    DDLogVerbose(@"didOpen: %@", [[request url] relativeString]);
 
     self.downstream = [[SRWebSocket alloc] initWithURLRequest:self.resource];
     self.downstream.delegate = self;
@@ -61,7 +61,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)didClose {
-    DDLogInfo(@"didClose");
+    DDLogVerbose(@"didClose");
 
     if (self.downstream != nil) [self.downstream close];
     if (!self.opened) [super didClose];
@@ -71,8 +71,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark - SRWebSocket delegate methods
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
-    DDLogInfo(@"webSocketDidOpen:%@", webSocket);
-
     self.opened = YES;
     if (self.authenticate == NO) {
       [super didOpen];
@@ -81,7 +79,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
     TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
     NSString *json = [service authenticatorJSON];
-    DDLogInfo(@"send downstream %@", json);
+    DDLogVerbose(@"send downstream %@", json);
     [self.downstream send:json];
 }
 
@@ -92,7 +90,7 @@ didReceiveMessage:(id)message {
         [self sendMessage:(NSString *)message];
         return;
     }
-    DDLogInfo(@"recv downstream %@", message);
+    DDLogVerbose(@"recv downstream %@", message);
 
     NSError *error = nil;
     NSData *data = [((NSString *) message) dataUsingEncoding:NSUTF8StringEncoding];
@@ -118,7 +116,7 @@ didReceiveMessage:(id)message {
 
 - (void)webSocket:(SRWebSocket *)webSocket
  didFailWithError:(NSError *)error {
-    DDLogInfo(@"webSocket:%@ didFailWithError:%@", webSocket, error);
+    DDLogError(@"webSocket:%@ didFailWithError:%@", webSocket, error);
 
     [self.downstream close];
     self.opened = NO;
@@ -129,9 +127,6 @@ didReceiveMessage:(id)message {
  didCloseWithCode:(NSInteger)code
            reason:(NSString *)reason
          wasClean:(BOOL)wasClean {
-    DDLogInfo(@"webSocket:%@ didCloseWithCode:%ld reason:%@ wasClean:%d",
-              webSocket, (long)code, reason, wasClean);
-
     self.opened = NO;
     [self stop];
 }

@@ -8,15 +8,13 @@ but your steward isn't available locally.
 This example is still a work in progress.
 The TODO list is:
 
-- figure out how to save and restore TOTP information in the Client library
+- repurpose the main screen to show status and console notices from the steward
+    - scrollable, time-aware console messages
+    - last status message
 
 - update the Client library to know about the [TAAS cloud](http://github.com/TheThingSystem/taas-server)
 
 - fill-in the error response bodies in TAASConnection.m
-
-- do not upgrade the main screen in the background
-
-- repurpose the main screen to show status and console notices from the steward
 
 - use the "betterthansiri" PAC approach
 

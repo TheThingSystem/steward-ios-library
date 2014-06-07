@@ -9,10 +9,12 @@
 #import "RootController.h"
 #import "AppDelegate.h"
 #import "FXKeychain.h"
+#import "MHPrettyDate.h"
 #import "DDLog.h"
 
 
-#define kLastSteward @"lastSteward"
+#define kAllStewards @"_allStewards"
+#define kLastSteward @"_lastSteward"
 
 #define kHostName    @"hostName"
 #define kName        @"name"
@@ -30,6 +32,26 @@
 static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 
+@interface MHPrettyDate (TAAS)
+
++ (NSString *)shortPrettyDateFromDate:(NSDate *)date;
+
+@end
+
+
+@implementation MHPrettyDate (TAAS)
+
++ (NSString *)shortPrettyDateFromDate:(NSDate *)date {
+  if (date == nil) return nil;
+
+  NSInteger seconds = [date timeIntervalSinceNow];
+  if (seconds <= -60) return [MHPrettyDate prettyDateFromDate:date withFormat:MHPrettyDateShortRelativeTime];
+  if (seconds ==   0) return @"now";
+  return [NSString stringWithFormat:@"%d%@", -seconds, NSLocalizedStringFromTable(@"s", @"MHPrettyDate", nil)];
+}
+@end
+
+
 @interface RootController ()
 
 @property (        nonatomic) BOOL                       readyP;
@@ -38,6 +60,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSURL                     *authURL;
 
 @property (strong, nonatomic) NSMutableDictionary       *entities;
+@property (strong, nonatomic) NSDateFormatter           *utcFormatter;
 
 @property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
 @property (weak,   nonatomic) IBOutlet UITextField      *textConsole;
@@ -117,16 +140,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     NSMutableDictionary *info = [[NSMutableDictionary alloc] initWithCapacity:(self.sharedInfo.count + 1)];
     [info addEntriesFromDictionary:self.sharedInfo];
-    [info setObject:((self.authURL != nil) ? [self.authURL absoluteString] : @"") forKey:@"authURL"];
+    [info setObject:(self.authURL ? [self.authURL absoluteString] : @"") forKey:@"authURL"];
 
-    FXKeychain *keyChain = [FXKeychain defaultKeychain];
-    DDLogVerbose(@"set lastSteward: %@", info);
-    [keyChain setObject:info forKey:kLastSteward];
-
-    NSString *key;
-    if ((key = [self.sharedInfo objectForKey:kHostName]) != nil) [keyChain setObject:info forKey:key];
-    if ((key = [self.sharedInfo objectForKey:kName]) != nil) [keyChain setObject:info forKey:key];
-
+    [self rememberThisSteward:info lastP:true];
     self.statusLabel.text = @"Connected";
 }
 
@@ -138,19 +154,40 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     self.service = nil;
 }
 
+- (BOOL)rememberThisSteward:(NSDictionary *)info
+                      lastP:(BOOL)lastP {
+    FXKeychain *keyChain = [FXKeychain defaultKeychain];
+    NSString *name = [info objectForKey:kHostName];
+
+    NSMutableArray *allStewards = [keyChain objectForKey:kAllStewards];
+    if (allStewards == nil) allStewards = [[NSMutableArray alloc] initWithCapacity:1];
+    BOOL foundP = [allStewards indexOfObject:name] != NSNotFound;
+    if (!foundP) {
+      [allStewards addObject:name];
+      [keyChain setObject:allStewards forKey:kAllStewards];
+    }
+
+    if (lastP) {
+        DDLogVerbose(@"set lastSteward: %@", info);
+        [keyChain setObject:info forKey:kLastSteward];
+    }
+
+    [keyChain setObject:info forKey:name];
+    if ((name = [info objectForKey:kName]) != nil) [keyChain setObject:info forKey:name];
+
+    return foundP;
+}
+
 #pragma mark - TAASClientDelegate methods
 
 - (void)foundService:(NSDictionary *)info {
     NSString *name = [self hostName:info];
 
     if (self.service != nil) {
-        NSString *hostName = [self.sharedInfo objectForKey:kHostName];
-// TBD: if not on keychain, add to list for future use
-
-// TBD: should loop through the FXKeychain
-        if (![hostName isEqual:[info objectForKey:kHostName]]) {
+        if ([self rememberThisSteward:info lastP:false]) {
             [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
         }
+
         return;
     }
 
@@ -206,6 +243,11 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             return;
         }
 
+        if (self.utcFormatter == nil) {
+            self.utcFormatter = [[NSDateFormatter alloc] init];
+            [self.utcFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.zzz'Z'"];
+            [self.utcFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
+        }
         [values enumerateObjectsUsingBlock:^(NSDictionary *entry, NSUInteger idx, BOOL *stop) {
             NSString *level = [entry objectForKey:@"level"];
             if (([level isEqual:@"debug"]) || ([level isEqual:@"info"])) return;
@@ -214,12 +256,13 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             NSString *format = (self.textConsole.text.length > 0) ? @"\n%@: %@ %@":  @"%@: %@ %@";
 
             NSString *date = [entry objectForKey:@"date"];
+            if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
 
             NSString *meta = [entry objectForKey:@"meta"];
             NSString *data = [self valuePP:meta];
 
             self.textConsole.text = [self.textConsole.text
-                                        stringByAppendingFormat:format, date,
+                                        stringByAppendingFormat:format, (date ? date : @""),
                                         [entry objectForKey:@"message"], (data ? data : @"")];
         }];
     }];
@@ -310,7 +353,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
                                                                options:kNilOptions
                                                                  error:&error];
-    return ((dictionary != nil) ? [self dictionaryPP:dictionary] : value);
+    return (dictionary ? [self dictionaryPP:dictionary] : value);
 }
 
 - (NSString *)dictionaryPP:(NSDictionary *)dict {
