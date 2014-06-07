@@ -12,6 +12,19 @@
 #import "DDLog.h"
 
 
+#define kLastSteward @"lastSteward"
+
+#define kHostName    @"hostName"
+#define kName        @"name"
+#define kIpAddresses @"ipAddresses"
+#define kPort        @"port"
+
+#define kError       @"Error"
+
+#define kWhoAmI      @"whoami"
+#define kWhatAmI     @"whatami"
+
+
 // Log levels: off, error, warn, info, verbose
 // Other flags: trace
 static const int ddLogLevel = LOG_LEVEL_VERBOSE;
@@ -24,8 +37,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSDictionary              *sharedInfo;
 @property (strong, nonatomic) NSURL                     *authURL;
 
+@property (strong, nonatomic) NSMutableDictionary       *entities;
+
 @property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
-@property (weak,   nonatomic) IBOutlet UILabel          *userLabel;
+@property (weak,   nonatomic) IBOutlet UITextField      *textConsole;
 
 @end
 
@@ -37,15 +52,15 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         DDLogVerbose(@"Client Library v%@", [Client version]);
 
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
-        NSDictionary *info = (NSDictionary *)[keyChain objectForKey:@"lastSteward"];
+        NSDictionary *info = [keyChain objectForKey:kLastSteward];
         if (info != nil) {
             DDLogVerbose(@"lastSteward: %@", info);
             NSString *string = [info objectForKey:@"authURL"];
 
             self.sharedInfo = info;
             self.rememberedP = YES;
-            [self connectToSteward:[[info objectForKey:@"ipAddresses"] objectAtIndex:0]
-                          withPort:[info objectForKey:@"port"]
+            [self connectToSteward:[[info objectForKey:kIpAddresses] objectAtIndex:0]
+                          withPort:[info objectForKey:kPort]
                         andAuthURL:((string.length > 0) ? [NSURL URLWithString:string] : nil)];
         }
 
@@ -66,6 +81,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
          withTitle:(NSString *)title {
     DDLogVerbose(@"notifyUser: %@ - %@", title, message);
     self.statusLabel.text = message;
+
+    if (self.textConsole.text == nil) self.textConsole.text = @"";
+    NSString *format = (self.textConsole.text.length > 0) ? @"\n%@: %@":  @"%@: %@";
+    self.textConsole.text = [self.textConsole.text stringByAppendingFormat:format, title, message];
 
     UIApplication *application = [UIApplication sharedApplication];
     AppDelegate *appDelegate = (AppDelegate *) application.delegate;
@@ -98,17 +117,17 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     NSMutableDictionary *info = [[NSMutableDictionary alloc] initWithCapacity:(self.sharedInfo.count + 1)];
     [info addEntriesFromDictionary:self.sharedInfo];
-    [info setObject:(self.authURL != nil ? [self.authURL absoluteString] : @"") forKey:@"authURL"];
+    [info setObject:((self.authURL != nil) ? [self.authURL absoluteString] : @"") forKey:@"authURL"];
 
     FXKeychain *keyChain = [FXKeychain defaultKeychain];
     DDLogVerbose(@"set lastSteward: %@", info);
-    [keyChain setObject:info forKey:@"lastSteward"];
+    [keyChain setObject:info forKey:kLastSteward];
 
     NSString *key;
-    if ((key = [self.sharedInfo objectForKey:@"hostName"]) != nil) [keyChain setObject:info forKey:key];
-    if ((key = [self.sharedInfo objectForKey:@"name"]) != nil) [keyChain setObject:info forKey:key];
+    if ((key = [self.sharedInfo objectForKey:kHostName]) != nil) [keyChain setObject:info forKey:key];
+    if ((key = [self.sharedInfo objectForKey:kName]) != nil) [keyChain setObject:info forKey:key];
 
-    self.statusLabel.text = @"";
+    self.statusLabel.text = @"Connected";
 }
 
 - (void)resetSteward {
@@ -122,74 +141,137 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 #pragma mark - TAASClientDelegate methods
 
 - (void)foundService:(NSDictionary *)info {
-    if (self.service != nil) {
-// TBD: add to list for future use
-      return;
-    }
+    NSString *name = [self hostName:info];
 
-    NSArray *ipaddrs = [info objectForKey:@"ipAddresses"];
-    if (ipaddrs.count == 0) {
-        [self notifyUser:[NSString stringWithFormat:@"no addresses for %@", [info objectForKey:@"name"]]
-                                          withTitle:@"Error"];
+    if (self.service != nil) {
+        NSString *hostName = [self.sharedInfo objectForKey:kHostName];
+// TBD: if not on keychain, add to list for future use
+
+// TBD: should loop through the FXKeychain
+        if (![hostName isEqual:[info objectForKey:kHostName]]) {
+            [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
+        }
         return;
     }
 
-    [self notifyUser:[NSString stringWithFormat:@"Found %@", [info objectForKey:@"hostName"]]
-           withTitle:@"Found"];
+    NSArray *ipaddrs = [info objectForKey:kIpAddresses];
+    if (ipaddrs.count == 0) {
+        [self notifyUser:[NSString stringWithFormat:@"no addresses for %@", name] withTitle:kError];
+        return;
+    }
+
+    [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
 
     self.sharedInfo = info;
     self.rememberedP = NO;
     [self connectToSteward:[ipaddrs objectAtIndex:0]
-                  withPort:[self.sharedInfo objectForKey:@"port"]
+                  withPort:[self.sharedInfo objectForKey:kPort]
                 andAuthURL:self.authURL];
 }
 
 - (void)didReceiveMonitor:(NSString *)message {
-    if (!self.readyP) {
-        NSError *error = nil;
-        NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
-        NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                                   options:kNilOptions
-                                                                     error:&error];
-        NSDictionary *oops = (NSDictionary *)[dictionary objectForKey:@"error"];
-        if (oops != nil) {
-	    [self resetSteward];
+      NSError *error = nil;
+      NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
+      NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                                 options:kNilOptions
+                                                                   error:&error];
 
-            NSString *diagnostic = [((NSDictionary *)oops) objectForKey:@"diagnostic"];
+    if (!self.readyP) {
+        NSDictionary *oops;
+        if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
+            [self resetSteward];
+
+            NSString *diagnostic = [oops objectForKey:@"diagnostic"];
             if (diagnostic == nil) diagnostic = message;
-            [self notifyUser:diagnostic withTitle:@"Error"];
+            [self notifyUser:diagnostic withTitle:kError];
 // TBD: prompt user to scan QRcode
             return;
-	}
+        }
 
-	self.readyP = YES;
+        self.readyP = YES;
         [self rememberSteward];
         [self.service listDevices];
     }
+    if (dictionary == nil) return;
 
-// TBD: add to screen
+    [dictionary enumerateKeysAndObjectsUsingBlock:^(id category, id values, BOOL *stop) {
+        if ([category isEqual:@"notice"]) return;
+
+        if ([category isEqual:@".updates"]) {
+            [values enumerateObjectsUsingBlock:^(NSDictionary *value, NSUInteger idx, BOOL *stop) {
+                NSString *whoami = [value objectForKey:kWhoAmI];
+                if (whoami != nil) [self.entities setObject:value forKey:whoami];
+            }];
+
+            return;
+        }
+
+        [values enumerateObjectsUsingBlock:^(NSDictionary *entry, NSUInteger idx, BOOL *stop) {
+            NSString *level = [entry objectForKey:@"level"];
+            if (([level isEqual:@"debug"]) || ([level isEqual:@"info"])) return;
+
+            if (self.textConsole.text == nil) self.textConsole.text = @"";
+            NSString *format = (self.textConsole.text.length > 0) ? @"\n%@: %@ %@":  @"%@: %@ %@";
+
+            NSString *date = [entry objectForKey:@"date"];
+
+            NSString *meta = [entry objectForKey:@"meta"];
+            NSString *data = [self valuePP:meta];
+
+            self.textConsole.text = [self.textConsole.text
+                                        stringByAppendingFormat:format, date,
+                                        [entry objectForKey:@"message"], (data ? data : @"")];
+        }];
+    }];
 }
 
 - (void)didReceiveListing:(NSString *)message {
-// TBD: parse and internalize
+    NSError *error = nil;
+    NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                               options:kNilOptions
+                                                                 error:&error];
+    if (dictionary == nil) return;
+    self.entities = nil;
+
+    NSDictionary *oops;
+    if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
+        NSString *diagnostic = [oops objectForKey:@"diagnostic"];
+        if (diagnostic == nil) diagnostic = message;
+        [self notifyUser:diagnostic withTitle:kError];
+        return;
+    }
+
+    self.entities = [[NSMutableDictionary alloc] init];
+    NSDictionary *result = [dictionary objectForKey:@"result"];
+    [result enumerateKeysAndObjectsUsingBlock:^(id entityType, id values, BOOL *stop) {
+        if ([entityType isEqual:@"actors"]) return;
+
+        [values enumerateKeysAndObjectsUsingBlock:^(id whoami, id value, BOOL *stop) {
+            NSMutableDictionary *entity = [NSMutableDictionary dictionaryWithDictionary:value];
+            [entity setObject:whoami forKey:kWhoAmI];
+            [entity setObject:entityType forKey:kWhatAmI];
+            [self.entities setObject:entity forKey:whoami];
+        }];
+    }];
 }
 
 
 - (void)didNotFindService:(NSDictionary *)errorDict {
-    [self notifyUser:@"steward not found" withTitle:@"Error"];
+    [self notifyUser:@"steward not found" withTitle:kError];
 }
 
 - (void)failedToMonitor:(NSError *)error {
     [self resetSteward];
 
-    [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", [self.sharedInfo objectForKey:@"name"]]
-                               withTitle:@"Error"];
+    [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", [self hostName:self.sharedInfo]]
+           withTitle:kError];
 }
 
 - (void)doneMonitoring:(NSInteger)code {
     [self resetSteward];
 
-    [self notifyUser:@"monitoring terminated" withTitle:@"Error"];
+    [self notifyUser:@"monitoring terminated" withTitle:kError];
 }
 
 
@@ -200,9 +282,61 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if (!self.sharedInfo) return;
 
     self.rememberedP = NO;
-    [self connectToSteward:[[self.sharedInfo objectForKey:@"ipAddresses"] objectAtIndex:0]
-                  withPort:[self.sharedInfo objectForKey:@"port"]
+    [self connectToSteward:[[self.sharedInfo objectForKey:kIpAddresses] objectAtIndex:0]
+                  withPort:[self.sharedInfo objectForKey:kPort]
                 andAuthURL:self.authURL];
+}
+
+
+#pragma mark - miscellany
+
+- (NSString *)hostName:(NSDictionary *)info {
+    NSString *name = [info objectForKey:kHostName];
+    NSRange range = [name rangeOfString:@".local." options:(NSBackwardsSearch | NSAnchoredSearch)];
+    if (range.location != NSNotFound) name = [name substringToIndex:range.location];
+
+    return name;
+}
+
+- (NSString *)valuePP:(id)value {
+    if ((value == nil) || ([value isKindOfClass:[NSNull class]])) return nil;
+
+    if ([value isKindOfClass:[NSDictionary class]]) return [self dictionaryPP:value];
+    if ([value isKindOfClass:[NSArray class]]) return [self arrayPP:value];
+    if (![value isKindOfClass:[NSString class]]) return [NSString stringWithFormat:@"%@", value];
+
+    NSError *error = nil;
+    NSData *data = [value dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                               options:kNilOptions
+                                                                 error:&error];
+    return ((dictionary != nil) ? [self dictionaryPP:dictionary] : value);
+}
+
+- (NSString *)dictionaryPP:(NSDictionary *)dict {
+    NSMutableString *result = [[NSMutableString alloc] init];
+
+    [dict enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+        NSString *string = [self valuePP:value];
+        if (string != nil) [result appendFormat:((result.length > 0) ? @", %@:%@" : @"{%@:%@"), key, string];
+    }];
+    if (result.length == 0) return nil;
+    [result appendString:@"}"];
+
+    return result;
+}
+
+- (NSString *)arrayPP:(NSArray *)array {
+    NSMutableString *result = [[NSMutableString alloc] init];
+
+    [array enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+        NSString *string = [self valuePP:value];
+        if (string != nil) [result appendFormat:((result.length > 0) ? @", %@" : @"[%@"), string];
+    }];
+    if (result.length == 0) return nil;
+    [result appendString:@"]"];
+
+    return result;
 }
 
 @end

@@ -37,8 +37,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     DDLogVerbose(@"didFinishLaunchingWithOptions: %@", launchOptions);
 
-    // should NEVER happen...
-    if ([launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey] != nil) return NO;
+    // should NEVER happen, as we are always running (voip)
+    if ([launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey] != nil) return YES;
 
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.rootController = [[RootController alloc] initWithNibName:@"RootController" bundle:nil];
@@ -103,6 +103,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     DDLogVerbose(@"applicationWillEnterForeground");
+
+    application.applicationIconBadgeNumber = 0;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
@@ -111,6 +113,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     DDLogVerbose(@"applicationDidResignActive");
+
+    application.applicationIconBadgeNumber = 0;
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -124,9 +128,6 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
     DDLogVerbose(@"didReceiveLocalNotication");
 
     application.applicationIconBadgeNumber = 0;
-    if (application.applicationState != UIApplicationStateBackground) return;
-
-// TBD: update something...
 }
 
 

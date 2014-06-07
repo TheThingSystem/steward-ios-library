@@ -99,14 +99,14 @@ didReceiveMessage:(id)message {
     NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
                                                                options:kNilOptions
                                                                  error:&error];
-    NSDictionary *oops = (NSDictionary *)[dictionary objectForKey:@"error"];
+    NSDictionary *oops = [dictionary objectForKey:@"error"];
     if (oops == nil) {
       self.authenticate = NO;
       [super didOpen];
       return;
     }
 
-    NSString *diagnostic = [((NSDictionary *)oops) objectForKey:@"diagnostic"];
+    NSString *diagnostic = [oops objectForKey:@"diagnostic"];
     if (diagnostic == nil) diagnostic = message;
     dictionary = [NSDictionary dictionaryWithObject:diagnostic
                                              forKey:NSLocalizedDescriptionKey];

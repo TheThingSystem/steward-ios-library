@@ -111,8 +111,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE | HTTP_LOG_FLAG_TRACE;
                                                                  options:kNilOptions
                                                                    error:&error];
       NSDictionary *oops;
-      if ((dictionary != nil) && ((oops = (NSDictionary *)[dictionary objectForKey:@"error"]) != nil)) {
-        text = [((NSDictionary *)oops) objectForKey:@"diagnostic"];
+      if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
+        text = [oops objectForKey:@"diagnostic"];
       }
     }
     if (text == nil) {
