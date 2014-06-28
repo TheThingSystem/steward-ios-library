@@ -46,7 +46,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
     self.downstream = [[SRWebSocket alloc] initWithURLRequest:self.resource];
     self.downstream.delegate = self;
-    TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
+    AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
+    TAASClient *service = [appDelegate rootController].service;
     self.authenticate = service.authenticate;
     self.opened = NO;
     [self.downstream open];
@@ -77,7 +78,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
       return;
     }
 
-    TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
+    AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
+    TAASClient *service = [appDelegate rootController].service;
     NSString *json = [service authenticatorJSON];
     DDLogVerbose(@"send downstream %@", json);
     [self.downstream send:json];

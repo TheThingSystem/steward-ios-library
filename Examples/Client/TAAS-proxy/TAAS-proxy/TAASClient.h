@@ -32,12 +32,19 @@
 
 @interface TAASClient : NSObject
 
+#define kHostName    @"hostName"
+#define kName        @"name"
+#define kIpAddresses @"ipAddresses"
+#define kPort        @"port"
+#define kTXT         @"txt"
+
+
 @property (weak,   nonatomic) id <TAASClientDelegate>    delegate;
 
 
 + (TAASClient *)sharedClient;
 
-- (id) initWithAddress:(NSString *)ipAddress andPort:(NSNumber *)port andAuthURL:(NSURL *)authURL;
+- (id) initWithAddress:(NSString *)address andPort:(NSNumber *)port andAuthURL:(NSURL *)authURL;
 
 - (BOOL)authenticate;
 - (void)setAuthenticate:(BOOL)onoff;

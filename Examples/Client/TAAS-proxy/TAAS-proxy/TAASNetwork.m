@@ -36,10 +36,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (id)init {
   if ((self = [super init])) {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(fxReachabilityStatusDidChange)
-                                                 name:FXReachabilityStatusDidChangeNotification
-                                               object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(fxReachabilityStatusDidChange)
+                                                     name:FXReachabilityStatusDidChangeNotification
+                                                   object:nil];
   }
   return self;
 }

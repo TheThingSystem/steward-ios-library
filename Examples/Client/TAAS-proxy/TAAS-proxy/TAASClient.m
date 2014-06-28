@@ -18,9 +18,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @interface  TAASClient () <StewardDelegate, MonitorDelegate, DevicesDelegate>
 
 @property (strong, nonatomic) Client                    *client;
-@property (strong, nonatomic) Devices                   *browser;
-@property (strong, nonatomic) NSNumber                  *portno;
+@property (strong, nonatomic) Devices                   *manager;
+@property (        nonatomic) BOOL                       managerP;
+@property (        nonatomic) BOOL                       retryP;
 @property (strong, nonatomic) Monitor                   *monitor;
+@property (        nonatomic) BOOL                       monitorP;
+@property (strong, nonatomic) NSNumber                  *portno;
 @property (strong, nonatomic) Steward                   *steward;
 
 @end
@@ -44,7 +47,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     return self;
 }
 
-- (id) initWithAddress:(NSString *)ipAddress
+- (id) initWithAddress:(NSString *)address
                andPort:(NSNumber *)port
             andAuthURL:(NSURL *)authURL {
     if ((self = [self init])) {
@@ -52,17 +55,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         self.client.authURL = authURL;
         self.client.debug = YES;
 
-        self.steward.ipAddress = ipAddress;
+        self.steward.ipAddress = address;
         self.portno = port;
 
-        self.monitor = [[Monitor alloc] initWithAddress:ipAddress
+        self.monitorP = NO;
+        self.monitor = [[Monitor alloc] initWithAddress:address
                                                 andPort:[port unsignedShortValue]
                                          andServiceType:NSURLNetworkServiceTypeVoIP];
         self.monitor.delegate = self;
-
-        self.browser = [[Devices alloc] initWithAddress:ipAddress
-                                                andPort:[port unsignedShortValue]];
-        self.browser.delegate = self;
     }
     return self;
 }
@@ -111,14 +111,21 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)stopMonitoring {
-  if (self.monitor != nil) {
-      self.monitor.delegate = nil;
-      [self.monitor stopMonitoringEvents];
+    if (self.monitor != nil) {
+        [self.monitor stopMonitoringEvents];
+        self.monitor = nil;
     }
 }
 
 - (void)listDevices {
-    [self.browser listAllDevices];
+    if (self.manager == nil) {
+        self.managerP = NO;
+        self.manager = [[Devices alloc] initWithAddress:self.steward.ipAddress
+                                                andPort:[self.portno unsignedShortValue]
+                                            andOneShotP:NO];
+        self.manager.delegate = self;
+    }
+    [self.manager listAllDevices];
 }
 
 
@@ -129,11 +136,24 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)stewardFoundAtService:(NSNetService *)service {
+    NSDictionary *txt = [NSNetService dictionaryFromTXTRecordData:[service TXTRecordData]];
+    NSMutableDictionary *utf8 = [[NSMutableDictionary alloc] initWithCapacity:txt.count];
+    for (NSString *key in txt) {
+        NSString *value = [[NSString alloc] initWithData:[txt objectForKey:key]
+                                                encoding:NSUTF8StringEncoding];
+        if (value == nil) {
+            DDLogError(@"invalid encoding for TXT %@", key);
+            continue;
+        }
+        [utf8 setObject:value forKey:key];
+    }
+
     NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
-                                       service.hostName,                               @"hostName",
-                                       service.name,                                   @"name",
-                                       [NSNumber numberWithUnsignedLong:service.port], @"port",
-                                       [service ipAddresses],                          @"ipAddresses",
+                                       service.hostName,                               kHostName,
+                                       service.name,                                   kName,
+                                       [service ipAddresses],                          kIpAddresses,
+                                       [NSNumber numberWithUnsignedLong:service.port], kPort,
+                                       [NSDictionary dictionaryWithDictionary:utf8],   kTXT,
                                        nil];
     if (self.delegate == nil) return;
 
@@ -141,19 +161,22 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)stewardDidStopSearching {
-    if ((self.delegate == nil) || (![self.delegate respondsToSelector:@selector(didNotFindService:)])) return;
+    if ((self.delegate == nil)
+            || (![self.delegate respondsToSelector:@selector(didNotFindService:)])) return;
 
     [self.delegate didNotFindService:nil];
 }
 
 - (void)stewardNotSearchedWithErrorDict:(NSDictionary *)errorDict {
-    if ((self.delegate == nil) || (![self.delegate respondsToSelector:@selector(didNotFindService:)])) return;
+    if ((self.delegate == nil)
+            || (![self.delegate respondsToSelector:@selector(didNotFindService:)])) return;
 
     [self.delegate didNotFindService:errorDict];
 }
 
 - (void)stewardNotResolvedWithErrorDict:(NSDictionary *)errorDict {
-    if ((self.delegate == nil) || (![self.delegate respondsToSelector:@selector(didNotFindService:)])) return;
+    if ((self.delegate == nil)
+            || (![self.delegate respondsToSelector:@selector(didNotFindService:)])) return;
 
     [self.delegate didNotFindService:errorDict];
 }
@@ -162,19 +185,30 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 #pragma mark - MonitorDelegate methods
 
 - (void)receivedEventMessage:(NSString *)message {
-    if ((self.delegate == nil) || (![self.delegate respondsToSelector:@selector(didReceiveMonitor:)])) return;
+    if ((!self.monitorP)
+            && (self.client.authenticate)
+            && ([message rangeOfString:@"error"].location != NSNotFound)) {
+        self.monitorP = YES;
+        [self.monitor.webSocket send:[self authenticatorJSON]];
+        return;
+    }
+
+    if ((self.delegate == nil)
+            || (![self.delegate respondsToSelector:@selector(didReceiveMonitor:)])) return;
 
     [self.delegate didReceiveMonitor:message];
 }
 
 - (void)monitoringFailedWithError:(NSError *)error {
-    if ((self.delegate == nil) || (![self.delegate respondsToSelector:@selector(failedToMonitor:)])) return;
+    if ((self.delegate == nil)
+            || (![self.delegate respondsToSelector:@selector(failedToMonitor:)])) return;
 
     [self.delegate failedToMonitor:error];
 }
 
 - (void)monitoringClosedWithCode:(NSInteger)code {
-    if ((self.delegate == nil) || (![self.delegate respondsToSelector:@selector(doneMonitoring:)])) return;
+    if ((self.delegate == nil)
+            || (![self.delegate respondsToSelector:@selector(doneMonitoring:)])) return;
 
     [self.delegate doneMonitoring:code];
 }
@@ -183,7 +217,23 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 #pragma mark - DevicesDelegate methods
 
 - (void)receivedDeviceList:(NSString *)message {
-    if ((self.delegate == nil) || (![self.delegate respondsToSelector:@selector(didReceiveListing:)])) return;
+    if ((!self.managerP)
+            && (self.client.authenticate)
+            && ([message rangeOfString:@"error"].location != NSNotFound)) {
+        self.managerP = YES;
+        self.retryP = YES;
+        [self.manager.webSocket send:[self authenticatorJSON]];
+        return;
+    }
+
+    if (self.retryP) {
+        self.retryP = NO;
+        [self.manager listAllDevices];
+        return;
+    }
+
+    if ((self.delegate == nil)
+            || (![self.delegate respondsToSelector:@selector(didReceiveListing:)])) return;
 
     [self.delegate didReceiveListing:message];
 }

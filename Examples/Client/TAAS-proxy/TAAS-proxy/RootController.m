@@ -10,16 +10,12 @@
 #import "AppDelegate.h"
 #import "FXKeychain.h"
 #import "MHPrettyDate.h"
+#import "TAASNetwork.h"
 #import "DDLog.h"
 
 
 #define kAllStewards @"_allStewards"
 #define kLastSteward @"_lastSteward"
-
-#define kHostName    @"hostName"
-#define kName        @"name"
-#define kIpAddresses @"ipAddresses"
-#define kPort        @"port"
 
 #define kError       @"Error"
 
@@ -42,12 +38,15 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @implementation MHPrettyDate (TAAS)
 
 + (NSString *)shortPrettyDateFromDate:(NSDate *)date {
-  if (date == nil) return nil;
+    if (date == nil) return nil;
 
-  NSInteger seconds = [date timeIntervalSinceNow];
-  if (seconds <= -60) return [MHPrettyDate prettyDateFromDate:date withFormat:MHPrettyDateShortRelativeTime];
-  if (seconds ==   0) return @"now";
-  return [NSString stringWithFormat:@"%d%@", -seconds, NSLocalizedStringFromTable(@"s", @"MHPrettyDate", nil)];
+    NSInteger seconds = [date timeIntervalSinceNow];
+    if (seconds <= -60) {
+        return [MHPrettyDate prettyDateFromDate:date withFormat:MHPrettyDateShortRelativeTime];
+}
+    if (seconds ==   0) return @"now";
+    return [NSString stringWithFormat:@"%d%@", -seconds,
+                     NSLocalizedStringFromTable(@"s", @"MHPrettyDate", nil)];
 }
 @end
 
@@ -58,6 +57,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (        nonatomic) BOOL                       rememberedP;
 @property (strong, nonatomic) NSDictionary              *sharedInfo;
 @property (strong, nonatomic) NSURL                     *authURL;
+@property (strong, nonatomic) NSString                  *taasCloud;
 
 @property (strong, nonatomic) NSMutableDictionary       *entities;
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
@@ -82,8 +82,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
             self.sharedInfo = info;
             self.rememberedP = YES;
-            [self connectToSteward:[[info objectForKey:kIpAddresses] objectAtIndex:0]
-                          withPort:[info objectForKey:kPort]
+            [self connectToSteward:info
                         andAuthURL:((string.length > 0) ? [NSURL URLWithString:string] : nil)];
         }
 
@@ -118,19 +117,37 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 
-- (void)connectToSteward:(NSString *)ipAddress
-                withPort:(NSNumber *)port
+- (void)connectToSteward:(NSDictionary *)info
               andAuthURL:(NSURL *)authURL {
     [self resetSteward];
 
-    self.service = [[TAASClient alloc] initWithAddress:ipAddress
+    NSString *address = [[info objectForKey:kIpAddresses] objectAtIndex:0];
+    NSNumber *port = [info objectForKey:kPort];
+
+    NSString *stewardID = nil;
+    if (authURL != nil) {
+        NSArray *array = [authURL.path componentsSeparatedByString:@"/"];
+        if (array.count > 3) {
+            stewardID = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"]
+                             objectAtIndex:0];
+        }
+    }
+    if ((stewardID != nil)
+            && ([TAASNetwork sharedInstance].fxReachabilityStatus
+                    != FXReachabilityStatusReachableViaWWAN)) {
+      NSString *name = [[info objectForKey:kTXT] objectForKey:kName];
+      if ((name == nil) || [name isEqualToString:stewardID]) stewardID = nil;
+    }
+    if (stewardID != nil) return [self rendezvous:stewardID withAuthURL:authURL];
+
+    self.service = [[TAASClient alloc] initWithAddress:address
                                                andPort:port
                                             andAuthURL:authURL];
     self.service.delegate = self;
     self.readyP = NO;
     [self.service startMonitoring];
 
-    [self notifyUser:[NSString stringWithFormat:@"steward at %@", ipAddress]
+    [self notifyUser:[NSString stringWithFormat:@"steward at %@", address]
            withTitle:@"Connecting"];
 };
 
@@ -138,7 +155,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if ((self.sharedInfo == nil) || (self.rememberedP)) return;
     self.rememberedP = YES;
 
-    NSMutableDictionary *info = [[NSMutableDictionary alloc] initWithCapacity:(self.sharedInfo.count + 1)];
+    NSMutableDictionary *info = [[NSMutableDictionary alloc]
+                                     initWithCapacity:(self.sharedInfo.count + 1)];
     [info addEntriesFromDictionary:self.sharedInfo];
     [info setObject:(self.authURL ? [self.authURL absoluteString] : @"") forKey:@"authURL"];
 
@@ -178,6 +196,84 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     return foundP;
 }
 
+
+#pragma mark - TAAS cloud
+
+- (void)rendezvous:(NSString *)stewardID
+           withAuthURL:(NSURL *)authURL
+{
+    self.service = [[TAASClient alloc] init];
+    self.taasCloud = stewardID;
+    self.authURL = authURL;
+
+    NSURLRequest *request = [NSURLRequest requestWithURL:
+                                          [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/",
+                                                                         self.taasCloud]]];
+    NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request
+                                                                  delegate:self
+                                                          startImmediately:NO];
+    /*
+    [connection scheduleInRunLoop:[NSRunLoop mainRunLoop]
+                          forMode:NSRunLoopCommonModes];
+    */
+    [connection start];
+}
+
+-                        (void)connection:(NSURLConnection *)connection
+willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    [challenge.sender
+                 useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]
+    forAuthenticationChallenge:challenge];
+}
+
+- (NSURLRequest *)connection:(NSURLConnection *)connection
+             willSendRequest:(NSURLRequest *)request
+            redirectResponse:(NSURLResponse *)redirectResponse {
+    if (redirectResponse == nil) return request;
+
+    NSURL *redirect = [request URL];
+    NSString *address = [redirect host];
+    self.service = [[TAASClient alloc] initWithAddress:address
+                                               andPort:[redirect port]
+                                            andAuthURL:self.authURL];
+    self.service.authenticate = YES;
+    self.service.delegate = self;
+    self.readyP = NO;
+    [self.service startMonitoring];
+
+    [self notifyUser:self.taasCloud withTitle:@"Connecting"];
+
+    return nil;
+}
+
+
+- (void)connection:(NSURLConnection *)theConnection
+didReceiveResponse:(NSURLResponse *)response {
+    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+
+    if ([httpResponse statusCode] != 307) {
+        DDLogError(@"statusCode=%d, expecting 307",[httpResponse statusCode]);
+        [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", self.taasCloud]
+               withTitle:kError];
+    }
+}
+
+- (void)connection:(NSURLConnection *)theConnection
+    didReceiveData:(NSData *)data {
+    DDLogVerbose(@"TAAS rendezvous: %d octets", [data length]);
+}
+
+- (void)connection:(NSURLConnection *)theConnection
+  didFailWithError:(NSError *)error {
+    DDLogError(@"%@: %@", self.taasCloud, error);
+    [self notifyUser:[NSString stringWithFormat:@"failed to connect to %@", self.taasCloud]
+                                      withTitle:kError];
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)theConnection {
+}
+
+
 #pragma mark - TAASClientDelegate methods
 
 - (void)foundService:(NSDictionary *)info {
@@ -201,8 +297,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     self.sharedInfo = info;
     self.rememberedP = NO;
-    [self connectToSteward:[ipaddrs objectAtIndex:0]
-                  withPort:[self.sharedInfo objectForKey:kPort]
+    [self connectToSteward:self.sharedInfo
                 andAuthURL:self.authURL];
 }
 
@@ -228,6 +323,13 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         self.readyP = YES;
         [self rememberSteward];
         [self.service listDevices];
+
+        NSDictionary *result = [dictionary objectForKey:@"result"];
+        if (result != nil) {
+            NSDictionary *client = [dictionary objectForKey:@"client"];
+            if (client != nil) self.statusLabel.text = @"Authenticated";
+            return;
+        }
     }
     if (dictionary == nil) return;
 
@@ -256,7 +358,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             NSString *format = (self.textConsole.text.length > 0) ? @"\n%@: %@ %@":  @"%@: %@ %@";
 
             NSString *date = [entry objectForKey:@"date"];
-            if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
+            if (date != nil) {
+                date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
+            }
 
             NSString *meta = [entry objectForKey:@"meta"];
             NSString *data = [self valuePP:meta];
@@ -307,7 +411,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)failedToMonitor:(NSError *)error {
     [self resetSteward];
 
-    [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", [self hostName:self.sharedInfo]]
+    [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@",
+                               [self hostName:self.sharedInfo]]
            withTitle:kError];
 }
 
@@ -325,8 +430,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if (!self.sharedInfo) return;
 
     self.rememberedP = NO;
-    [self connectToSteward:[[self.sharedInfo objectForKey:kIpAddresses] objectAtIndex:0]
-                  withPort:[self.sharedInfo objectForKey:kPort]
+    [self connectToSteward:self.sharedInfo
                 andAuthURL:self.authURL];
 }
 
@@ -361,7 +465,13 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     [dict enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
         NSString *string = [self valuePP:value];
-        if (string != nil) [result appendFormat:((result.length > 0) ? @", %@:%@" : @"{%@:%@"), key, string];
+        if (string != nil) {
+            if (string.length > 36) {
+                if ([key isEqualToString:@"body"]) return;
+//              string = [[string substringWithRange:NSMakeRange(0, 32)] stringByAppendingString:@"..."];
+	    }
+            [result appendFormat:((result.length > 0) ? @", %@:%@" : @"{%@:%@"), key, string];
+        }
     }];
     if (result.length == 0) return nil;
     [result appendString:@"}"];

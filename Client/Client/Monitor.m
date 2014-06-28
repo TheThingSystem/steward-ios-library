@@ -60,6 +60,7 @@
     if ( [self.delegate respondsToSelector:@selector(monitoringFailedWithError:)] ) {
         [self.delegate monitoringFailedWithError:error];
     }
+
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {

@@ -98,7 +98,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE | HTTP_LOG_FLAG_TRACE;
 
 - (BOOL)isDone {
     HTTPLogTrace2(@"%@[%p]: isDone:%@", THIS_FILE, self,
-                  (self.downstream != nil) || ((self.data != nil) && ([self.data length] > 0)) ? @"NO" : @"YES");
+                  (self.downstream != nil) || ((self.data != nil) && ([self.data length] > 0))
+                      ? @"NO" : @"YES");
 
     if ((self.downstream != nil) || ((self.data != nil) && ([self.data length] > 0))) return NO;
     if (!self.oneshotP) return YES;
@@ -128,7 +129,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE | HTTP_LOG_FLAG_TRACE;
 
     return YES;
 }
-// http://127.0.0.1:8884/oneshot?behavior=report&entity=device&id=129&properties=temperature,humidity,co2,noise,pressure
+// http://127.0.0.1:8884/oneshot?behavior=report&entity=device&id=129&properties=temperature,humidity,...
 
 - (void)connectionDidClose {
     HTTPLogTrace();

@@ -11,21 +11,30 @@
 @implementation Devices
 
 - (id)initWithAddress:(NSString *)ipAddress {
-  return [self initWithAddress:ipAddress andPort:8888];
+  return [self initWithAddress:ipAddress andPort:8888 andOneShotP:YES];
 }
 
-- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port {
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port andOneShotP:(BOOL)oneShotP {
     if( (self = [super init]) ) {
         NSString *request = [NSString stringWithFormat:@"wss://%@:%ld/manage", ipAddress, port];
         self.webSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:request]]];
         self.webSocket.delegate = self;
+        self.oneShotP = oneShotP;
+        self.opened = NO;
     }
     return self;
 }
 
 - (void)listAllDevices {
-    [self.webSocket open];
-    
+    if (!self.opened) {
+      [self.webSocket open];
+      return;
+    }
+
+    NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/list\",\"requestID\":\"%d\",\"options\":{\"depth\":\"all\"}}", [Client sharedClient].requestCounter];
+    NSLog(@"json = %@", json);
+    [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
+    [self.webSocket send:json];
 }
 
 #pragma mark - SRWebSocketDelegate Methods
@@ -35,7 +44,7 @@
     if ( [self.delegate respondsToSelector:@selector(receivedDeviceList:)]  ) {
         [self.delegate receivedDeviceList:(NSString *)message];
     }
-    [webSocket close];
+    if (self.oneShotP) [webSocket close];
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
@@ -43,11 +52,8 @@
     if ( [self.delegate respondsToSelector:@selector(startedListing)] ) {
         [self.delegate startedListing];
     }
-    
-    NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/list\",\"requestID\":\"%d\",\"options\":{\"depth\":\"all\"}}", [Client sharedClient].requestCounter];
-    NSLog(@"json = %@", json);
-    [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
-    [webSocket send:json];
+    self.opened = YES;
+    [self listAllDevices];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {

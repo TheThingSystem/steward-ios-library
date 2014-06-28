@@ -31,8 +31,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 @implementation TAASConnection
 
-// TODO: create error response bodies
-
 - (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method
                                               URI:(NSString *)path {
     NSString *filePath = [self filePathForURI:path allowDirectory:NO];
@@ -47,15 +45,17 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         }
 
         DDLogError(@"filePath is a directory: %@", filePath);
-return [[TAASErrorResponse alloc] initWithStatusCode:403 andBody:nil];
+        return [[TAASErrorResponse alloc] initWithStatusCode:403
+                                                     andBody:[self dataForBody:@"403 Forbidden"]];
       }
     }
 
-    TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
+    AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
+    TAASClient *service = [appDelegate rootController].service;
     NSString *serviceURI = [service serviceURI:path];
     if (serviceURI == nil) {
-
-return [[TAASErrorResponse alloc] initWithStatusCode:504 andBody:nil];
+        return [[TAASErrorResponse alloc] initWithStatusCode:503
+                                                     andBody:[self dataForBody:@"503 Not Connected"]];
     }
 
     self.response = [[TAASProxyResponse alloc] initWithURI:serviceURI
@@ -64,7 +64,8 @@ return [[TAASErrorResponse alloc] initWithStatusCode:504 andBody:nil];
 }
 
 - (WebSocket *)webSocketForURI:(NSString *)path {
-    TAASClient *service = [((AppDelegate *) [UIApplication sharedApplication].delegate) rootController].service;
+    AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
+    TAASClient *service = [appDelegate rootController].service;
     NSString *serviceURI = [service serviceURI:path];
     if (serviceURI == nil) {
 
@@ -80,6 +81,12 @@ return [[TAASErrorResponse alloc] initWithStatusCode:504 andBody:nil];
                                            andSocket:asyncSocket
                                          forResource:URLrequest];
     return self.ws;
+}
+
+- (NSData *)dataForBody:(NSString *)reason {
+  return [[NSString stringWithFormat:@"<html><head><title>%@</title></head><body>%@</body></html>",
+                    reason, reason]
+              dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 @end

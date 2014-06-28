@@ -12,10 +12,6 @@ The TODO list is:
     - scrollable, time-aware console messages
     - last status message
 
-- update the Client library to know about the [TAAS cloud](http://github.com/TheThingSystem/taas-server)
-
-- fill-in the error response bodies in TAASConnection.m
-
 - use the "betterthansiri" PAC approach
 
 - test, test, and test!

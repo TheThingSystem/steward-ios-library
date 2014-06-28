@@ -32,7 +32,7 @@
 
 #import "SRWebSocket.h"
 
-#define LIBRARY_VERSION @"0.4.0"
+#define LIBRARY_VERSION @"0.4.1"
 #define ISO_TIMEZONE_UTC_FORMAT @"Z"
 #define ISO_TIMEZONE_OFFSET_FORMAT @"+%02d%02d"
 
@@ -114,8 +114,12 @@
 @property (nonatomic, weak) id <DevicesDelegate> delegate;
 @property (nonatomic, strong) SRWebSocket *webSocket;
 
+@property (nonatomic) BOOL oneShotP;
+@property (nonatomic) BOOL opened;
+
+
 - (id)initWithAddress:(NSString *)ipAddress;
-- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port;
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port andOneShotP:(BOOL)oneShotP;
 - (void)listAllDevices;
 
 @end
