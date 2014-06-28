@@ -45,7 +45,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         return [MHPrettyDate prettyDateFromDate:date withFormat:MHPrettyDateShortRelativeTime];
 }
     if (seconds ==   0) return @"now";
-    return [NSString stringWithFormat:@"%d%@", -seconds,
+    return [NSString stringWithFormat:@"%ld%@", (long)-seconds,
                      NSLocalizedStringFromTable(@"s", @"MHPrettyDate", nil)];
 }
 @end
@@ -252,7 +252,7 @@ didReceiveResponse:(NSURLResponse *)response {
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
 
     if ([httpResponse statusCode] != 307) {
-        DDLogError(@"statusCode=%d, expecting 307",[httpResponse statusCode]);
+        DDLogError(@"statusCode=%ld, expecting 307",(long)[httpResponse statusCode]);
         [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", self.taasCloud]
                withTitle:kError];
     }
@@ -260,7 +260,7 @@ didReceiveResponse:(NSURLResponse *)response {
 
 - (void)connection:(NSURLConnection *)theConnection
     didReceiveData:(NSData *)data {
-    DDLogVerbose(@"TAAS rendezvous: %d octets", [data length]);
+    DDLogVerbose(@"TAAS rendezvous: %lu octets", (unsigned long)[data length]);
 }
 
 - (void)connection:(NSURLConnection *)theConnection

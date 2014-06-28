@@ -47,7 +47,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (void)fxReachabilityStatusDidChange {
   self.fxReachabilityStatus = [FXReachability sharedInstance].status;
-  DDLogVerbose(@"reachability=%d",  self.fxReachabilityStatus);
+  DDLogVerbose(@"reachability=%ld",  self.fxReachabilityStatus);
 }
 
 @end
