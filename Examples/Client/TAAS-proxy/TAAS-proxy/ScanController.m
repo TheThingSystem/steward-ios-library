@@ -85,9 +85,12 @@
 
         // dispatch secret only
         NSArray *array = [result.text componentsSeparatedByString:@"="];
-        NSLog(@"Secret = %@", array[1]);
+        NSString *secret = array[1];
+        NSRange range = [secret rangeOfString:@"&"];
+        if (range.location != NSNotFound) secret = [secret substringToIndex:range.location];
+        NSLog(@"Secret = %@", secret);
         if ( [self.delegate respondsToSelector:@selector(closedWithSecret:)] ) {
-            [self.delegate closedWithSecret:array[1]];
+            [self.delegate closedWithSecret:secret];
         }
 
         // Vibrate

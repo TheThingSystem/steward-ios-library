@@ -37,6 +37,7 @@
 #define kIpAddresses @"ipAddresses"
 #define kPort        @"port"
 #define kTXT         @"txt"
+#define kIssuer      @"issuer"
 
 
 @property (weak,   nonatomic) id <TAASClientDelegate>    delegate;

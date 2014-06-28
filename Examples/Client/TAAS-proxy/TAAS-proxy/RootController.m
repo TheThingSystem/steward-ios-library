@@ -10,6 +10,7 @@
 #import "AppDelegate.h"
 #import "FXKeychain.h"
 #import "MHPrettyDate.h"
+#import "RequestUtils.h"
 #import "TAASNetwork.h"
 #import "DDLog.h"
 
@@ -55,9 +56,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 @property (        nonatomic) BOOL                       readyP;
 @property (        nonatomic) BOOL                       rememberedP;
-@property (strong, nonatomic) NSDictionary              *sharedInfo;
-@property (strong, nonatomic) NSURL                     *authURL;
+@property (strong, nonatomic) NSString                  *taasName;
+
 @property (strong, nonatomic) NSString                  *taasCloud;
+@property (strong, nonatomic) NSURL                     *authURL;
 
 @property (strong, nonatomic) NSMutableDictionary       *entities;
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
@@ -75,12 +77,19 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         DDLogVerbose(@"Client Library v%@", [Client version]);
 
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
-        NSDictionary *info = [keyChain objectForKey:kLastSteward];
+        NSString *lastSteward = [keyChain objectForKey:kLastSteward];
+NSLog(@"lastSteward: %@", lastSteward);
+        NSDictionary *info = (lastSteward != nil) ? [keyChain objectForKey:lastSteward] : nil;
+        if (info == nil) {
+            NSArray *allStewards = [keyChain objectForKey:kAllStewards];
+NSLog(@"allStewards: %@", allStewards);
+            if (allStewards != nil) info = [keyChain objectForKey:[allStewards objectAtIndex:0]];
+if(allStewards!=nil)lastSteward = [allStewards objectAtIndex:0];
+        }
         if (info != nil) {
-            DDLogVerbose(@"lastSteward: %@", info);
+NSLog(@"%@: %@", lastSteward, info);
             NSString *string = [info objectForKey:@"authURL"];
 
-            self.sharedInfo = info;
             self.rememberedP = YES;
             [self connectToSteward:info
                         andAuthURL:((string.length > 0) ? [NSURL URLWithString:string] : nil)];
@@ -116,29 +125,32 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     }
 }
 
-
 - (void)connectToSteward:(NSDictionary *)info
               andAuthURL:(NSURL *)authURL {
-    [self resetSteward];
+    [self resetSteward:false];
 
     NSString *address = [[info objectForKey:kIpAddresses] objectAtIndex:0];
     NSNumber *port = [info objectForKey:kPort];
 
-    NSString *stewardID = nil;
+    if (!self.rememberedP) [self rememberThisSteward:info lastP:true];
+    self.rememberedP = false;
+
+    NSString *issuer = nil;
     if (authURL != nil) {
         NSArray *array = [authURL.path componentsSeparatedByString:@"/"];
         if (array.count > 3) {
-            stewardID = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"]
-                             objectAtIndex:0];
+            issuer = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"]
+                           objectAtIndex:0];
         }
     }
-    if ((stewardID != nil)
+    if ((issuer != nil)
             && ([TAASNetwork sharedInstance].fxReachabilityStatus
-                    != FXReachabilityStatusReachableViaWWAN)) {
-      NSString *name = [[info objectForKey:kTXT] objectForKey:kName];
-      if ((name == nil) || [name isEqualToString:stewardID]) stewardID = nil;
+                    == FXReachabilityStatusReachableViaWiFi)) {
+/* TODO: determine if we're on the same network or not; if so: issuer = nil;
+ */
+
     }
-    if (stewardID != nil) return [self rendezvous:stewardID withAuthURL:authURL];
+    if (issuer != nil) return [self rendezvous:issuer withAuthURL:authURL];
 
     self.service = [[TAASClient alloc] initWithAddress:address
                                                andPort:port
@@ -147,24 +159,18 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     self.readyP = NO;
     [self.service startMonitoring];
 
+    self.taasName = [self hostName:info];
     [self notifyUser:[NSString stringWithFormat:@"steward at %@", address]
            withTitle:@"Connecting"];
 };
 
-- (void)rememberSteward {
-    if ((self.sharedInfo == nil) || (self.rememberedP)) return;
-    self.rememberedP = YES;
+- (void)resetSteward:(BOOL)lastP {
+    if (lastP) {
+        FXKeychain *keyChain = [FXKeychain defaultKeychain];
+        [keyChain removeObjectForKey:kLastSteward];
+NSLog(@"reset lastSteward");
+    }
 
-    NSMutableDictionary *info = [[NSMutableDictionary alloc]
-                                     initWithCapacity:(self.sharedInfo.count + 1)];
-    [info addEntriesFromDictionary:self.sharedInfo];
-    [info setObject:(self.authURL ? [self.authURL absoluteString] : @"") forKey:@"authURL"];
-
-    [self rememberThisSteward:info lastP:true];
-    self.statusLabel.text = @"Connected";
-}
-
-- (void)resetSteward {
     if (self.service == nil) return;
 
     self.service.delegate = nil;
@@ -175,23 +181,31 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (BOOL)rememberThisSteward:(NSDictionary *)info
                       lastP:(BOOL)lastP {
     FXKeychain *keyChain = [FXKeychain defaultKeychain];
-    NSString *name = [info objectForKey:kHostName];
+    NSString *name = [self hostName:info];
 
     NSMutableArray *allStewards = [keyChain objectForKey:kAllStewards];
-    if (allStewards == nil) allStewards = [[NSMutableArray alloc] initWithCapacity:1];
+    allStewards = (allStewards != nil) ? [allStewards mutableCopy]
+                                       : [[NSMutableArray alloc] initWithCapacity:1];
+
     BOOL foundP = [allStewards indexOfObject:name] != NSNotFound;
     if (!foundP) {
-      [allStewards addObject:name];
+      [allStewards insertObject:name atIndex:0];
       [keyChain setObject:allStewards forKey:kAllStewards];
+NSLog(@"set allStewards: %@", allStewards);
     }
 
     if (lastP) {
-        DDLogVerbose(@"set lastSteward: %@", info);
-        [keyChain setObject:info forKey:kLastSteward];
+        [keyChain setObject:name forKey:kLastSteward];
+NSLog(@"set lastSteward: %@", name);
     }
 
     [keyChain setObject:info forKey:name];
-    if ((name = [info objectForKey:kName]) != nil) [keyChain setObject:info forKey:name];
+NSLog(@"set %@: %@", name, info);
+
+    NSDictionary *txt = [info objectForKey:kTXT];
+    name = (txt != nil) ? [txt objectForKey:kName] : nil;
+    if (name != nil) [keyChain setObject:info forKey:name];
+if(name != nil)NSLog(@"set %@: %@", name, info);
 
     return foundP;
 }
@@ -199,11 +213,11 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 #pragma mark - TAAS cloud
 
-- (void)rendezvous:(NSString *)stewardID
-           withAuthURL:(NSURL *)authURL
+- (void)rendezvous:(NSString *)issuer
+       withAuthURL:(NSURL *)authURL
 {
     self.service = [[TAASClient alloc] init];
-    self.taasCloud = stewardID;
+    self.taasCloud = issuer;
     self.authURL = authURL;
 
     NSURLRequest *request = [NSURLRequest requestWithURL:
@@ -212,10 +226,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request
                                                                   delegate:self
                                                           startImmediately:NO];
-    /*
-    [connection scheduleInRunLoop:[NSRunLoop mainRunLoop]
-                          forMode:NSRunLoopCommonModes];
-    */
     [connection start];
 }
 
@@ -260,7 +270,7 @@ didReceiveResponse:(NSURLResponse *)response {
 
 - (void)connection:(NSURLConnection *)theConnection
     didReceiveData:(NSData *)data {
-    DDLogVerbose(@"TAAS rendezvous: %lu octets", (unsigned long)[data length]);
+    DDLogWarn(@"TAAS rendezvous: %lu octets", (unsigned long)[data length]);
 }
 
 - (void)connection:(NSURLConnection *)theConnection
@@ -295,10 +305,7 @@ didReceiveResponse:(NSURLResponse *)response {
 
     [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
 
-    self.sharedInfo = info;
-    self.rememberedP = NO;
-    [self connectToSteward:self.sharedInfo
-                andAuthURL:self.authURL];
+    [self connectToSteward:info andAuthURL:nil];
 }
 
 - (void)didReceiveMonitor:(NSString *)message {
@@ -311,7 +318,7 @@ didReceiveResponse:(NSURLResponse *)response {
     if (!self.readyP) {
         NSDictionary *oops;
         if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
-            [self resetSteward];
+            [self resetSteward:true];
 
             NSString *diagnostic = [oops objectForKey:@"diagnostic"];
             if (diagnostic == nil) diagnostic = message;
@@ -321,7 +328,7 @@ didReceiveResponse:(NSURLResponse *)response {
         }
 
         self.readyP = YES;
-        [self rememberSteward];
+        self.statusLabel.text = @"Connected";
         [self.service listDevices];
 
         NSDictionary *result = [dictionary objectForKey:@"result"];
@@ -409,15 +416,14 @@ didReceiveResponse:(NSURLResponse *)response {
 }
 
 - (void)failedToMonitor:(NSError *)error {
-    [self resetSteward];
+    [self resetSteward:true];
 
-    [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@",
-                               [self hostName:self.sharedInfo]]
+    [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", self.taasName]
            withTitle:kError];
 }
 
 - (void)doneMonitoring:(NSInteger)code {
-    [self resetSteward];
+    [self resetSteward:false];
 
     [self notifyUser:@"monitoring terminated" withTitle:kError];
 }
@@ -426,12 +432,50 @@ didReceiveResponse:(NSURLResponse *)response {
 #pragma mark - ScanControllerDelegate methods
 
 - (void)closedWithURL:(NSURL *)url {
-    self.authURL = url;
-    if (!self.sharedInfo) return;
+    if (url == nil) {
+        [self notifyUser:@"invalid QRcode: not a URL" withTitle:kError];
+        return;
+    }
 
-    self.rememberedP = NO;
-    [self connectToSteward:self.sharedInfo
-                andAuthURL:self.authURL];
+    NSString *URI = [url absoluteString];
+    NSArray *array = [URI componentsSeparatedByString:@"/"];
+    if (array.count < 4) {
+        [self notifyUser:@"invalid QRcode: missing issuer" withTitle:kError];
+        return;
+    }
+    NSString *issuer = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"]
+                            objectAtIndex:0];
+
+    NSDictionary *parameters = [URI URLQueryParameters];
+    NSString *hostName = [parameters objectForKey:kHostName];
+    NSString *name = [parameters objectForKey:kName];
+    NSArray *ipAddresses = [[parameters objectForKey:kIpAddresses] componentsSeparatedByString:@","];
+    NSString *port = [parameters objectForKey:kPort];
+    if ((hostName == nil) || (name == nil) || (ipAddresses == nil) || (port == nil) || (issuer == nil)) {
+        [self notifyUser:@"invalid QRcode: missing parameters" withTitle:kError];
+        return;
+    }
+
+    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+                                           hostName,                                         kHostName,
+                                           name,                                             kName,
+                                           ipAddresses,                                      kIpAddresses,
+                                           [NSNumber numberWithInteger:[port integerValue]], kPort,
+                                           [NSDictionary dictionaryWithObjectsAndKeys:
+                                                  issuer,                                    kName,
+                                                  nil],                                      kTXT,
+                                            URI,                                             @"authURL",
+                                           nil];
+
+    if (self.service != nil) {
+        if ([self rememberThisSteward:info lastP:false]) {
+            [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
+        }
+
+        return;
+    }
+
+    [self connectToSteward:info andAuthURL:url];
 }
 
 
@@ -439,7 +483,9 @@ didReceiveResponse:(NSURLResponse *)response {
 
 - (NSString *)hostName:(NSDictionary *)info {
     NSString *name = [info objectForKey:kHostName];
-    NSRange range = [name rangeOfString:@".local." options:(NSBackwardsSearch | NSAnchoredSearch)];
+    NSRange range = [name rangeOfString:@"." options:(NSBackwardsSearch | NSAnchoredSearch)];
+    if (range.location != NSNotFound) name = [name substringToIndex:range.location];
+    range = [name rangeOfString:@".local" options:(NSBackwardsSearch | NSAnchoredSearch)];
     if (range.location != NSNotFound) name = [name substringToIndex:range.location];
 
     return name;
@@ -469,7 +515,7 @@ didReceiveResponse:(NSURLResponse *)response {
             if (string.length > 36) {
                 if ([key isEqualToString:@"body"]) return;
 //              string = [[string substringWithRange:NSMakeRange(0, 32)] stringByAppendingString:@"..."];
-	    }
+            }
             [result appendFormat:((result.length > 0) ? @", %@:%@" : @"{%@:%@"), key, string];
         }
     }];
