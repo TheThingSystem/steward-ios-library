@@ -84,8 +84,8 @@
 - (NSString *)generateTOTP {
     
     if ( self.authURL ) {
-        NSArray *array = [self.authURL.absoluteString componentsSeparatedByString:@"="];
-        self.secret = array[1];
+        NSDictionary *params = [self.authURL queryDictionary];
+        self.secret = [params objectForKey:@"secret"];
         NSLog(@"URL to String, secret = %@", self.secret);
     }
     
@@ -112,17 +112,25 @@
 - (void)setAuthURL:(NSURL *)url {
     NSLog(@"Setting authURL to %@", url);
     authURL = url;
+    if (self.authURL == nil) {
+      self.secret = nil;
+      self.clientID = nil;
+      return;
+    }
     
-    NSArray *array = [url.absoluteString componentsSeparatedByString:@"="];
-    self.secret = array[1];
+    NSDictionary *params = [self.authURL queryDictionary];
+    self.secret = [params objectForKey:@"secret"];
     NSLog(@"URL to String, secret = %@", self.secret);
     
-    array = [url.absoluteString componentsSeparatedByString:@"?"];
-    NSString *pre = array[0];
-    array = [pre componentsSeparatedByString:@"/"];
-    NSString *user = [NSString stringWithFormat:@"%@/%@",array[5],array[6]];
-    NSLog(@"URL to String, clientID = %@", user);
-    self.clientID = user;
+    NSArray *array = [self.authURL.path componentsSeparatedByString:@"/"];
+    if (array.count < 4) return;
+
+    self.stewardID = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"] objectAtIndex:0];
+    NSLog(@"URL to String, stewardID = %@", self.stewardID);
+
+    self.clientID = [NSString stringWithFormat:@"%@/%@",
+                              [array objectAtIndex:(array.count - 2)], [array objectAtIndex:(array.count - 1)]];
+    NSLog(@"URL to String, clientID = %@", self.clientID);
     
 }
 
@@ -176,4 +184,28 @@
     return LIBRARY_VERSION;
 }
 
+@end
+
+
+@implementation NSURL(queryDictionary)
+
+- (NSString *)decoded:(NSString *)s {
+    return [[s stringByReplacingOccurrencesOfString:@"+" withString:@" "]
+               stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+}
+
+// purposefully simple for OTP URLs (no duplicates!)
+
+- (NSMutableDictionary *)queryDictionary {
+    NSArray *params = [self.query componentsSeparatedByString:@"&"];
+    NSMutableDictionary *qd = [[NSMutableDictionary alloc] initWithCapacity:[params count]];
+
+    for (NSString *param in params) {
+      NSArray *kv = [param componentsSeparatedByString:@"="];
+
+      if ([kv count] >= 2) [qd setObject:[self decoded:[kv objectAtIndex:1]] forKey:[self decoded:[kv objectAtIndex:0]]];
+    }
+
+    return qd;
+}
 @end

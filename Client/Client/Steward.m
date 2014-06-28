@@ -137,9 +137,10 @@
 
         struct sockaddr_in *sin = (struct sockaddr_in *)addr;
 
-        char ipaddr[16];
+        char ipaddr[INET_ADDRSTRLEN];
         if (!inet_ntop(sin->sin_family, &sin->sin_addr, ipaddr, sizeof ipaddr)) continue;
-        [ipaddrs addObject:[NSString stringWithFormat:@"%s", ipaddr]];
+        NSString *ipaddress = [NSString stringWithFormat:@"%s", ipaddr];
+        if ([ipaddrs indexOfObject:ipaddress] == NSNotFound) [ipaddrs addObject:ipaddress];
     }
 
     return ipaddrs;

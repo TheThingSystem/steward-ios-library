@@ -27,6 +27,8 @@
 
 #import "Client.h"
 
+#import <net/if.h>
+
 @implementation Util
 
 
@@ -100,17 +102,18 @@
 				if ( [Client sharedClient].debug ) {
 					NSLog(@"Util: getIPAddress: ifa_name = %@", [NSString stringWithUTF8String:temp_addr->ifa_name] );
 				}
-				
+				if (temp_addr->ifa_flags & IFF_LOOPBACK) continue;
+				NSString *name = [NSString stringWithUTF8String:temp_addr->ifa_name];
+
 				// Check if interface is en0 which is the wifi connection on the iPhone
-				if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"] ||
-				   [[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en1"] ) {
+				if([name hasPrefix:@"en"]) {
 					// Get NSString from C String
 					address = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)];
 					if ( [Client sharedClient].debug ) {
 						NSLog(@"Util: getIPAddress: IP (via WiFi) = %@", address );
 					}
 					break;
-				} else if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"pdp_ip0"]) {
+				} else if([name isEqualToString:@"pdp_ip0"]) {
 					// Get NSString from C String
 					address = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)];
 					if ( [Client sharedClient].debug ) {
@@ -125,7 +128,7 @@
 	}
 	
 	// Free memory
-	freeifaddrs(interfaces);
+	if (interfaces != NULL) freeifaddrs(interfaces);
 	
 	return address;
 }

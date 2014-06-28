@@ -185,6 +185,7 @@
 @property (nonatomic) BOOL authenticate;
 @property (nonatomic, strong) NSString *secret;
 @property (nonatomic, strong) NSString *clientID;
+@property (nonatomic, strong) NSString *stewardID;
 @property (nonatomic, strong) NSURL *authURL;
 
 + (Client *)sharedClient;
@@ -235,5 +236,12 @@
 @interface NSNetService(ipAddresses)
 
 - (NSArray *)ipAddresses;
+
+@end
+
+
+@interface NSURL(queryDictionary)
+
+- (NSMutableDictionary *)queryDictionary;
 
 @end
