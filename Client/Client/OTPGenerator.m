@@ -125,8 +125,9 @@ NSString *const kOTPGeneratorSHAMD5Algorithm = @"MD5";
 
   const char *ptr = [hash bytes];
   unsigned char offset = ptr[hashLength-1] & 0x0f;
-  unsigned long truncatedHash =
-    NSSwapBigLongToHost(*((unsigned long *)&ptr[offset])) & 0x7fffffff;
+// MTR: use uint32_t/NSSwapBigIntToHost instead of unsigned long/NSSwapBigLongToHost for 64-bit systems
+  uint32_t truncatedHash =
+    NSSwapBigIntToHost(*((unsigned long *)&ptr[offset])) & 0x7fffffff;
   unsigned long pinValue = truncatedHash % kPinModTable[digits_];
 
   _GTMDevLog(@"secret: %@", secret_);

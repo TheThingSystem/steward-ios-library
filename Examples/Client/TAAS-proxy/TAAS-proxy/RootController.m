@@ -78,16 +78,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         NSString *lastSteward = [keyChain objectForKey:kLastSteward];
-NSLog(@"lastSteward: %@", lastSteward);
         NSDictionary *info = (lastSteward != nil) ? [keyChain objectForKey:lastSteward] : nil;
         if (info == nil) {
             NSArray *allStewards = [keyChain objectForKey:kAllStewards];
-NSLog(@"allStewards: %@", allStewards);
             if (allStewards != nil) info = [keyChain objectForKey:[allStewards objectAtIndex:0]];
-if(allStewards!=nil)lastSteward = [allStewards objectAtIndex:0];
         }
         if (info != nil) {
-NSLog(@"%@: %@", lastSteward, info);
             NSString *string = [info objectForKey:@"authURL"];
 
             self.rememberedP = YES;
@@ -168,7 +164,6 @@ NSLog(@"%@: %@", lastSteward, info);
     if (lastP) {
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         [keyChain removeObjectForKey:kLastSteward];
-NSLog(@"reset lastSteward");
     }
 
     if (self.service == nil) return;
@@ -191,21 +186,15 @@ NSLog(@"reset lastSteward");
     if (!foundP) {
       [allStewards insertObject:name atIndex:0];
       [keyChain setObject:allStewards forKey:kAllStewards];
-NSLog(@"set allStewards: %@", allStewards);
     }
 
-    if (lastP) {
-        [keyChain setObject:name forKey:kLastSteward];
-NSLog(@"set lastSteward: %@", name);
-    }
+    if (lastP) [keyChain setObject:name forKey:kLastSteward];
 
     [keyChain setObject:info forKey:name];
-NSLog(@"set %@: %@", name, info);
 
     NSDictionary *txt = [info objectForKey:kTXT];
     name = (txt != nil) ? [txt objectForKey:kName] : nil;
     if (name != nil) [keyChain setObject:info forKey:name];
-if(name != nil)NSLog(@"set %@: %@", name, info);
 
     return foundP;
 }

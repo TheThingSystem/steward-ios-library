@@ -112,8 +112,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (void)stopMonitoring {
     if (self.monitor != nil) {
+/* TODO: an immediate disconnect will result in SRWebSocket's handleEvent failing...
         [self.monitor stopMonitoringEvents];
         self.monitor = nil;
+ */
     }
 }
 
