@@ -251,7 +251,7 @@ didReceiveResponse:(NSURLResponse *)response {
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
 
     if ([httpResponse statusCode] != 307) {
-        DDLogError(@"statusCode=%ld, expecting 307",(long)[httpResponse statusCode]);
+        DDLogError(@"%s: statusCode=%ld, expecting 307", __FUNCTION__, (long)[httpResponse statusCode]);
         [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", self.taasCloud]
                withTitle:kError];
     }
@@ -264,7 +264,7 @@ didReceiveResponse:(NSURLResponse *)response {
 
 - (void)connection:(NSURLConnection *)theConnection
   didFailWithError:(NSError *)error {
-    DDLogError(@"%@: %@", self.taasCloud, error);
+    DDLogError(@"%s: %@: %@", __FUNCTION__, self.taasCloud, error);
     [self notifyUser:[NSString stringWithFormat:@"failed to connect to %@", self.taasCloud]
                                       withTitle:kError];
 }

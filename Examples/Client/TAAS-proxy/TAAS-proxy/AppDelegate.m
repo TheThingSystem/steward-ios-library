@@ -48,27 +48,42 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     self.httpServer = [[HTTPServer alloc] init];
     [self.httpServer setConnectionClass:[TAASConnection class]];
     [self.httpServer setPort:8884];
-    NSString *documentRoot = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Web"];
+
+    NSString *documentRoot;
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    if ([paths count] > 0) documentRoot = [paths objectAtIndex:0];
+    if ([paths count] > 0) documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"Web"];
     DDLogVerbose(@"Document Root %@", documentRoot);
-    [self.httpServer setDocumentRoot:documentRoot];
+    if (documentRoot != nil) {
+        if (![[NSFileManager defaultManager] fileExistsAtPath:documentRoot]) {
+            NSError *error = nil;
+            if (![[NSFileManager defaultManager] copyItemAtPath:[[[NSBundle mainBundle] bundlePath] 
+                                                                       stringByAppendingPathComponent:@"Web"]
+                                                         toPath:documentRoot
+                                                          error:&error]) {
+              DDLogVerbose(@"created %@", documentRoot);
+            } else {
+              DDLogError(@"%s: %@", __FUNCTION__, error);
+            }
+        }
+
+        [self.httpServer setDocumentRoot:documentRoot];
+    }
 
     NSError *error = nil;
     if (![self.httpServer start:&error]) {
-      DDLogError(@"Error starting HTTP Server: %@", error);
-      self.httpServer = nil;
+        DDLogError(@"%s: error starting HTTP Server: %@", __FUNCTION__, error);
+        self.httpServer = nil;
     }
 
     self.audioSession = [AVAudioSession sharedInstance];
     error = nil;
     [self.audioSession setCategory:AVAudioSessionCategoryPlayback error:&error];
     if (error != nil) {
-      DDLogError(@"Error setting audio session category to playback: %@", error);
+      DDLogError(@"%s: error setting audio session category to playback: %@", __FUNCTION__, error);
     } else {
       [self.audioSession setActive:YES error:&error];
       if (error) {
-        DDLogError(@"Error setting audio session active: %@", error);
+        DDLogError(@"%s: error setting audio session active: %@", __FUNCTION__, error);
       }
     }
 
@@ -79,7 +94,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if ([device respondsToSelector:@selector(isMultitaskingSupported)]) {
       backgroundSupported = device.multitaskingSupported;
     }
-    if (!backgroundSupported) DDLogError(@"background processing not supported");
+    if (!backgroundSupported) DDLogError(@"%s: background processing not supported", __FUNCTION__);
     self.backgroundTaskID = UIBackgroundTaskInvalid;
     self.notifyTaskID = UIBackgroundTaskInvalid;
 
@@ -147,7 +162,7 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
         [self keepAlive:application onoff:YES];
     }];
     if (self.backgroundTaskID == UIBackgroundTaskInvalid) {
-        DDLogError(@"unable to create background task");
+        DDLogError(@"%s: unable to create background task", __FUNCTION__);
         return;
     }
 

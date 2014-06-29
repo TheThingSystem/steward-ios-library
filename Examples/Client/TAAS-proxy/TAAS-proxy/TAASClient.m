@@ -134,7 +134,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 #pragma mark - StewardDelegate methods
 
 - (void)stewardFoundWithAddress:(NSString *)ipAddress {
-    DDLogError(@"stewardFoundWithAddress: should never be invoked!");
+    DDLogError(@"%s: should never be invoked!", __FUNCTION__);
 }
 
 - (void)stewardFoundAtService:(NSNetService *)service {
@@ -144,7 +144,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         NSString *value = [[NSString alloc] initWithData:[txt objectForKey:key]
                                                 encoding:NSUTF8StringEncoding];
         if (value == nil) {
-            DDLogError(@"invalid encoding for TXT %@", key);
+            DDLogError(@"%s: invalid encoding for TXT %@", __FUNCTION__, key);
             continue;
         }
         [utf8 setObject:value forKey:key];
