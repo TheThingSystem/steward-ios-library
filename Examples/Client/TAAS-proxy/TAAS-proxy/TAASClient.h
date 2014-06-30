@@ -12,7 +12,7 @@
 @protocol TAASClientDelegate <NSObject>
 
 @required
-- (void)foundService:(NSDictionary *)info;
+- (void)foundService:(NSMutableDictionary *)info;
 
 - (void)didReceiveMonitor:(NSString *)message;
 
@@ -38,6 +38,8 @@
 #define kPort        @"port"
 #define kTXT         @"txt"
 #define kIssuer      @"issuer"
+
+#define kAuthURL     @"authURL"
 
 
 @property (weak,   nonatomic) id <TAASClientDelegate>    delegate;

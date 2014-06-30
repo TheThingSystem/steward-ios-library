@@ -46,8 +46,23 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 
 - (void)fxReachabilityStatusDidChange {
-  self.fxReachabilityStatus = [FXReachability sharedInstance].status;
-DDLogVerbose(@"reachability=%ld",  (long)self.fxReachabilityStatus);
+    self.fxReachabilityStatus = [FXReachability sharedInstance].status;
+    DDLogVerbose(@"reachability=%ld",  (long)self.fxReachabilityStatus);
+
+    struct ifaddrs *addrs, *ifa;
+    if (getifaddrs(&addrs) != 0) {
+        DDLogError(@"%s: getifaddrs failed", __FUNCTION__);
+        return;
+    }
+
+// TODO: when network address changes, restart steward and proxy
+    for (ifa = addrs; ifa; ifa = ifa -> ifa_next) {
+        if (ifa -> ifa_flags & IFF_LOOPBACK) continue;
+
+
+    }
+
+    freeifaddrs(addrs);
 }
 
 @end

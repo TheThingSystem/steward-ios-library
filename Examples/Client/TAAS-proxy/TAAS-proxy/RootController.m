@@ -44,7 +44,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     NSInteger seconds = [date timeIntervalSinceNow];
     if (seconds <= -60) {
         return [MHPrettyDate prettyDateFromDate:date withFormat:MHPrettyDateShortRelativeTime];
-}
+    }
     if (seconds ==   0) return @"now";
     return [NSString stringWithFormat:@"%ld%@", (long)-seconds,
                      NSLocalizedStringFromTable(@"s", @"MHPrettyDate", nil)];
@@ -54,16 +54,25 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 @interface RootController ()
 
-@property (        nonatomic) BOOL                       readyP;
+// if nothing from bonjour within 3 seconds
+@property (strong, nonatomic) NSTimer                   *timer;
+
+// when connecting
 @property (        nonatomic) BOOL                       rememberedP;
 @property (strong, nonatomic) NSString                  *taasName;
 
+// when connecting via the TAAS cloud
 @property (strong, nonatomic) NSString                  *taasCloud;
 @property (strong, nonatomic) NSURL                     *authURL;
 
+// when monitoring
+@property (        nonatomic) BOOL                       monitoringP;
+
+// device status
 @property (strong, nonatomic) NSMutableDictionary       *entities;
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
 
+// UI
 @property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
 @property (weak,   nonatomic) IBOutlet UITextField      *textConsole;
 
@@ -83,13 +92,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             NSArray *allStewards = [keyChain objectForKey:kAllStewards];
             if (allStewards != nil) info = [keyChain objectForKey:[allStewards objectAtIndex:0]];
         }
-        if (info != nil) {
-            NSString *string = [info objectForKey:@"authURL"];
 
-            self.rememberedP = YES;
-            [self connectToSteward:info
-                        andAuthURL:((string.length > 0) ? [NSURL URLWithString:string] : nil)];
-        }
+        self.timer =  [NSTimer scheduledTimerWithTimeInterval:3.0f
+                                                       target:self
+                                                     selector:@selector(timeout:)
+                                                     userInfo:info
+                                                      repeats:NO];
 
         TAASClient *sharedClient = [TAASClient sharedClient];
         sharedClient.delegate = self;
@@ -97,6 +105,22 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     }
     return self;
 };
+
+- (void)timeout:(NSTimer *)timer {
+NSLog(@"timeout");
+    self.timer = nil;
+    if (self.service != nil) return;
+
+    NSDictionary *info = (NSDictionary *)[timer userInfo];
+    if (info == nil) {
+        [self notifyUser:@"no stewards visible" withTitle:@"Attention"];
+        return;
+    }
+
+    self.rememberedP = YES;
+    [self connectToSteward:info localP:NO];
+}
+
 
 - (IBAction)scanQRcode:(id)sender {
     ScanController *scanner = [[ScanController alloc] initWithNibName:@"ScanController" bundle:nil];
@@ -122,40 +146,36 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)connectToSteward:(NSDictionary *)info
-              andAuthURL:(NSURL *)authURL {
+                  localP:(BOOL)localP {
     [self resetSteward:false];
 
-    NSString *address = [[info objectForKey:kIpAddresses] objectAtIndex:0];
-    NSNumber *port = [info objectForKey:kPort];
-
-    if (!self.rememberedP) [self rememberThisSteward:info lastP:true];
+    if (!self.rememberedP) [self rememberSteward:info lastP:true];
     self.rememberedP = false;
+    self.taasName = [self hostName:info];
 
+    NSString *authURI = [info objectForKey:kAuthURL];
+    NSURL *authURL = (authURI.length > 0) ? [NSURL URLWithString:authURI] : nil;
     NSString *issuer = nil;
-    if (authURL != nil) {
-        NSArray *array = [authURL.path componentsSeparatedByString:@"/"];
+    if ((localP) && (authURL != nil)) {
+        NSArray *array = [authURI componentsSeparatedByString:@"/"];
         if (array.count > 3) {
             issuer = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"]
                            objectAtIndex:0];
         }
     }
-    if ((issuer != nil)
-            && ([TAASNetwork sharedInstance].fxReachabilityStatus
-                    == FXReachabilityStatusReachableViaWiFi)) {
-/* TODO: determine if we're on the same network or not; if so: issuer = nil;
- */
-
-    }
     if (issuer != nil) return [self rendezvous:issuer withAuthURL:authURL];
+
+    NSString *address = [[info objectForKey:kIpAddresses] objectAtIndex:0];
+    NSNumber *port = [info objectForKey:kPort];
 
     self.service = [[TAASClient alloc] initWithAddress:address
                                                andPort:port
                                             andAuthURL:authURL];
+    self.service.authenticate = authURL != nil;
     self.service.delegate = self;
-    self.readyP = NO;
+    self.monitoringP = NO;
     [self.service startMonitoring];
 
-    self.taasName = [self hostName:info];
     [self notifyUser:[NSString stringWithFormat:@"steward at %@", address]
            withTitle:@"Connecting"];
 };
@@ -173,8 +193,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     self.service = nil;
 }
 
-- (BOOL)rememberThisSteward:(NSDictionary *)info
-                      lastP:(BOOL)lastP {
+- (BOOL)rememberSteward:(NSDictionary *)info
+                  lastP:(BOOL)lastP {
     FXKeychain *keyChain = [FXKeychain defaultKeychain];
     NSString *name = [self hostName:info];
 
@@ -223,6 +243,7 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
     [challenge.sender
                  useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]
     forAuthenticationChallenge:challenge];
+// TODO: use pinned cert files
 }
 
 - (NSURLRequest *)connection:(NSURLConnection *)connection
@@ -237,7 +258,7 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
                                             andAuthURL:self.authURL];
     self.service.authenticate = YES;
     self.service.delegate = self;
-    self.readyP = NO;
+    self.monitoringP = NO;
     [self.service startMonitoring];
 
     [self notifyUser:self.taasCloud withTitle:@"Connecting"];
@@ -275,14 +296,19 @@ didReceiveResponse:(NSURLResponse *)response {
 
 #pragma mark - TAASClientDelegate methods
 
-- (void)foundService:(NSDictionary *)info {
+- (void)foundService:(NSMutableDictionary *)info {
     NSString *name = [self hostName:info];
+    FXKeychain *keyChain = [FXKeychain defaultKeychain];
+    NSDictionary *prev = [keyChain objectForKey:name];
+    if (prev != nil) {
+        NSString *authURI = [prev objectForKey:kAuthURL];
+        if (authURI != nil) [info setObject:authURI forKey:kAuthURL];
+    }
 
     if (self.service != nil) {
-        if ([self rememberThisSteward:info lastP:false]) {
+        if ([self rememberSteward:info lastP:false]) {
             [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
         }
-
         return;
     }
 
@@ -293,8 +319,7 @@ didReceiveResponse:(NSURLResponse *)response {
     }
 
     [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
-
-    [self connectToSteward:info andAuthURL:nil];
+    [self connectToSteward:info localP:YES];
 }
 
 - (void)didReceiveMonitor:(NSString *)message {
@@ -304,7 +329,7 @@ didReceiveResponse:(NSURLResponse *)response {
                                                                  options:kNilOptions
                                                                    error:&error];
 
-    if (!self.readyP) {
+    if (!self.monitoringP) {
         NSDictionary *oops;
         if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
             [self resetSteward:true];
@@ -312,11 +337,10 @@ didReceiveResponse:(NSURLResponse *)response {
             NSString *diagnostic = [oops objectForKey:@"diagnostic"];
             if (diagnostic == nil) diagnostic = message;
             [self notifyUser:diagnostic withTitle:kError];
-// TBD: prompt user to scan QRcode
             return;
         }
 
-        self.readyP = YES;
+        self.monitoringP = YES;
         self.statusLabel.text = @"Connected";
         [self.service listDevices];
 
@@ -327,17 +351,16 @@ didReceiveResponse:(NSURLResponse *)response {
             return;
         }
     }
-    if (dictionary == nil) return;
+    if ((dictionary == nil) && ([dictionary objectForKey:@"notice"] != nil)) return;
 
     [dictionary enumerateKeysAndObjectsUsingBlock:^(id category, id values, BOOL *stop) {
-        if ([category isEqual:@"notice"]) return;
+        if (([category isEqual:@"notice"]) || (![values isKindOfClass:[NSArray class]])) return;
 
         if ([category isEqual:@".updates"]) {
             [values enumerateObjectsUsingBlock:^(NSDictionary *value, NSUInteger idx, BOOL *stop) {
                 NSString *whoami = [value objectForKey:kWhoAmI];
                 if (whoami != nil) [self.entities setObject:value forKey:whoami];
             }];
-
             return;
         }
 
@@ -453,18 +476,16 @@ didReceiveResponse:(NSURLResponse *)response {
                                            [NSDictionary dictionaryWithObjectsAndKeys:
                                                   issuer,                                    kName,
                                                   nil],                                      kTXT,
-                                            URI,                                             @"authURL",
+                                            URI,                                             kAuthURL,
                                            nil];
-
     if (self.service != nil) {
-        if ([self rememberThisSteward:info lastP:false]) {
+        if ([self rememberSteward:info lastP:false]) {
             [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
         }
-
         return;
     }
 
-    [self connectToSteward:info andAuthURL:url];
+    [self connectToSteward:info localP:NO];
 }
 
 

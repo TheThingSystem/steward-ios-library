@@ -31,6 +31,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 @implementation AppDelegate
 
+#define kDocumentRoot    @"Web"
+
+
 -           (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
@@ -51,15 +54,16 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     NSString *documentRoot;
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    if ([paths count] > 0) documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"Web"];
+    if ([paths count] > 0) documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentRoot];
     DDLogVerbose(@"Document Root %@", documentRoot);
     if (documentRoot != nil) {
         if (![[NSFileManager defaultManager] fileExistsAtPath:documentRoot]) {
             NSError *error = nil;
-            if (![[NSFileManager defaultManager] copyItemAtPath:[[[NSBundle mainBundle] bundlePath] 
-                                                                       stringByAppendingPathComponent:@"Web"]
-                                                         toPath:documentRoot
-                                                          error:&error]) {
+            if (![[NSFileManager defaultManager]
+                       copyItemAtPath:[[[NSBundle mainBundle] bundlePath]
+                                             stringByAppendingPathComponent:kDocumentRoot]
+                               toPath:documentRoot
+                                error:&error]) {
               DDLogVerbose(@"created %@", documentRoot);
             } else {
               DDLogError(@"%s: %@", __FUNCTION__, error);

@@ -87,7 +87,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (NSString *)serviceURI:(NSString *)path {
     if (self.steward.ipAddress == nil) return nil;
 
-    return [NSString stringWithFormat:@"http://%@:%@%@", self.steward.ipAddress, self.portno, path];
+    int portno = [self.portno intValue];
+    return [NSString stringWithFormat:@"http%@://%@:%@%@",
+                     ((portno != 80) && (portno != 8887)) ? @"s" : @"",
+                     self.steward.ipAddress, self.portno, path];
 }
 
 
@@ -150,13 +153,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         [utf8 setObject:value forKey:key];
     }
 
-    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
-                                       service.hostName,                               kHostName,
-                                       service.name,                                   kName,
-                                       [service ipAddresses],                          kIpAddresses,
-                                       [NSNumber numberWithUnsignedLong:service.port], kPort,
-                                       [NSDictionary dictionaryWithDictionary:utf8],   kTXT,
-                                       nil];
+    NSMutableDictionary *info = [NSMutableDictionary
+                                     dictionaryWithObjectsAndKeys:
+                                          service.hostName,                               kHostName,
+                                          service.name,                                   kName,
+                                          [service ipAddresses],                          kIpAddresses,
+                                          [NSNumber numberWithUnsignedLong:service.port], kPort,
+                                          [NSDictionary dictionaryWithDictionary:utf8],   kTXT,
+                                          nil];
     if (self.delegate == nil) return;
 
     [self.delegate foundService:info];

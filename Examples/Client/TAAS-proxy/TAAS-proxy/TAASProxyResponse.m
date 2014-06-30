@@ -14,7 +14,7 @@
 
 // Log levels : off, error, warn, info, verbose
 // Other flags: trace
-static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE | HTTP_LOG_FLAG_TRACE;
+static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
 
 @interface TAASProxyResponse ()
@@ -202,6 +202,14 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE | HTTP_LOG_FLAG_TRACE;
 
 
 #pragma mark - NSURLConnection delegate methods
+
+-                        (void)connection:(NSURLConnection *)connection
+willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    [challenge.sender
+                 useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]
+    forAuthenticationChallenge:challenge];
+// TODO: use pinned cert files
+}
 
 - (void)connection:(NSURLConnection *)theConnection
 didReceiveResponse:(NSURLResponse *)response {
