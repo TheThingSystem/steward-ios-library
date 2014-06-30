@@ -118,14 +118,13 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 };
 
 - (void)applicationDidBecomeActive {
-    if (self.timer == nil) {
-        self.timer =  [NSTimer scheduledTimerWithTimeInterval:1.0f
-                                                       target:self
-                                                     selector:@selector(timeout:)
-                                                     userInfo:nil
-                                                      repeats:NO];
-    }
-    [self.timer fire];
+    if ((self.timer != nil) || (self.service != nil)) return;
+
+    self.timer =  [NSTimer scheduledTimerWithTimeInterval:1.0f
+                                                   target:self
+                                                 selector:@selector(timeout:)
+                                                 userInfo:nil
+                                                  repeats:NO];
 }
 
 - (void)timeout:(NSTimer *)timer {
@@ -198,6 +197,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     }
     if (issuer != nil) return [self rendezvous:issuer withAuthURL:authURL];
 
+NSLog(@"connectToSteward: info=%@", info);
     NSString *address = [[info objectForKey:kIpAddresses] objectAtIndex:0];
 
     self.service = [[TAASClient alloc] initWithParameters:info];
@@ -541,10 +541,16 @@ NSLog(@".");
 #pragma mark - FXReachability
 
 - (void)fxReachabilityStatusDidChange {
-    FXReachabilityStatus prev = self. fxReachabilityStatus;
+    FXReachabilityStatus prev = self.fxReachabilityStatus;
+    int status;
+    NSArray *choices = @[@"unknown", @"notReachable", @"reachableViaWWAN", @"reachableViaWiFi"];
 
     self.fxReachabilityStatus = [FXReachability sharedInstance].status;
-    DDLogVerbose(@"reachability=%ld",  (long)self.fxReachabilityStatus);
+    status = (int)self.fxReachabilityStatus;
+    DDLogVerbose(@"reachabilityStatusDidChange: %@",
+                 (0 <= status) && (status < choices.count)
+                     ? [choices objectAtIndex:status]
+                     : [NSString stringWithFormat:@"%d (unknown status)", status]);
 
     NSMutableArray *addresses = nil;
     struct ifaddrs *addrs = NULL;
