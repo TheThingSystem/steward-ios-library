@@ -21,6 +21,7 @@
 #define kAllStewards @"_allStewards"
 #define kLastSteward @"_lastSteward"
 
+#define kAttention   @"Attention"
 #define kError       @"Error"
 
 #define kWhoAmI      @"whoami"
@@ -60,13 +61,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 // if nothing from bonjour within 3 seconds
 @property (strong, nonatomic) NSTimer                   *timer;
 
-// when connecting
-@property (        nonatomic) BOOL                       rememberP;
-@property (strong, nonatomic) NSString                  *taasName;
-
-// when connecting via the TAAS cloud
-@property (strong, nonatomic) NSString                  *taasCloud;
+// for TAAS cloud
+@property (strong, nonatomic) NSString                  *taasIssuer;
+@property (strong, nonatomic) NSURLConnection           *taasConnection;
 @property (strong, nonatomic) NSURL                     *authURL;
+
+
+// when connecting
+@property (strong, nonatomic) NSString                  *taasName;
 
 // when monitoring
 @property (        nonatomic) BOOL                       monitoringP;
@@ -113,20 +115,30 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (void)timeout:(NSTimer *)timer {
     self.timer = nil;
+
+DDLogVerbose(@"timer reachability=%ld",  (long)self.fxReachabilityStatus);
     if (self.service != nil) return;
+    if (self.fxReachabilityStatus == FXReachabilityStatusNotReachable) {
+        [self notifyUser:@"network unavailable" withTitle:kAttention];
+        return;
+    }
 
     NSDictionary *info = (NSDictionary *)[timer userInfo];
     if (info == nil) {
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         NSString *lastSteward = [keyChain objectForKey:kLastSteward];
+NSLog(@"lastSteward=%@",lastSteward);
         info = (lastSteward != nil) ? [keyChain objectForKey:lastSteward] : nil;
+if(info!= nil)NSLog(@"lastSteward info=%@",info);
         if (info == nil) {
             NSArray *allStewards = [keyChain objectForKey:kAllStewards];
+NSLog(@"allStewards=%@",allStewards);
             if (allStewards != nil) info = [keyChain objectForKey:[allStewards objectAtIndex:0]];
+if(info!= nil)NSLog(@"allStewards info=%@",info);
         }
     }
     if (info == nil) {
-        [self notifyUser:@"no stewards available" withTitle:@"Attention"];
+        [self notifyUser:@"no stewards available" withTitle:kAttention];
         return;
     }
 
@@ -161,8 +173,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                   localP:(BOOL)localP {
     [self resetSteward:false];
 
-    if (self.rememberP) [self rememberSteward:info lastP:true];
-    self.rememberP = localP;
+    if (localP) [self rememberSteward:info lastP:true];
     self.taasName = [self hostName:info];
 
     NSString *authURI = [info objectForKey:kAuthURL];
@@ -190,12 +201,18 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 };
 
 - (void)resetSteward:(BOOL)lastP {
-    if (lastP) {
+  if ((lastP) && (self.taasConnection == nil)) {
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         [keyChain removeObjectForKey:kLastSteward];
     }
 
     if (self.service == nil) return;
+
+    if (self.taasConnection != nil) {
+      [self.taasConnection cancel];
+      self.taasConnection = nil;
+      return;
+    }
 
     self.service.delegate = nil;
     [self.service stopManaging];
@@ -236,16 +253,16 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
        withAuthURL:(NSURL *)authURL
 {
     self.service = [[TAASClient alloc] init];
-    self.taasCloud = issuer;
+    self.taasIssuer = issuer;
     self.authURL = authURL;
+NSLog(@"rendezvous issuer=%@ authURL=%@",issuer,authURL);
 
     NSURLRequest *request = [NSURLRequest requestWithURL:
                                           [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/",
-                                                                         self.taasCloud]]];
-    NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request
-                                                                  delegate:self
-                                                          startImmediately:NO];
-    [connection start];
+                                                                         self.taasIssuer]]];
+    self.taasConnection = [[NSURLConnection alloc] initWithRequest:request
+                                                          delegate:self
+                                                  startImmediately:YES];
 }
 
 -                        (void)connection:(NSURLConnection *)connection
@@ -261,19 +278,23 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
             redirectResponse:(NSURLResponse *)redirectResponse {
     if (redirectResponse == nil) return request;
 
+    NSString *taasIssuer = self.taasIssuer;
+    NSURL *authURL = self.authURL;
+NSLog(@"redirect issuer=%@ authURL=%@",taasIssuer,authURL);
+
+    [self resetSteward:NO];
+
     NSURL *redirect = [request URL];
     NSString *address = [redirect host];
-
-
     self.service = [[TAASClient alloc] initWithAddress:address
                                                andPort:[redirect port]
-                                            andAuthURL:self.authURL];
+                                            andAuthURL:authURL];
     self.service.authenticate = YES;
     self.service.delegate = self;
     self.monitoringP = NO;
     [self.service startMonitoring];
 
-    [self notifyUser:self.taasCloud withTitle:@"Connecting"];
+    [self notifyUser:taasIssuer withTitle:@"Connecting"];
 
     return nil;
 }
@@ -285,32 +306,37 @@ didReceiveResponse:(NSURLResponse *)response {
 
     if ([httpResponse statusCode] != 307) {
         DDLogError(@"%s: statusCode=%ld, expecting 307", __FUNCTION__, (long)[httpResponse statusCode]);
-        [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", self.taasCloud]
+        [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", self.taasIssuer]
                withTitle:kError];
+        [self resetSteward:false];
     }
 }
 
 - (void)connection:(NSURLConnection *)theConnection
     didReceiveData:(NSData *)data {
     DDLogWarn(@"TAAS rendezvous: %lu octets", (unsigned long)[data length]);
+    [self resetSteward:false];
 }
 
 - (void)connection:(NSURLConnection *)theConnection
   didFailWithError:(NSError *)error {
-    DDLogError(@"%s: %@: %@", __FUNCTION__, self.taasCloud, error);
-    [self notifyUser:[NSString stringWithFormat:@"failed to connect to %@", self.taasCloud]
+    DDLogError(@"%s: %@: %@", __FUNCTION__, self.taasIssuer, error);
+    [self notifyUser:[NSString stringWithFormat:@"failed to connect to %@", self.taasIssuer]
                                       withTitle:kError];
+    [self resetSteward:false];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)theConnection {
+    [self resetSteward:false];
 }
 
 
 #pragma mark - TAASClientDelegate methods
 
 - (void)foundService:(NSMutableDictionary *)info {
-    NSString *name = [self hostName:info];
     FXKeychain *keyChain = [FXKeychain defaultKeychain];
+    NSString *name = [self hostName:info];
+
     NSDictionary *prev = [keyChain objectForKey:name];
     if (prev != nil) {
         NSString *authURI = [prev objectForKey:kAuthURL];
@@ -527,6 +553,13 @@ didReceiveResponse:(NSURLResponse *)response {
             struct sockaddr_in *sin = (struct sockaddr_in *) ifa -> ifa_addr;
             if (!inet_ntop(sin -> sin_family, &sin -> sin_addr, ipaddr, sizeof ipaddr)) continue;
             [addresses addObject:[NSString stringWithFormat:@"%s", ipaddr]];
+
+            if (self.fxReachabilityStatus != FXReachabilityStatusReachableViaWiFi) {
+                NSString *name = [NSString stringWithUTF8String:ifa->ifa_name];
+                self.fxReachabilityStatus = [name hasPrefix:@"en"]
+                                                ? FXReachabilityStatusReachableViaWiFi
+                                                : FXReachabilityStatusReachableViaWWAN;
+            }
         }
 
         if (addresses.count > 1) {
@@ -546,21 +579,27 @@ NSLog(@"addresses:  current=%@",addresses);
             && (self.fxAddresses != nil)
             && ((addresses == nil) || ([self.fxAddresses isEqualToArray:addresses]))) return;
 
-    self.fxReachabilityStatus = prev;
     self.fxAddresses = addresses;
 
-    if ((self.service == nil) || (self.timer != nil)) return;
+NSLog(@"timer=%@ service=%@",self.timer,self.service);
+    if (self.timer != nil) {
+        [self.timer fire];
+        return;
+    }
 
-    NSDictionary *info = self.service.parameters;
-    [self resetSteward:true];
+    NSDictionary *info = nil;
+    if (self.service != nil) {
+        info = self.service.parameters;
+        [self resetSteward:true];
+    }
 
     if (self.fxReachabilityStatus == FXReachabilityStatusNotReachable) {
-        [self notifyUser:@"network unavailable" withTitle:@"Attention"];
+        [self notifyUser:@"network unavailable" withTitle:kAttention];
         return;
     }
 
     NSTimeInterval seconds = (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
-                                  ? 3.0f : 0.0f;
+                                  ? 3.0f : 1.0f;
     self.timer =  [NSTimer scheduledTimerWithTimeInterval:seconds
                                                    target:self
                                                  selector:@selector(timeout:)
@@ -568,7 +607,7 @@ NSLog(@"addresses:  current=%@",addresses);
                                                   repeats:NO];
 
     [[TAASClient sharedClient] findService];
-    [self notifyUser:@"reconfiguring network" withTitle:@"Attention"];
+    [self notifyUser:@"reconfiguring network" withTitle:kAttention];
 }
 
 

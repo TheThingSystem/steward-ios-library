@@ -45,6 +45,7 @@
 @property (weak,   nonatomic) id <TAASClientDelegate>    delegate;
 @property (strong, nonatomic) NSDictionary              *parameters;
 
+
 + (TAASClient *)sharedClient;
 
 - (id) initWithParameters:(NSDictionary *)parameters;

@@ -62,7 +62,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (id) initWithParameters:(NSDictionary *)parameters {
     if ((self = [self init])) {
-NSLog(@"parameters; %@",parameters);
         self.parameters = parameters;
 
         self.client = [[Client alloc] init];
@@ -140,7 +139,7 @@ NSLog(@"parameters; %@",parameters);
 }
 
 - (void)stopManaging {
-    NSMutableArray *array = [[NSMutableArray array] initWithCapacity:2];
+    NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:2];
     if (self.monitor != nil) {
         [self.monitor stopMonitoringEvents];
         [array addObject:self.monitor];
