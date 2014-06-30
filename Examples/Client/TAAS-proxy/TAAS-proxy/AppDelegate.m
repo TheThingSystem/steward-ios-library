@@ -134,7 +134,6 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     DDLogVerbose(@"applicationDidBecomeActive");
     self.lastNotifications = nil;
-    
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {

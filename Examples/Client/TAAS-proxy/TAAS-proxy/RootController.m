@@ -113,6 +113,40 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                                                  selector:@selector(fxReachabilityStatusDidChange)
                                                      name:FXReachabilityStatusDidChangeNotification
                                                    object:nil];
+
+        FXKeychain *keyChain = [FXKeychain defaultKeychain];
+        NSMutableArray *allStewards = [keyChain objectForKey:kAllStewards];
+        if (allStewards != nil) {
+            NSMutableArray *array = [NSMutableArray array];
+            [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+                NSDictionary *info = [keyChain objectForKey:value];
+                if (info == nil) {
+                    [array addObject:value];
+                    DDLogVerbose(@"removing: %@=%@", value, info);
+                    return;
+                }
+
+                NSArray *ipAddresses = [info objectForKey:kIpAddresses];
+                if ((ipAddresses == nil) || (ipAddresses.count < 1) || ([info objectForKey:kPort] == nil)) {
+                    [keyChain removeObjectForKey:value];
+                    DDLogVerbose(@"removing: %@=%@", value, info);
+                    return;
+                }
+            }];
+            if (array.count > 0) {
+                [allStewards removeObjectsInArray:array];
+                [keyChain setObject:allStewards forKey:kAllStewards];
+                DDLogVerbose(@"allStewards: %@", allStewards);
+            }
+        } else {
+            [keyChain removeObjectForKey:kLastSteward];
+        }
+        NSString *lastSteward = [keyChain objectForKey:kLastSteward];
+        if ((lastSteward != nil)
+                && ((allStewards == nil) || ([allStewards indexOfObject:lastSteward] == NSNotFound))) {
+            [keyChain removeObjectForKey:kLastSteward];
+            DDLogVerbose(@"removing lastSteward=%@", lastSteward);
+        }
     }
     return self;
 };
@@ -211,7 +245,7 @@ NSLog(@"connectToSteward: info=%@", info);
 };
 
 - (void)resetSteward:(BOOL)lastP {
-  if ((lastP) && (self.taasConnection == nil)) {
+    if ((lastP) && (self.taasConnection == nil)) {
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         [keyChain removeObjectForKey:kLastSteward];
     }
