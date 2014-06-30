@@ -106,6 +106,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         [sharedClient findService];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationDidBecomeActive)
+                                                     name:UIApplicationDidBecomeActiveNotification
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(fxReachabilityStatusDidChange)
                                                      name:FXReachabilityStatusDidChangeNotification
                                                    object:nil];
@@ -113,10 +117,20 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     return self;
 };
 
+- (void)applicationDidBecomeActive {
+    if (self.timer == nil) {
+        self.timer =  [NSTimer scheduledTimerWithTimeInterval:1.0f
+                                                       target:self
+                                                     selector:@selector(timeout:)
+                                                     userInfo:nil
+                                                      repeats:NO];
+    }
+    [self.timer fire];
+}
+
 - (void)timeout:(NSTimer *)timer {
     self.timer = nil;
 
-DDLogVerbose(@"timer reachability=%ld",  (long)self.fxReachabilityStatus);
     if (self.service != nil) return;
     if (self.fxReachabilityStatus == FXReachabilityStatusNotReachable) {
         [self notifyUser:@"network unavailable" withTitle:kAttention];
@@ -127,14 +141,10 @@ DDLogVerbose(@"timer reachability=%ld",  (long)self.fxReachabilityStatus);
     if (info == nil) {
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         NSString *lastSteward = [keyChain objectForKey:kLastSteward];
-NSLog(@"lastSteward=%@",lastSteward);
         info = (lastSteward != nil) ? [keyChain objectForKey:lastSteward] : nil;
-if(info!= nil)NSLog(@"lastSteward info=%@",info);
         if (info == nil) {
             NSArray *allStewards = [keyChain objectForKey:kAllStewards];
-NSLog(@"allStewards=%@",allStewards);
             if (allStewards != nil) info = [keyChain objectForKey:[allStewards objectAtIndex:0]];
-if(info!= nil)NSLog(@"allStewards info=%@",info);
         }
     }
     if (info == nil) {
@@ -243,7 +253,7 @@ if(info!= nil)NSLog(@"allStewards info=%@",info);
     name = (txt != nil) ? [txt objectForKey:kName] : nil;
     if (name != nil) [keyChain setObject:info forKey:name];
 
-    return foundP;
+    return (!foundP);
 }
 
 
@@ -255,7 +265,6 @@ if(info!= nil)NSLog(@"allStewards info=%@",info);
     self.service = [[TAASClient alloc] init];
     self.taasIssuer = issuer;
     self.authURL = authURL;
-NSLog(@"rendezvous issuer=%@ authURL=%@",issuer,authURL);
 
     NSURLRequest *request = [NSURLRequest requestWithURL:
                                           [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/",
@@ -280,7 +289,6 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
 
     NSString *taasIssuer = self.taasIssuer;
     NSURL *authURL = self.authURL;
-NSLog(@"redirect issuer=%@ authURL=%@",taasIssuer,authURL);
 
     [self resetSteward:NO];
 
@@ -343,16 +351,16 @@ didReceiveResponse:(NSURLResponse *)response {
         if (authURI != nil) [info setObject:authURI forKey:kAuthURL];
     }
 
+    NSArray *ipaddrs = [info objectForKey:kIpAddresses];
+    if (ipaddrs.count == 0) {
+        [self notifyUser:[NSString stringWithFormat:@"no addresses for %@", name] withTitle:kError];
+        return;
+    }
+
     if (self.service != nil) {
         if ([self rememberSteward:info lastP:false]) {
             [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
         }
-        return;
-    }
-
-    NSArray *ipaddrs = [info objectForKey:kIpAddresses];
-    if (ipaddrs.count == 0) {
-        [self notifyUser:[NSString stringWithFormat:@"no addresses for %@", name] withTitle:kError];
         return;
     }
 
@@ -361,6 +369,7 @@ didReceiveResponse:(NSURLResponse *)response {
 }
 
 - (void)didReceiveMonitor:(NSString *)message {
+NSLog(@".");
       NSError *error = nil;
       NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
       NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
@@ -462,7 +471,7 @@ didReceiveResponse:(NSURLResponse *)response {
 
 
 - (void)didNotFindService:(NSDictionary *)errorDict {
-    [self notifyUser:@"steward not found" withTitle:kError];
+  // the timer will catch this
 }
 
 - (void)failedToMonitor:(NSError *)error {
@@ -523,6 +532,8 @@ didReceiveResponse:(NSURLResponse *)response {
         return;
     }
 
+    [self notifyUser:[NSString stringWithFormat:@"Found %@", [self hostName:info]]
+           withTitle:@"Rendezvous"];
     [self connectToSteward:info localP:NO];
 }
 
@@ -538,7 +549,13 @@ didReceiveResponse:(NSURLResponse *)response {
     NSMutableArray *addresses = nil;
     struct ifaddrs *addrs = NULL;
     if (getifaddrs(&addrs) != 0) {
-      DDLogError(@"%s: getifaddrs failed: errno=%d", __FUNCTION__, errno);
+      int errcode = errno;
+      char strerrbuf[BUFSIZ];
+
+      if (strerror_r(errcode, strerrbuf, sizeof strerrbuf - 1) != 0) {
+          snprintf(strerrbuf, sizeof strerrbuf, "errno=%d", errcode);
+      }
+      DDLogError(@"%s: getifaddrs failed: %@", __FUNCTION__, [NSString stringWithUTF8String:strerrbuf]);
     } else {
         int count;
         struct ifaddrs *ifa;
@@ -547,7 +564,9 @@ didReceiveResponse:(NSURLResponse *)response {
         addresses = [[NSMutableArray alloc] initWithCapacity:count];
 
         for (ifa = addrs; ifa; ifa = ifa -> ifa_next) {
-            if ((ifa -> ifa_flags & IFF_LOOPBACK) || (ifa -> ifa_addr -> sa_family != AF_INET)) continue;
+            if ((ifa -> ifa_flags & IFF_LOOPBACK)
+                    || (!(ifa -> ifa_flags & IFF_UP))
+                    || (ifa -> ifa_addr -> sa_family != AF_INET)) continue;
 
             char ipaddr[INET_ADDRSTRLEN];
             struct sockaddr_in *sin = (struct sockaddr_in *) ifa -> ifa_addr;
@@ -572,16 +591,12 @@ didReceiveResponse:(NSURLResponse *)response {
     }
     if (addrs != NULL) freeifaddrs(addrs);
 
-NSLog(@"reachability: previous=%ld current=%ld", (long)prev, (long)self.fxReachabilityStatus);
-NSLog(@"addresses: previous=%@",self.fxAddresses);
-NSLog(@"addresses:  current=%@",addresses);
     if ((self.fxReachabilityStatus == prev)
             && (self.fxAddresses != nil)
             && ((addresses == nil) || ([self.fxAddresses isEqualToArray:addresses]))) return;
 
     self.fxAddresses = addresses;
 
-NSLog(@"timer=%@ service=%@",self.timer,self.service);
     if (self.timer != nil) {
         [self.timer fire];
         return;
@@ -600,13 +615,15 @@ NSLog(@"timer=%@ service=%@",self.timer,self.service);
 
     NSTimeInterval seconds = (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
                                   ? 3.0f : 1.0f;
-    self.timer =  [NSTimer scheduledTimerWithTimeInterval:seconds
-                                                   target:self
-                                                 selector:@selector(timeout:)
-                                                 userInfo:info
-                                                  repeats:NO];
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:seconds
+                                                  target:self
+                                                selector:@selector(timeout:)
+                                                userInfo:info
+                                                 repeats:NO];
 
-    [[TAASClient sharedClient] findService];
+    if (self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN) {
+        [[TAASClient sharedClient] findService];
+    }
     [self notifyUser:@"reconfiguring network" withTitle:kAttention];
 }
 

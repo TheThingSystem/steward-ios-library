@@ -25,6 +25,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (        nonatomic) UIBackgroundTaskIdentifier notifyTaskID;
 @property (strong, nonatomic) HTTPServer                *httpServer;
 @property (strong, nonatomic) AVAudioSession            *audioSession;
+@property (strong, nonatomic) NSMutableArray            *lastNotifications;
 
 @end
 
@@ -38,7 +39,13 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
-    DDLogVerbose(@"didFinishLaunchingWithOptions: %@", launchOptions);
+    int state = (int) application.applicationState;
+    NSArray *choices = @[@"active", @"inactive", @"background"];
+    DDLogVerbose(@"didFinishLaunchingWithOptions: %@ options=%@",
+                 (0 <= state) && (state < choices.count)
+                     ? [choices objectAtIndex:state]
+                     : [NSString stringWithFormat:@"%d (unknown state)", state],
+                   launchOptions);
 
     // should NEVER happen, as we are always running (voip)
     if ([launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey] != nil) return YES;
@@ -102,32 +109,32 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     self.backgroundTaskID = UIBackgroundTaskInvalid;
     self.notifyTaskID = UIBackgroundTaskInvalid;
 
-    if (application.applicationState == UIApplicationStateBackground) {
-        self.backgroundTaskID = [application beginBackgroundTaskWithExpirationHandler:^{
-            DDLogVerbose(@"expiration of background task");
-            [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTaskID];
-            self.backgroundTaskID = UIBackgroundTaskInvalid;
-        }];
-
-      return YES;
-    }
-
     [self.window makeKeyAndVisible];
     return YES;
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    DDLogVerbose(@"applicationWillEnterBackground");
+    int status = (int) application.backgroundRefreshStatus;
+    NSArray *choices = @[@"restricted", @"denied", @"available"];
+
+    DDLogVerbose(@"applicationDidEnterBackground: %@",
+                 (0 <= status) && (status < choices.count)
+                     ? [choices objectAtIndex:status]
+                     : [NSString stringWithFormat:@"%d (unknown status)", status]);
+    [self keepAlive:application onoff:YES];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     DDLogVerbose(@"applicationWillEnterForeground");
 
     application.applicationIconBadgeNumber = 0;
+    [self keepAlive:application onoff:NO];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     DDLogVerbose(@"applicationDidBecomeActive");
+    self.lastNotifications = nil;
+    
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -154,6 +161,8 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
 
 - (void)keepAlive:(UIApplication *)application
             onoff:(BOOL)onoff {
+    DDLogVerbose(@"keepAlive onoff=%@", onoff ? @"YES" : @"NO");
+
     if (self.backgroundTaskID != UIBackgroundTaskInvalid) {
         if (onoff) return;
 
@@ -179,6 +188,15 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
 - (void)backgroundNotify:(NSString *)message
                 andTitle:(NSString *)title {
     if (self.notifyTaskID != UIBackgroundTaskInvalid) return;
+
+    // suppress duplicate runs of notifications (they often travel in pairs!)
+    if (self.lastNotifications == nil) {
+        self.lastNotifications = [[NSMutableArray array] initWithCapacity:4];
+    }
+    BOOL containsP = [self.lastNotifications containsObject:message];
+    [self.lastNotifications insertObject:message atIndex:0];
+    if (self.lastNotifications.count > 3) [self.lastNotifications removeLastObject];
+    if (containsP) return;
 
     UIApplication *application = [UIApplication sharedApplication];
 
