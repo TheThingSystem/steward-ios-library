@@ -43,10 +43,11 @@
 
 
 @property (weak,   nonatomic) id <TAASClientDelegate>    delegate;
-
+@property (strong, nonatomic) NSDictionary              *parameters;
 
 + (TAASClient *)sharedClient;
 
+- (id) initWithParameters:(NSDictionary *)parameters;
 - (id) initWithAddress:(NSString *)address andPort:(NSNumber *)port andAuthURL:(NSURL *)authURL;
 
 - (BOOL)authenticate;
@@ -61,8 +62,7 @@
 - (void)findService;
 
 - (void)startMonitoring;
-- (void)stopMonitoring;
-
 - (void)listDevices;
+- (void)stopManaging;
 
 @end

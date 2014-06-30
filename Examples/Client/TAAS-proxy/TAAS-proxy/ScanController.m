@@ -78,7 +78,6 @@
 - (void)captureResult:(ZXCapture*)capture result:(ZXResult*)result {
     if (result) {
         // dispatch URL
-        NSLog(@"Result = %@", result.text);
         if ( [self.delegate respondsToSelector:@selector(closedWithURL:)] ) {
             [self.delegate closedWithURL:[NSURL URLWithString:result.text]];
         }
@@ -88,7 +87,6 @@
         NSString *secret = array[1];
         NSRange range = [secret rangeOfString:@"&"];
         if (range.location != NSNotFound) secret = [secret substringToIndex:range.location];
-        NSLog(@"Secret = %@", secret);
         if ( [self.delegate respondsToSelector:@selector(closedWithSecret:)] ) {
             [self.delegate closedWithSecret:secret];
         }

@@ -18,6 +18,8 @@
 }
 
 - (void)findSteward {
+    if (self.browser != nil) [self.browser stop];
+
     NSLog(@"Starting search for steward");
     self.browser = [NSNetServiceBrowser new];
     [self.browser scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
@@ -64,6 +66,8 @@
     if ( [self.delegate respondsToSelector:@selector(stewardNotSearchedWithErrorDict:)] ) {
         [self.delegate stewardNotSearchedWithErrorDict:errorDict];
     }
+
+    [self.browser searchForServicesOfType:@"_wss._tcp." inDomain:@""];
 }
 
 // Sent when a service appears

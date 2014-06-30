@@ -37,6 +37,10 @@
     [self.webSocket send:json];
 }
 
+- (void)stopListingDevices {
+    [self.webSocket close];
+}
+
 #pragma mark - SRWebSocketDelegate Methods
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {

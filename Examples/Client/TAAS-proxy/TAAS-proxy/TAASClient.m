@@ -50,17 +50,32 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (id) initWithAddress:(NSString *)address
                andPort:(NSNumber *)port
             andAuthURL:(NSURL *)authURL {
+  NSDictionary *parameters = [NSDictionary
+                                  dictionaryWithObjectsAndKeys:
+                                      [NSArray arrayWithObject:address], kIpAddresses,
+                                      port,                              kPort,
+                                      [authURL absoluteString],          kAuthURL,
+                                      nil];
+
+  return [self initWithParameters:parameters];
+}
+
+- (id) initWithParameters:(NSDictionary *)parameters {
     if ((self = [self init])) {
+NSLog(@"parameters; %@",parameters);
+        self.parameters = parameters;
+
         self.client = [[Client alloc] init];
-        self.client.authURL = authURL;
+        NSString *authURI = [parameters objectForKey:kAuthURL];
+        self.client.authURL = (authURI.length > 0) ? [NSURL URLWithString:authURI] : nil;
         self.client.debug = YES;
 
-        self.steward.ipAddress = address;
-        self.portno = port;
+        self.steward.ipAddress = [[self.parameters objectForKey:kIpAddresses] objectAtIndex:0];
+        self.portno = [self.parameters objectForKey:kPort];
 
         self.monitorP = NO;
-        self.monitor = [[Monitor alloc] initWithAddress:address
-                                                andPort:[port unsignedShortValue]
+        self.monitor = [[Monitor alloc] initWithAddress:self.steward.ipAddress
+                                                andPort:[self.portno unsignedShortValue]
                                          andServiceType:NSURLNetworkServiceTypeVoIP];
         self.monitor.delegate = self;
     }
@@ -113,15 +128,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     [self.monitor startMonitoringEvents];
 }
 
-- (void)stopMonitoring {
-    if (self.monitor != nil) {
-/* TODO: an immediate disconnect will result in SRWebSocket's handleEvent failing...
-        [self.monitor stopMonitoringEvents];
-        self.monitor = nil;
- */
-    }
-}
-
 - (void)listDevices {
     if (self.manager == nil) {
         self.managerP = NO;
@@ -133,6 +139,29 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     [self.manager listAllDevices];
 }
 
+- (void)stopManaging {
+    NSMutableArray *array = [[NSMutableArray array] initWithCapacity:2];
+    if (self.monitor != nil) {
+        [self.monitor stopMonitoringEvents];
+        [array addObject:self.monitor];
+    }
+    if (self.manager != nil) {
+        [self.manager stopListingDevices];
+        [array addObject:self.manager];
+    }
+
+// avoid race conditions between SRWebSocket, blocks, and ARC...
+    [NSTimer scheduledTimerWithTimeInterval:3.0f
+                                     target:self
+                                   selector:@selector(drained:)
+                                   userInfo:array
+                                   repeats:NO];
+}
+
+- (void)drained:(NSTimer *)timer {
+    NSMutableArray *array = [timer userInfo];
+    DDLogVerbose(@"drained: %@", array);
+}
 
 #pragma mark - StewardDelegate methods
 

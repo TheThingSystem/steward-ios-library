@@ -9,9 +9,12 @@
 #import "RootController.h"
 #import "AppDelegate.h"
 #import "FXKeychain.h"
+#import "FXReachability.h"
+#import <ifaddrs.h>
+#import <net/if.h>
+#import <arpa/inet.h>
 #import "MHPrettyDate.h"
 #import "RequestUtils.h"
-#import "TAASNetwork.h"
 #import "DDLog.h"
 
 
@@ -58,7 +61,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSTimer                   *timer;
 
 // when connecting
-@property (        nonatomic) BOOL                       rememberedP;
+@property (        nonatomic) BOOL                       rememberP;
 @property (strong, nonatomic) NSString                  *taasName;
 
 // when connecting via the TAAS cloud
@@ -71,6 +74,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 // device status
 @property (strong, nonatomic) NSMutableDictionary       *entities;
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
+
+// network reachability
+@property (        nonatomic) FXReachabilityStatus       fxReachabilityStatus;
+@property (strong, nonatomic) NSArray                   *fxAddresses;
 
 // UI
 @property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
@@ -85,39 +92,44 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) != nil) {
         DDLogVerbose(@"Client Library v%@", [Client version]);
 
-        FXKeychain *keyChain = [FXKeychain defaultKeychain];
-        NSString *lastSteward = [keyChain objectForKey:kLastSteward];
-        NSDictionary *info = (lastSteward != nil) ? [keyChain objectForKey:lastSteward] : nil;
-        if (info == nil) {
-            NSArray *allStewards = [keyChain objectForKey:kAllStewards];
-            if (allStewards != nil) info = [keyChain objectForKey:[allStewards objectAtIndex:0]];
-        }
-
+        self.fxReachabilityStatus = FXReachabilityStatusUnknown;
         self.timer =  [NSTimer scheduledTimerWithTimeInterval:3.0f
                                                        target:self
                                                      selector:@selector(timeout:)
-                                                     userInfo:info
+                                                     userInfo:nil
                                                       repeats:NO];
 
         TAASClient *sharedClient = [TAASClient sharedClient];
         sharedClient.delegate = self;
         [sharedClient findService];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(fxReachabilityStatusDidChange)
+                                                     name:FXReachabilityStatusDidChangeNotification
+                                                   object:nil];
     }
     return self;
 };
 
 - (void)timeout:(NSTimer *)timer {
-NSLog(@"timeout");
     self.timer = nil;
     if (self.service != nil) return;
 
     NSDictionary *info = (NSDictionary *)[timer userInfo];
     if (info == nil) {
-        [self notifyUser:@"no stewards visible" withTitle:@"Attention"];
+        FXKeychain *keyChain = [FXKeychain defaultKeychain];
+        NSString *lastSteward = [keyChain objectForKey:kLastSteward];
+        info = (lastSteward != nil) ? [keyChain objectForKey:lastSteward] : nil;
+        if (info == nil) {
+            NSArray *allStewards = [keyChain objectForKey:kAllStewards];
+            if (allStewards != nil) info = [keyChain objectForKey:[allStewards objectAtIndex:0]];
+        }
+    }
+    if (info == nil) {
+        [self notifyUser:@"no stewards available" withTitle:@"Attention"];
         return;
     }
 
-    self.rememberedP = YES;
     [self connectToSteward:info localP:NO];
 }
 
@@ -149,14 +161,14 @@ NSLog(@"timeout");
                   localP:(BOOL)localP {
     [self resetSteward:false];
 
-    if (!self.rememberedP) [self rememberSteward:info lastP:true];
-    self.rememberedP = false;
+    if (self.rememberP) [self rememberSteward:info lastP:true];
+    self.rememberP = localP;
     self.taasName = [self hostName:info];
 
     NSString *authURI = [info objectForKey:kAuthURL];
     NSURL *authURL = (authURI.length > 0) ? [NSURL URLWithString:authURI] : nil;
     NSString *issuer = nil;
-    if ((localP) && (authURL != nil)) {
+    if ((!localP) && (authURL != nil)) {
         NSArray *array = [authURI componentsSeparatedByString:@"/"];
         if (array.count > 3) {
             issuer = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"]
@@ -166,11 +178,8 @@ NSLog(@"timeout");
     if (issuer != nil) return [self rendezvous:issuer withAuthURL:authURL];
 
     NSString *address = [[info objectForKey:kIpAddresses] objectAtIndex:0];
-    NSNumber *port = [info objectForKey:kPort];
 
-    self.service = [[TAASClient alloc] initWithAddress:address
-                                               andPort:port
-                                            andAuthURL:authURL];
+    self.service = [[TAASClient alloc] initWithParameters:info];
     self.service.authenticate = authURL != nil;
     self.service.delegate = self;
     self.monitoringP = NO;
@@ -189,7 +198,8 @@ NSLog(@"timeout");
     if (self.service == nil) return;
 
     self.service.delegate = nil;
-    [self.service stopMonitoring];
+    [self.service stopManaging];
+
     self.service = nil;
 }
 
@@ -253,6 +263,8 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
 
     NSURL *redirect = [request URL];
     NSString *address = [redirect host];
+
+
     self.service = [[TAASClient alloc] initWithAddress:address
                                                andPort:[redirect port]
                                             andAuthURL:self.authURL];
@@ -486,6 +498,77 @@ didReceiveResponse:(NSURLResponse *)response {
     }
 
     [self connectToSteward:info localP:NO];
+}
+
+
+#pragma mark - FXReachability
+
+- (void)fxReachabilityStatusDidChange {
+    FXReachabilityStatus prev = self. fxReachabilityStatus;
+
+    self.fxReachabilityStatus = [FXReachability sharedInstance].status;
+    DDLogVerbose(@"reachability=%ld",  (long)self.fxReachabilityStatus);
+
+    NSMutableArray *addresses = nil;
+    struct ifaddrs *addrs = NULL;
+    if (getifaddrs(&addrs) != 0) {
+      DDLogError(@"%s: getifaddrs failed: errno=%d", __FUNCTION__, errno);
+    } else {
+        int count;
+        struct ifaddrs *ifa;
+
+        for (ifa = addrs, count = 0; ifa; ifa = ifa -> ifa_next, count++) continue;
+        addresses = [[NSMutableArray alloc] initWithCapacity:count];
+
+        for (ifa = addrs; ifa; ifa = ifa -> ifa_next) {
+            if ((ifa -> ifa_flags & IFF_LOOPBACK) || (ifa -> ifa_addr -> sa_family != AF_INET)) continue;
+
+            char ipaddr[INET_ADDRSTRLEN];
+            struct sockaddr_in *sin = (struct sockaddr_in *) ifa -> ifa_addr;
+            if (!inet_ntop(sin -> sin_family, &sin -> sin_addr, ipaddr, sizeof ipaddr)) continue;
+            [addresses addObject:[NSString stringWithFormat:@"%s", ipaddr]];
+        }
+
+        if (addresses.count > 1) {
+          addresses = [NSMutableArray
+                           arrayWithArray:[addresses sortedArrayUsingComparator:^(NSString *obj1,
+                                                                                  NSString *obj2) {
+                return [obj1 compare:obj2];
+            }]];
+        }
+    }
+    if (addrs != NULL) freeifaddrs(addrs);
+
+NSLog(@"reachability: previous=%ld current=%ld", (long)prev, (long)self.fxReachabilityStatus);
+NSLog(@"addresses: previous=%@",self.fxAddresses);
+NSLog(@"addresses:  current=%@",addresses);
+    if ((self.fxReachabilityStatus == prev)
+            && (self.fxAddresses != nil)
+            && ((addresses == nil) || ([self.fxAddresses isEqualToArray:addresses]))) return;
+
+    self.fxReachabilityStatus = prev;
+    self.fxAddresses = addresses;
+
+    if ((self.service == nil) || (self.timer != nil)) return;
+
+    NSDictionary *info = self.service.parameters;
+    [self resetSteward:true];
+
+    if (self.fxReachabilityStatus == FXReachabilityStatusNotReachable) {
+        [self notifyUser:@"network unavailable" withTitle:@"Attention"];
+        return;
+    }
+
+    NSTimeInterval seconds = (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
+                                  ? 3.0f : 0.0f;
+    self.timer =  [NSTimer scheduledTimerWithTimeInterval:seconds
+                                                   target:self
+                                                 selector:@selector(timeout:)
+                                                 userInfo:info
+                                                  repeats:NO];
+
+    [[TAASClient sharedClient] findService];
+    [self notifyUser:@"reconfiguring network" withTitle:@"Attention"];
 }
 
 
