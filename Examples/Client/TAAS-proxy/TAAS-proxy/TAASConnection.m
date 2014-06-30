@@ -58,6 +58,13 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                                                      andBody:[self dataForBody:@"503 Not Connected"]];
     }
 
+    NSRange range = [path rangeOfString:@"/search?q="];
+    if (range.location != NSNotFound) {
+        DDLogVerbose(@"interpret %@", [path substringFromIndex:(range.location + range.length)]);
+        return [[TAASErrorResponse alloc] initWithStatusCode:500
+                                                     andBody:[self dataForBody:@"not implemented"]];
+    }
+
     self.response = [[TAASProxyResponse alloc] initWithURI:serviceURI
                                              forConnection:self];
     return self.response;

@@ -18,15 +18,17 @@
 #import "DDLog.h"
 
 
-#define kAllStewards @"_allStewards"
-#define kLastSteward @"_lastSteward"
+#define kAllStewards  @"_allStewards"
+#define kLastSteward  @"_lastSteward"
 
-#define kAttention   @"Attention"
-#define kError       @"Error"
+#define kAttention    @"Attention"
+#define kError        @"Error"
 
-#define kWhoAmI      @"whoami"
-#define kWhatAmI     @"whatami"
+#define kWhoAmI       @"whoami"
+#define kWhatAmI      @"whatami"
 
+#define kBonjourDelay  3.0f
+#define kNetworkDelay  1.0f
 
 // Log levels: off, error, warn, info, verbose
 // Other flags: trace
@@ -95,7 +97,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         DDLogVerbose(@"Client Library v%@", [Client version]);
 
         self.fxReachabilityStatus = FXReachabilityStatusUnknown;
-        self.timer =  [NSTimer scheduledTimerWithTimeInterval:3.0f
+        self.timer =  [NSTimer scheduledTimerWithTimeInterval:kBonjourDelay
                                                        target:self
                                                      selector:@selector(timeout:)
                                                      userInfo:nil
@@ -117,6 +119,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         NSMutableArray *allStewards = [keyChain objectForKey:kAllStewards];
         if (allStewards != nil) {
+            allStewards = [allStewards mutableCopy];
             NSMutableArray *array = [NSMutableArray array];
             [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
                 NSDictionary *info = [keyChain objectForKey:value];
@@ -154,7 +157,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)applicationDidBecomeActive {
     if ((self.timer != nil) || (self.service != nil)) return;
 
-    self.timer =  [NSTimer scheduledTimerWithTimeInterval:1.0f
+    NSTimeInterval seconds = (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
+                                  ? kBonjourDelay : kNetworkDelay;
+    self.timer =  [NSTimer scheduledTimerWithTimeInterval:seconds
                                                    target:self
                                                  selector:@selector(timeout:)
                                                  userInfo:nil
@@ -580,7 +585,7 @@ NSLog(@".");
     NSArray *choices = @[@"unknown", @"notReachable", @"reachableViaWWAN", @"reachableViaWiFi"];
 
     self.fxReachabilityStatus = [FXReachability sharedInstance].status;
-    status = (int)self.fxReachabilityStatus;
+    status = (int)self.fxReachabilityStatus + 1;
     DDLogVerbose(@"reachabilityStatusDidChange: %@",
                  (0 <= status) && (status < choices.count)
                      ? [choices objectAtIndex:status]
@@ -637,10 +642,7 @@ NSLog(@".");
 
     self.fxAddresses = addresses;
 
-    if (self.timer != nil) {
-        [self.timer fire];
-        return;
-    }
+    if (self.timer != nil) return;
 
     NSDictionary *info = nil;
     if (self.service != nil) {
@@ -654,7 +656,7 @@ NSLog(@".");
     }
 
     NSTimeInterval seconds = (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
-                                  ? 3.0f : 1.0f;
+                                  ? kBonjourDelay : kNetworkDelay;
     self.timer = [NSTimer scheduledTimerWithTimeInterval:seconds
                                                   target:self
                                                 selector:@selector(timeout:)

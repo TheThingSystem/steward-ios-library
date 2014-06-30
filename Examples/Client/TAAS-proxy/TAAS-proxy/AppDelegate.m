@@ -190,7 +190,7 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
 
     // suppress duplicate runs of notifications (they often travel in pairs!)
     if (self.lastNotifications == nil) {
-        self.lastNotifications = [[NSMutableArray array] initWithCapacity:4];
+        self.lastNotifications = [[NSMutableArray alloc] initWithCapacity:4];
     }
     BOOL containsP = [self.lastNotifications containsObject:message];
     [self.lastNotifications insertObject:message atIndex:0];

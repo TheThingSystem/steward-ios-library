@@ -38,7 +38,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 - (id)initWithURI:(NSString *)URI
     forConnection:(HTTPConnection *)parent {
     if ((self = [super init]))  {
-        HTTPLogInfo(@"%@[%p]: initwithURI:%@", THIS_FILE, self, URI);
+        HTTPLogInfo(@"%@[%p]: initWithURI:%@", THIS_FILE, self, URI);
 
         self.upstream = parent;
 
