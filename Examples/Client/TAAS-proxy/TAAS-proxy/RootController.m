@@ -103,6 +103,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         [sharedClient findService];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationWillEnterForeground)
+                                                     name:UIApplicationWillEnterForegroundNotification
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationDidBecomeActive)
                                                      name:UIApplicationDidBecomeActiveNotification
                                                    object:nil];
@@ -153,7 +157,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     return self;
 };
 
-- (void)applicationDidBecomeActive {
+// refresh the screen
+- (void)applicationWillEnterForeground {
     if (self.ticker != nil) [self.ticker invalidate];
     self.ticker = [NSTimer scheduledTimerWithTimeInterval:3.0f
                                                    target:self
@@ -161,22 +166,17 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                                                  userInfo:nil
                                                    repeats:YES];
     [self ticktock:self.ticker];
+}
 
+// see if we need to start looking for the steward
+- (void)applicationDidBecomeActive {
     if ((self.timer == nil) && (self.service == nil)) [self setTimer];
 }
 
+// stop refreshing the screen
 - (void)applicationWillResignActive {
     if (self.ticker != nil) [self.ticker invalidate];
     self.ticker = nil;
-}
-
-- (void)viewDidLoad {
-    self.tableData = [NSMutableArray arrayWithCapacity:50];
-
-    UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
-    [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
-
-    [self notifyUser:@"scanning network" withTitle:@"Discovered"];
 }
 
 - (void)ticktock:(NSTimer *)timer {
@@ -210,6 +210,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     [self connectToSteward:info localP:NO];
 }
 
+- (void)viewDidLoad {
+    self.tableData = [NSMutableArray arrayWithCapacity:50];
+
+    UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
+    [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
+
+    [self notifyUser:@"scanning network..." withTitle:@"Discovered"];
+}
 
 - (IBAction)scanQRcode:(id)sender {
     ScanController *scanner = [[ScanController alloc] initWithNibName:@"ScanController" bundle:nil];
@@ -484,6 +492,9 @@ NSLog(@".");
             NSString *data = [self valuePP:meta];
             if ((date.length == 0) || (message.length == 0)) return;
 
+// TODO: more message simplification here...
+	    if ([data isEqual:@"[Circular]"]) return;
+
             [self pushTableDataDictionary:@{@"when": date, @"message": message, @"data": data}];
         }];
     }];
@@ -535,7 +546,8 @@ NSLog(@".");
 - (void)doneMonitoring:(NSInteger)code {
     [self resetSteward:false];
 
-    [self notifyUser:@"monitoring terminated" withTitle:kError];
+    [self notifyUser:[NSString stringWithFormat:@"%@: %@", self.taasName, @"disconnected"]
+           withTitle:kError];
     if (self.monitoringP) [self setTimer];
 }
 
@@ -818,6 +830,7 @@ NSLog(@".");
 }
 
 - (void)pushTableDataDictionary:(NSDictionary *)dictionary {
+// TODO: decide whether to do sorting here...
     [self.tableData insertObject:dictionary atIndex:0];
     [self.tableView reloadData];
 }
