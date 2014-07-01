@@ -72,6 +72,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 // when monitoring
 @property (        nonatomic) BOOL                       monitoringP;
+@property (strong, nonatomic) NSTimer                   *ticker;
 
 // device status
 @property (strong, nonatomic) NSMutableDictionary       *entities;
@@ -108,6 +109,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationDidBecomeActive)
                                                      name:UIApplicationDidBecomeActiveNotification
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationWillResignActive)
+                                                     name:UIApplicationWillResignActiveNotification
                                                    object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(fxReachabilityStatusDidChange)
@@ -153,6 +158,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 };
 
 - (void)applicationDidBecomeActive {
+    if (self.ticker != nil) [self.ticker invalidate];
+    self.ticker = [NSTimer scheduledTimerWithTimeInterval:3.0f
+                                                   target:self
+                                                 selector:@selector(ticktock:)
+                                                 userInfo:nil
+                                                   repeats:YES];
+    [self ticktock:self.ticker];
+
     if ((self.timer != nil) || (self.service != nil)) return;
 
     NSTimeInterval seconds = (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
@@ -164,11 +177,20 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                                                   repeats:NO];
 }
 
+- (void)applicationWillResignActive {
+    if (self.ticker != nil) [self.ticker invalidate];
+    self.ticker = nil;
+}
+
 - (void)viewDidLoad {
     self.tableData = [NSMutableArray arrayWithCapacity:50];
     
     UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
     [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
+}
+
+- (void)ticktock:(NSTimer *)timer {
+    [self.tableView reloadData];
 }
 
 - (void)timeout:(NSTimer *)timer {
@@ -463,17 +485,13 @@ NSLog(@".");
             NSString *level = [entry objectForKey:@"level"];
             if (([level isEqual:@"debug"]) || ([level isEqual:@"info"])) return;
 
-
             NSString *date = [entry objectForKey:@"date"];
-            if (date != nil) {
-                date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
-            }
-
+            NSString *message = [entry objectForKey:@"message"];
             NSString *meta = ([entry objectForKey:@"meta"] == [NSNull null]) ? @"" : [entry objectForKey:@"meta"];
             NSString *data = [self valuePP:meta];
+            if ((date.length == 0) || (message.length == 0)) return;
 
-            [self pushTableDataDictionary:@{@"when": date,
-                                            @"data": data}];
+            [self pushTableDataDictionary:@{@"when": date, @"message": message, @"data": data}];
             
         }];
     }];
@@ -731,6 +749,7 @@ NSLog(@".");
     return result;
 }
 
+
 #pragma mark - Action sheets
 
 - (IBAction)rootActionSheet:(id)sender {
@@ -793,6 +812,7 @@ NSLog(@".");
     actionSheet = nil;
 }
 
+
 #pragma mark - Table view data source
 
 - (void)deleteAllTableData {
@@ -841,9 +861,12 @@ NSLog(@".");
     // Configure the cell...
     if ([self.tableData count] > 0) {
         NSDictionary *tableEntry = [self.tableData objectAtIndex:indexPath.row];
-        cell.cellTimeLabel.text = [tableEntry objectForKey: @"when"];
-        cell.cellText1Label.text = [tableEntry objectForKey: @"data"];
-        cell.cellText2Label.text = [NSString stringWithFormat:@"Text Column 3 for Row %d", indexPath.row];
+        NSString *date = [tableEntry objectForKey: @"when"];
+        if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
+
+        cell.cellTimeLabel.text = date;
+        cell.cellText1Label.text = [tableEntry objectForKey: @"message"];
+        cell.cellText2Label.text = [tableEntry objectForKey: @"data"];
     }
     
     return cell;
