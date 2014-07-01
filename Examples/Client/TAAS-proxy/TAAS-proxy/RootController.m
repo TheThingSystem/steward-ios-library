@@ -83,7 +83,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 // UI
 @property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
-@property (weak,   nonatomic) IBOutlet UITextField      *textConsole;
+@property (strong, nonatomic) NSMutableArray            *tableData;
 
 @end
 
@@ -164,6 +164,13 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                                                   repeats:NO];
 }
 
+- (void)viewDidLoad {
+    self.tableData = [NSMutableArray arrayWithCapacity:50];
+    
+    UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
+    [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
+}
+
 - (void)timeout:(NSTimer *)timer {
     self.timer = nil;
 
@@ -202,10 +209,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
          withTitle:(NSString *)title {
     DDLogVerbose(@"notifyUser: %@ - %@", title, message);
     self.statusLabel.text = message;
-
-    if (self.textConsole.text == nil) self.textConsole.text = @"";
-    NSString *format = (self.textConsole.text.length > 0) ? @"\n%@: %@":  @"%@: %@";
-    self.textConsole.text = [self.textConsole.text stringByAppendingFormat:format, title, message];
 
     UIApplication *application = [UIApplication sharedApplication];
     AppDelegate *appDelegate = (AppDelegate *) application.delegate;
@@ -460,20 +463,18 @@ NSLog(@".");
             NSString *level = [entry objectForKey:@"level"];
             if (([level isEqual:@"debug"]) || ([level isEqual:@"info"])) return;
 
-            if (self.textConsole.text == nil) self.textConsole.text = @"";
-            NSString *format = (self.textConsole.text.length > 0) ? @"\n%@: %@ %@":  @"%@: %@ %@";
 
             NSString *date = [entry objectForKey:@"date"];
             if (date != nil) {
                 date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
             }
 
-            NSString *meta = [entry objectForKey:@"meta"];
+            NSString *meta = ([entry objectForKey:@"meta"] == [NSNull null]) ? @"" : [entry objectForKey:@"meta"];
             NSString *data = [self valuePP:meta];
 
-            self.textConsole.text = [self.textConsole.text
-                                        stringByAppendingFormat:format, (date ? date : @""),
-                                        [entry objectForKey:@"message"], (data ? data : @"")];
+            [self pushTableDataDictionary:@{@"when": date,
+                                            @"data": data}];
+            
         }];
     }];
 }
@@ -728,6 +729,124 @@ NSLog(@".");
     [result appendString:@"]"];
 
     return result;
+}
+
+#pragma mark - Action sheets
+
+- (IBAction)rootActionSheet:(id)sender {
+    UIActionSheet *actionSheet = [[UIActionSheet alloc]
+                                  initWithTitle:@""
+                                  delegate:self
+                                  cancelButtonTitle:@"Cancel"
+                                  destructiveButtonTitle:@"Clear Monitor History"
+                                  otherButtonTitles:@"Scan QR Code", nil];
+    [actionSheet showFromBarButtonItem:sender animated:YES];
+    actionSheet.tag = 0;
+}
+
+- (void)confirmActionSheet:(id)sender {
+    UIActionSheet *actionSheet = [[UIActionSheet alloc]
+                                  initWithTitle:@"Are you sure?"
+                                  delegate:self
+                                  cancelButtonTitle:@"Cancel"
+                                  destructiveButtonTitle:@"Clear Monitor History"
+                                  otherButtonTitles:nil];
+    [actionSheet showInView:self.view];
+    actionSheet.tag = 1;
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    switch (actionSheet.tag) {
+        case 0:
+            // root action sheet
+            switch (buttonIndex) {
+                case 0:
+                    [self confirmActionSheet:nil];
+                    break;
+                case 1:
+                    [self scanQRcode:nil];
+                    break;
+                case 2:
+                    
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case 1:
+            // confirm deletion action sheet
+            switch (buttonIndex) {
+                case 0:
+                    [self deleteAllTableData];
+                    break;
+                case 1:
+                    
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+    
+    actionSheet = nil;
+}
+
+#pragma mark - Table view data source
+
+- (void)deleteAllTableData {
+    [self.tableData removeAllObjects];
+    [self.tableView reloadData];
+}
+
+- (void)pushTableDataDictionary:(NSDictionary *)dictionary {
+    [self.tableData insertObject:dictionary atIndex:0];
+    [self.tableView reloadData];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    CGFloat rowHeight = 20;
+    NSDictionary *tableEntry = [self.tableData objectAtIndex:indexPath.row];
+    
+    UIFont *font = [UIFont systemFontOfSize:14.0f];
+    NSDictionary *attrsDictionary = [NSDictionary dictionaryWithObject:font
+                                                                forKey:NSFontAttributeName];
+    
+    NSAttributedString *attrString1 = [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"]
+                                    attributes:attrsDictionary];
+    
+    CGFloat label1Height = [attrString1 boundingRectWithSize:CGSizeMake(225, 250) options:NSStringDrawingUsesLineFragmentOrigin  context:nil].size.height;
+    // In anticipation of third column
+//    NSAttributedString *attrString1 = [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"] attributes:attrsDictionary];
+
+    CGFloat label2Height = 0.0f; // [attrString2 boundingRectWithSize:CGSizeMake(220, 250) options:NSStringDrawingUsesLineFragmentOrigin  context:nil].size.height;
+    
+    rowHeight += fmaxf(label1Height, label2Height);
+
+    
+    return rowHeight;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    // Return the number of rows in the section.
+    return [self.tableData count];
+}
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    TableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MonitorCellReuseIdentifier forIndexPath:indexPath];
+    
+    
+    // Configure the cell...
+    if ([self.tableData count] > 0) {
+        NSDictionary *tableEntry = [self.tableData objectAtIndex:indexPath.row];
+        cell.cellTimeLabel.text = [tableEntry objectForKey: @"when"];
+        cell.cellText1Label.text = [tableEntry objectForKey: @"data"];
+        cell.cellText2Label.text = [NSString stringWithFormat:@"Text Column 3 for Row %d", indexPath.row];
+    }
+    
+    return cell;
 }
 
 @end

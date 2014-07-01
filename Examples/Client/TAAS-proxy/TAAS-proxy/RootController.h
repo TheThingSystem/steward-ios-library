@@ -9,10 +9,13 @@
 #import <UIKit/UIKit.h>
 #import "TAASClient.h"
 #import "ScanController.h"
+#import "TableViewCell.h"
 
 
-@interface RootController : UIViewController <TAASClientDelegate, ScanControllerDelegate>
+@interface RootController : UIViewController <TAASClientDelegate, ScanControllerDelegate, UITableViewDelegate, UITableViewDataSource, UIActionSheetDelegate>
 
-@property (strong, nonatomic) TAASClient         *service;
+@property (strong, nonatomic) TAASClient              *service;
+@property (strong, nonatomic) IBOutlet UITableView    *tableView;
+@property (strong, nonatomic) IBOutlet TableViewCell  *tableCell;
 
 @end

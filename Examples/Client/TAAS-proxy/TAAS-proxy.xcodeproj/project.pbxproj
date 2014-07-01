@@ -28,6 +28,8 @@
 		00820C5F1899227A00B05498 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C5E1899227A00B05498 /* CFNetwork.framework */; };
 		00820C611899228000B05498 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C601899228000B05498 /* Security.framework */; };
 		00820C631899228900B05498 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C621899228900B05498 /* libicucore.dylib */; };
+		3C1B89B3196214D500AAF455 /* TableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3C1B89B1196214D500AAF455 /* TableViewCell.xib */; };
+		3C1B89B4196214D500AAF455 /* TableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1B89B2196214D500AAF455 /* TableViewCell.m */; };
 		5F1F93D5191D7DED0026A14A /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1F93D4191D7DED0026A14A /* libxml2.dylib */; };
 		5F1F943A191D86120026A14A /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9425191D86120026A14A /* Util.m */; };
 		5F1F943B191D86120026A14A /* Client.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9426191D86120026A14A /* Client.m */; };
@@ -87,6 +89,9 @@
 		00820C5E1899227A00B05498 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		00820C601899228000B05498 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		00820C621899228900B05498 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
+		3C1B89B0196214D500AAF455 /* TableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewCell.h; sourceTree = "<group>"; };
+		3C1B89B1196214D500AAF455 /* TableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TableViewCell.xib; sourceTree = "<group>"; };
+		3C1B89B2196214D500AAF455 /* TableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewCell.m; sourceTree = "<group>"; };
 		5F1F93D4191D7DED0026A14A /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		5F1F9424191D86120026A14A /* Client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Client.h; path = ../../../../Client/Client/Client.h; sourceTree = "<group>"; };
 		5F1F9425191D86120026A14A /* Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Util.m; path = ../../../../Client/Client/Util.m; sourceTree = "<group>"; };
@@ -214,6 +219,8 @@
 				0082097918991D8400B05498 /* AppDelegate.m */,
 				0082099818991DD600B05498 /* RootController.h */,
 				0082099918991DD600B05498 /* RootController.m */,
+				3C1B89B0196214D500AAF455 /* TableViewCell.h */,
+				3C1B89B2196214D500AAF455 /* TableViewCell.m */,
 				008209A318991F6600B05498 /* ScanController.h */,
 				008209A418991F6600B05498 /* ScanController.m */,
 				5F5D507119400C19002FD93B /* TAASClient.h */,
@@ -333,6 +340,7 @@
 				0082097118991D8400B05498 /* TAAS-proxy-Info.plist */,
 				0082097218991D8400B05498 /* InfoPlist.strings */,
 				0082099A18991DD600B05498 /* RootController.xib */,
+				3C1B89B1196214D500AAF455 /* TableViewCell.xib */,
 				008209A518991F6600B05498 /* ScanController.xib */,
 				5F1F9489191D974B0026A14A /* Web */,
 			);
@@ -422,6 +430,7 @@
 				008209A718991F6600B05498 /* ScanController.xib in Resources */,
 				0082097418991D8400B05498 /* InfoPlist.strings in Resources */,
 				5F1F947A191D898E0026A14A /* README.md in Resources */,
+				3C1B89B3196214D500AAF455 /* TableViewCell.xib in Resources */,
 				0082099C18991DD600B05498 /* RootController.xib in Resources */,
 				0082097C18991D8500B05498 /* Images.xcassets in Resources */,
 			);
@@ -495,6 +504,7 @@
 				5F1F9470191D897C0026A14A /* HOTPGenerator.m in Sources */,
 				5F1F9492191D9F7D0026A14A /* TAASWebSocket.m in Sources */,
 				5F1F947C191D898E0026A14A /* base64.c in Sources */,
+				3C1B89B4196214D500AAF455 /* TableViewCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
