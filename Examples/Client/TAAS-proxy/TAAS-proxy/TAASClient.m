@@ -7,6 +7,7 @@
 //
 
 #import "TAASClient.h"
+#import "AppDelegate.h"
 #import "DDLog.h"
 
 
@@ -71,11 +72,17 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
         self.steward.ipAddress = [[self.parameters objectForKey:kIpAddresses] objectAtIndex:0];
         self.portno = [self.parameters objectForKey:kPort];
-
         self.monitorP = NO;
-        self.monitor = [[Monitor alloc] initWithAddress:self.steward.ipAddress
-                                                andPort:[self.portno unsignedShortValue]
-                                         andServiceType:NSURLNetworkServiceTypeVoIP];
+
+        NSString *URI = [NSString stringWithFormat:@"wss://%@:%hu/console", self.steward.ipAddress,
+                                  [self.portno unsignedShortValue]];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:URI]];
+        [request setNetworkServiceType:NSURLNetworkServiceTypeVoIP];
+        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        if (appDelegate.pinnedCertValidator != nil) {
+            request.SR_SSLPinnedCertificates = appDelegate.pinnedCertValidator.trustedCertificates;
+        }
+        self.monitor = [[Monitor alloc] initWithURLRequest:request];
         self.monitor.delegate = self;
     }
     return self;
@@ -130,9 +137,15 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)listDevices {
     if (self.manager == nil) {
         self.managerP = NO;
-        self.manager = [[Devices alloc] initWithAddress:self.steward.ipAddress
-                                                andPort:[self.portno unsignedShortValue]
-                                            andOneShotP:NO];
+
+        NSString *URI = [NSString stringWithFormat:@"wss://%@:%hu/manage", self.steward.ipAddress,
+                                  [self.portno unsignedShortValue]];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:URI]];
+        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        if (appDelegate.pinnedCertValidator != nil) {
+            request.SR_SSLPinnedCertificates = appDelegate.pinnedCertValidator.trustedCertificates;
+        }
+        self.manager = [[Devices alloc] initWithURLRequest:request andOneShotP:NO];
         self.manager.delegate = self;
     }
     [self.manager listAllDevices];
@@ -175,7 +188,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         NSString *value = [[NSString alloc] initWithData:[txt objectForKey:key]
                                                 encoding:NSUTF8StringEncoding];
         if (value == nil) {
-            DDLogError(@"%s: invalid encoding for TXT %@", __FUNCTION__, key);
+            DDLogError(@"invalid encoding for TXT %@", key);
             continue;
         }
         [utf8 setObject:value forKey:key];

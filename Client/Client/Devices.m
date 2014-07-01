@@ -11,13 +11,19 @@
 @implementation Devices
 
 - (id)initWithAddress:(NSString *)ipAddress {
-  return [self initWithAddress:ipAddress andPort:8888 andOneShotP:YES];
+    return [self initWithAddress:ipAddress andPort:8888];
 }
 
-- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port andOneShotP:(BOOL)oneShotP {
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port {
+  NSString *URI = [NSString stringWithFormat:@"wss://%@:%ld/manage", ipAddress, port];
+
+  return [self initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:URI]]
+		      andOneShotP:YES];
+}
+
+- (id)initWithURLRequest:(NSURLRequest *)request andOneShotP:(BOOL)oneShotP {
     if( (self = [super init]) ) {
-        NSString *request = [NSString stringWithFormat:@"wss://%@:%ld/manage", ipAddress, port];
-        self.webSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:request]]];
+        self.webSocket = [[SRWebSocket alloc] initWithURLRequest:request];
         self.webSocket.delegate = self;
         self.oneShotP = oneShotP;
         self.opened = NO;

@@ -13,16 +13,18 @@
 
 
 - (id)initWithAddress:(NSString *)ipAddress {
-  return [self initWithAddress:ipAddress andPort:8888 andServiceType:NSURLNetworkServiceTypeDefault];
+  return [self initWithAddress:ipAddress andPort:8888];
 }
 
-- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port andServiceType:(NSURLRequestNetworkServiceType)serviceType {
+- (id)initWithAddress:(NSString *)ipAddress andPort:(long)port {
+  NSString *URI = [NSString stringWithFormat:@"wss://%@:%ld/console", ipAddress, port];
+
+  return [self initWithURLRequest:[NSURL URLWithString:URI]];
+}
+
+- (id)initWithURLRequest:(NSURLRequest *)request {
     if( (self = [super init]) ) {
-      NSString *request = [NSString stringWithFormat:@"wss://%@:%ld/console", ipAddress, port];
-        NSLog(@"Address is %@", request);
-        NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:request]];
-        [urlRequest setNetworkServiceType:serviceType];
-        self.webSocket = [[SRWebSocket alloc] initWithURLRequest:urlRequest];
+        self.webSocket = [[SRWebSocket alloc] initWithURLRequest:request];
         self.webSocket.delegate = self;
     }
     return self;

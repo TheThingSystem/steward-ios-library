@@ -20,7 +20,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface TAASWebSocket ()
 
-@property (strong, nonatomic) NSURLRequest              *resource;
+@property (strong, nonatomic) NSMutableURLRequest       *resource;
 @property (strong, nonatomic) SRWebSocket               *downstream;
 @property (        nonatomic) BOOL                       authenticate;
 @property (        nonatomic) BOOL                       opened;
@@ -35,7 +35,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             andSocket:(GCDAsyncSocket *)socket
           forResource:(NSURLRequest *)resource {
   if ((self = [super initWithRequest:message socket:socket]) != nil) {
-    self.resource = resource;
+    self.resource = [resource mutableCopy];
+
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if (appDelegate.pinnedCertValidator != nil) {
+        self.resource.SR_SSLPinnedCertificates = appDelegate.pinnedCertValidator.trustedCertificates;
+    }
   }
 
   return self;

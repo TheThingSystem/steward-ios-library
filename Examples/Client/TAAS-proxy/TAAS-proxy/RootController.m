@@ -21,14 +21,12 @@
 #define kAllStewards  @"_allStewards"
 #define kLastSteward  @"_lastSteward"
 
-#define kAttention    @"Attention"
-#define kError        @"Error"
-
 #define kWhoAmI       @"whoami"
 #define kWhatAmI      @"whatami"
 
 #define kBonjourDelay  3.0f
 #define kNetworkDelay  1.0f
+
 
 // Log levels: off, error, warn, info, verbose
 // Other flags: trace
@@ -236,7 +234,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     }
     if (issuer != nil) return [self rendezvous:issuer withAuthURL:authURL];
 
-NSLog(@"connectToSteward: info=%@", info);
     NSString *address = [[info objectForKey:kIpAddresses] objectAtIndex:0];
 
     self.service = [[TAASClient alloc] initWithParameters:info];
@@ -315,10 +312,15 @@ NSLog(@"connectToSteward: info=%@", info);
 
 -                        (void)connection:(NSURLConnection *)connection
 willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if (appDelegate.pinnedCertValidator != nil) {
+        [appDelegate.pinnedCertValidator validateChallenge:challenge];
+        return;
+    }
+
     [challenge.sender
                  useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]
     forAuthenticationChallenge:challenge];
-// TODO: use pinned cert files
 }
 
 - (NSURLRequest *)connection:(NSURLConnection *)connection
@@ -346,13 +348,12 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
     return nil;
 }
 
-
 - (void)connection:(NSURLConnection *)theConnection
 didReceiveResponse:(NSURLResponse *)response {
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
 
     if ([httpResponse statusCode] != 307) {
-        DDLogError(@"%s: statusCode=%ld, expecting 307", __FUNCTION__, (long)[httpResponse statusCode]);
+        DDLogError(@"statusCode=%ld, expecting 307", (long)[httpResponse statusCode]);
         [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", self.taasIssuer]
                withTitle:kError];
         [self resetSteward:false];
@@ -367,7 +368,7 @@ didReceiveResponse:(NSURLResponse *)response {
 
 - (void)connection:(NSURLConnection *)theConnection
   didFailWithError:(NSError *)error {
-    DDLogError(@"%s: %@: %@", __FUNCTION__, self.taasIssuer, error);
+    DDLogError(@"%@: %@", self.taasIssuer, error);
     [self notifyUser:[NSString stringWithFormat:@"failed to connect to %@", self.taasIssuer]
                                       withTitle:kError];
     [self resetSteward:false];
@@ -600,7 +601,7 @@ NSLog(@".");
       if (strerror_r(errcode, strerrbuf, sizeof strerrbuf - 1) != 0) {
           snprintf(strerrbuf, sizeof strerrbuf, "errno=%d", errcode);
       }
-      DDLogError(@"%s: getifaddrs failed: %@", __FUNCTION__, [NSString stringWithUTF8String:strerrbuf]);
+      DDLogError(@"getifaddrs failed: %@", [NSString stringWithUTF8String:strerrbuf]);
     } else {
         int count;
         struct ifaddrs *ifa;

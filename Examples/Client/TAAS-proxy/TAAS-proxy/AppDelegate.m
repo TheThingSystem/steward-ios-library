@@ -11,6 +11,7 @@
 #import "HTTPServer.h"
 #import "TAASConnection.h"
 #import "DDLog.h"
+#import "DDFileLogger.h"
 #import "DDTTYLogger.h"
 
 
@@ -21,34 +22,143 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 @interface AppDelegate ()
 
+@property (        nonatomic) BOOL                       launchedP;
 @property (        nonatomic) UIBackgroundTaskIdentifier backgroundTaskID;
 @property (        nonatomic) UIBackgroundTaskIdentifier notifyTaskID;
 @property (strong, nonatomic) HTTPServer                *httpServer;
 @property (strong, nonatomic) AVAudioSession            *audioSession;
 @property (strong, nonatomic) NSMutableArray            *lastNotifications;
+@property (strong, nonatomic) CLLocationManager         *locationManager;
 
 @end
 
 
 @implementation AppDelegate
 
+#define kDocumentCerts   @"Certs"
+#define kDocumentLogs    @"Logs"
 #define kDocumentRoot    @"Web"
 
 
 -           (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    NSError *error;
+
+    if (self.launchedP) {
+        [self reportLaunch:application withOptions:launchOptions];
+
+        // should NEVER happen, as we are always running (voip)
+        if ([launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey] != nil) return YES;
+
+        if ([launchOptions objectForKey:UIApplicationLaunchOptionsLocationKey] == nil) return YES;
+
+        self.locationManager = [[CLLocationManager alloc] init];
+        self.locationManager.delegate = self;
+        [self.locationManager startMonitoringSignificantLocationChanges];
+        return YES;
+    }
+
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
-    int state = (int) application.applicationState;
-    NSArray *choices = @[@"active", @"inactive", @"background"];
-    DDLogVerbose(@"didFinishLaunchingWithOptions: %@ options=%@",
-                 (0 <= state) && (state < choices.count)
-                     ? [choices objectAtIndex:state]
-                     : [NSString stringWithFormat:@"%d (unknown state)", state],
-                   launchOptions);
+    NSString *documentLogs = nil;
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    if ([paths count] > 0) {
+        documentLogs = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentLogs];
+    }
+    DDLogVerbose(@"Logs %@", documentLogs);
+    if ((documentLogs != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:documentLogs])) {
+        if (![[NSFileManager defaultManager]
+                   createDirectoryAtPath:documentLogs
+             withIntermediateDirectories:YES
+                              attributes:nil
+                                   error:&error]) {
+          DDLogError(@"create %@: %@", documentLogs, error);
+          documentLogs = nil;
+        }
+    }
+    if (documentLogs != nil) {
+        DDLogFileManagerDefault *logFileManager = [[DDLogFileManagerDefault alloc]
+                                                        initWithLogsDirectory:documentLogs];
+        [DDLog addLogger:[[DDFileLogger alloc] initWithLogFileManager:logFileManager]];
+    }
 
-    // should NEVER happen, as we are always running (voip)
-    if ([launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey] != nil) return YES;
+    NSString *documentRoot = nil;
+    if ([paths count] > 0) {
+        documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentRoot];
+    }
+    DDLogVerbose(@"Root %@", documentRoot);
+    if ((documentRoot != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:documentRoot])) {
+        NSString *src = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:kDocumentRoot];
+        error = nil;
+        if (![[NSFileManager defaultManager]
+                   copyItemAtPath:src
+                           toPath:documentRoot
+                            error:&error]) {
+            DDLogError(@"copy %@ to %@: %@", documentRoot, src, error);
+        }
+    }
+
+    NSString *documentCerts = nil;
+    documentCerts = nil;
+    self.pinnedCertValidator = nil;
+    if ([paths count] > 0) {
+        documentCerts = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentCerts];
+    }
+    DDLogVerbose(@"Certs %@", documentCerts);
+    if ((documentCerts != nil)
+            && (![[NSFileManager defaultManager] fileExistsAtPath:documentCerts])) {
+        error = nil;
+        if (![[NSFileManager defaultManager]
+                   createDirectoryAtPath:documentCerts
+             withIntermediateDirectories:YES
+                              attributes:nil
+                                   error:&error]) {
+          DDLogError(@"create %@: %@", documentCerts, error);
+          documentCerts = nil;
+        }
+    }
+    if (documentCerts != nil) {
+        error = nil;
+        NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:documentCerts
+                                                                             error:&error];
+        NSMutableArray *trustedCertificates = [NSMutableArray array];
+        if (files != nil) {
+            [files enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
+                NSError *error = nil;
+
+                NSString *path = [documentCerts stringByAppendingPathComponent:name];
+                BOOL isDir = NO;
+                if ((![[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir])
+                        || (isDir)) return;
+
+// openssl x509 -outform der -in certificate.crt -out certificate.cer
+                NSRange range = [name rangeOfString:@".cer"
+                                            options:(NSBackwardsSearch | NSAnchoredSearch)];
+                if (range.location == NSNotFound) return;
+
+                NSData *data = [NSData dataWithContentsOfFile:path
+                                                      options:0
+                                                        error:&error];
+                if (data == nil) {
+                    DDLogError(@"read %@: %@", path, error);
+                    return;
+                }
+                SecCertificateRef certificate =
+                    SecCertificateCreateWithData(NULL, (__bridge CFDataRef)(data));
+                [trustedCertificates addObject:CFBridgingRelease(certificate)];
+                DDLogVerbose(@"pin %@", name);
+            }];
+            if (trustedCertificates.count > 0) {
+                self.pinnedCertValidator = [[RNPinnedCertValidator alloc] init];
+                self.pinnedCertValidator.trustedCertificates = trustedCertificates;
+            }
+        } else {
+          DDLogError(@"list %@: %@", documentCerts, error);
+          documentCerts = nil;
+        }
+    }
+
+    [self reportLaunch:application withOptions:launchOptions];
 
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.rootController = [[RootController alloc] initWithNibName:@"RootController" bundle:nil];
@@ -58,31 +168,11 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     self.httpServer = [[HTTPServer alloc] init];
     [self.httpServer setConnectionClass:[TAASConnection class]];
     [self.httpServer setPort:8884];
+    if (documentRoot != nil) [self.httpServer setDocumentRoot:documentRoot];
 
-    NSString *documentRoot;
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    if ([paths count] > 0) documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentRoot];
-    DDLogVerbose(@"Document Root %@", documentRoot);
-    if (documentRoot != nil) {
-        if (![[NSFileManager defaultManager] fileExistsAtPath:documentRoot]) {
-            NSError *error = nil;
-            if (![[NSFileManager defaultManager]
-                       copyItemAtPath:[[[NSBundle mainBundle] bundlePath]
-                                             stringByAppendingPathComponent:kDocumentRoot]
-                               toPath:documentRoot
-                                error:&error]) {
-              DDLogVerbose(@"created %@", documentRoot);
-            } else {
-              DDLogError(@"%s: %@", __FUNCTION__, error);
-            }
-        }
-
-        [self.httpServer setDocumentRoot:documentRoot];
-    }
-
-    NSError *error = nil;
+    error = nil;
     if (![self.httpServer start:&error]) {
-        DDLogError(@"%s: error starting HTTP Server: %@", __FUNCTION__, error);
+        DDLogError(@"error starting HTTP Server: %@", error);
         self.httpServer = nil;
     }
 
@@ -90,11 +180,11 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     error = nil;
     [self.audioSession setCategory:AVAudioSessionCategoryPlayback error:&error];
     if (error != nil) {
-      DDLogError(@"%s: error setting audio session category to playback: %@", __FUNCTION__, error);
+      DDLogError(@"error setting audio session category to playback: %@", error);
     } else {
       [self.audioSession setActive:YES error:&error];
       if (error) {
-        DDLogError(@"%s: error setting audio session active: %@", __FUNCTION__, error);
+        DDLogError(@"error setting audio session active: %@", error);
       }
     }
 
@@ -105,23 +195,33 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if ([device respondsToSelector:@selector(isMultitaskingSupported)]) {
       backgroundSupported = device.multitaskingSupported;
     }
-    if (!backgroundSupported) DDLogError(@"%s: background processing not supported", __FUNCTION__);
+    if (!backgroundSupported) DDLogError(@"background processing not supported");
     self.backgroundTaskID = UIBackgroundTaskInvalid;
     self.notifyTaskID = UIBackgroundTaskInvalid;
 
+    if ([CLLocationManager significantLocationChangeMonitoringAvailable]) {
+        self.locationManager = [[CLLocationManager alloc] init];
+        self.locationManager.delegate = self;
+        [self.locationManager startMonitoringSignificantLocationChanges];
+    } else {
+        DDLogError(@"signfication location monitoring not supported");
+    }
+
     [self.window makeKeyAndVisible];
+
+    self.launchedP = YES;
     return YES;
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    int status = (int) application.backgroundRefreshStatus;
-    NSArray *choices = @[@"restricted", @"denied", @"available"];
-
-    DDLogVerbose(@"applicationDidEnterBackground: %@",
-                 (0 <= status) && (status < choices.count)
-                     ? [choices objectAtIndex:status]
-                     : [NSString stringWithFormat:@"%d (unknown status)", status]);
-    [self keepAlive:application onoff:YES];
+- (void)reportLaunch:(UIApplication *)application
+         withOptions:(NSDictionary *)launchOptions {
+    int state = (int) application.applicationState;
+    NSArray *choices = @[@"active", @"inactive", @"background"];
+    DDLogVerbose(@"didFinishLaunchingWithOptions: %@ options=%@",
+                 (0 <= state) && (state < choices.count)
+                     ? [choices objectAtIndex:state]
+                     : [NSString stringWithFormat:@"%d (unknown state)", state],
+                   launchOptions);
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -142,10 +242,23 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     application.applicationIconBadgeNumber = 0;
 }
 
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    int status = (int) application.backgroundRefreshStatus;
+    NSArray *choices = @[@"restricted", @"denied", @"available"];
+
+    DDLogVerbose(@"applicationDidEnterBackground: %@",
+                 (0 <= status) && (status < choices.count)
+                     ? [choices objectAtIndex:status]
+                     : [NSString stringWithFormat:@"%d (unknown status)", status]);
+    [self keepAlive:application onoff:YES];
+}
+
 - (void)applicationWillTerminate:(UIApplication *)application {
     DDLogVerbose(@"applicationWillTerminate");
 
     if (self.httpServer != nil) [self.httpServer stop:NO];
+
+    [self backgroundNotify:@"Terminated. Tap to restart." andTitle:kAttention];
 }
 
 -         (void)application:(UIApplication *)application
@@ -174,7 +287,7 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
         [self keepAlive:application onoff:YES];
     }];
     if (self.backgroundTaskID == UIBackgroundTaskInvalid) {
-        DDLogError(@"%s: unable to create background task", __FUNCTION__);
+        DDLogError(@"unable to create background task");
         return;
     }
 
@@ -222,6 +335,19 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
         [application endBackgroundTask:self.notifyTaskID];
         self.notifyTaskID = UIBackgroundTaskInvalid;
     });
+}
+
+
+#pragma mark - CLLocationManagerDelegate methods
+
+- (void)locationManager:(CLLocationManager *)manager
+     didUpdateLocations:(NSArray *)locations {
+    DDLogVerbose(@"locations: %@", locations);
+}
+
+- (void)locationManager:(CLLocationManager *)manager
+       didFailWithError:(NSError *)error {
+    DDLogError(@"location manager error: %@", error);
 }
 
 @end

@@ -121,7 +121,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
       text = [NSString stringWithUTF8String:[self.body bytes]];
     }
     HTTPLogVerbose(@"text to speech: %@", text);
-    AppDelegate *appDelegate = [[UIApplication sharedApplication] delegate];
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     AVSpeechUtterance *speechUtterance = [AVSpeechUtterance speechUtteranceWithString:text];
     // based on observation
     speechUtterance.rate = 0.30;
@@ -205,10 +205,15 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
 -                        (void)connection:(NSURLConnection *)connection
 willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if (appDelegate.pinnedCertValidator != nil) {
+        [appDelegate.pinnedCertValidator validateChallenge:challenge];
+        return;
+    }
+
     [challenge.sender
                  useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]
     forAuthenticationChallenge:challenge];
-// TODO: use pinned cert files
 }
 
 - (void)connection:(NSURLConnection *)theConnection

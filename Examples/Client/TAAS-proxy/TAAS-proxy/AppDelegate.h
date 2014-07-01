@@ -7,17 +7,24 @@
 //
 
 #import <AVFoundation/AVFoundation.h>
+#import <CoreLocation/CoreLocation.h>
 #import <UIKit/UIKit.h>
+#import "RNPinnedCertValidator.h"
 #import "RootController.h"
 
 @class HTTPServer;
 
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
+
+#define kAttention    @"Attention"
+#define kError        @"Error"
+
 
 @property (strong, nonatomic) UIWindow                  *window;
 @property (strong, nonatomic) RootController            *rootController;
 @property (strong, nonatomic) AVSpeechSynthesizer       *speechSynthesizer;
+@property (strong, nonatomic) RNPinnedCertValidator     *pinnedCertValidator;
 
 
 - (void)backgroundNotify:(NSString *)message

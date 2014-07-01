@@ -44,7 +44,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
           return [[HTTPFileResponse alloc] initWithFilePath:filePath forConnection:self];
         }
 
-        DDLogError(@"%s: filePath is a directory: %@", __FUNCTION__, filePath);
+        DDLogError(@"filePath is a directory: %@", filePath);
         return [[TAASErrorResponse alloc] initWithStatusCode:403
                                                      andBody:[self dataForBody:@"403 Forbidden"]];
       }
