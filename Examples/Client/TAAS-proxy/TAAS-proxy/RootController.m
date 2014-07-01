@@ -49,7 +49,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if (seconds <= -60) {
         return [MHPrettyDate prettyDateFromDate:date withFormat:MHPrettyDateShortRelativeTime];
     }
-    if (seconds ==   0) return @"now";
+    if (seconds ==  0) return @"now";
     return [NSString stringWithFormat:@"%ld%@", (long)-seconds,
                      NSLocalizedStringFromTable(@"s", @"MHPrettyDate", nil)];
 }
@@ -96,11 +96,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         DDLogVerbose(@"Client Library v%@", [Client version]);
 
         self.fxReachabilityStatus = FXReachabilityStatusUnknown;
-        self.timer =  [NSTimer scheduledTimerWithTimeInterval:kBonjourDelay
-                                                       target:self
-                                                     selector:@selector(timeout:)
-                                                     userInfo:nil
-                                                      repeats:NO];
+        [self setTimer];
 
         TAASClient *sharedClient = [TAASClient sharedClient];
         sharedClient.delegate = self;
@@ -166,15 +162,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                                                    repeats:YES];
     [self ticktock:self.ticker];
 
-    if ((self.timer != nil) || (self.service != nil)) return;
-
-    NSTimeInterval seconds = (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
-                                  ? kBonjourDelay : kNetworkDelay;
-    self.timer =  [NSTimer scheduledTimerWithTimeInterval:seconds
-                                                   target:self
-                                                 selector:@selector(timeout:)
-                                                 userInfo:nil
-                                                  repeats:NO];
+    if ((self.timer == nil) && (self.service == nil)) [self setTimer];
 }
 
 - (void)applicationWillResignActive {
@@ -184,9 +172,11 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (void)viewDidLoad {
     self.tableData = [NSMutableArray arrayWithCapacity:50];
-    
+
     UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
     [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
+
+    [self notifyUser:@"scanning network" withTitle:@"Discovered"];
 }
 
 - (void)ticktock:(NSTimer *)timer {
@@ -453,13 +443,16 @@ NSLog(@".");
         }
 
         self.monitoringP = YES;
-        self.statusLabel.text = @"Connected";
+        [self deleteAllTableData];
+        self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName, @"connected"];
         [self.service listDevices];
 
         NSDictionary *result = [dictionary objectForKey:@"result"];
         if (result != nil) {
             NSDictionary *client = [dictionary objectForKey:@"client"];
-            if (client != nil) self.statusLabel.text = @"Authenticated";
+            if (client != nil) {
+                self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName, @"authenticated"];
+            }
             return;
         }
     }
@@ -492,7 +485,6 @@ NSLog(@".");
             if ((date.length == 0) || (message.length == 0)) return;
 
             [self pushTableDataDictionary:@{@"when": date, @"message": message, @"data": data}];
-            
         }];
     }];
 }
@@ -544,6 +536,7 @@ NSLog(@".");
     [self resetSteward:false];
 
     [self notifyUser:@"monitoring terminated" withTitle:kError];
+    if (self.monitoringP) [self setTimer];
 }
 
 
@@ -675,13 +668,7 @@ NSLog(@".");
         return;
     }
 
-    NSTimeInterval seconds = (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
-                                  ? kBonjourDelay : kNetworkDelay;
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:seconds
-                                                  target:self
-                                                selector:@selector(timeout:)
-                                                userInfo:info
-                                                 repeats:NO];
+    [self setTimer];
 
     if (self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN) {
         [[TAASClient sharedClient] findService];
@@ -691,6 +678,18 @@ NSLog(@".");
 
 
 #pragma mark - miscellany
+
+- (void)setTimer {
+    if (self.timer != nil) [self.timer invalidate];
+
+    NSTimeInterval seconds = (self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN)
+                                  ? kBonjourDelay : kNetworkDelay;
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:seconds
+                                                  target:self
+                                                selector:@selector(timeout:)
+                                                userInfo:nil
+                                                 repeats:NO];
+}
 
 - (NSString *)hostName:(NSDictionary *)info {
     NSString *name = [info objectForKey:kHostName];
@@ -786,7 +785,6 @@ NSLog(@".");
                     [self scanQRcode:nil];
                     break;
                 case 2:
-                    
                     break;
                 default:
                     break;
@@ -799,7 +797,6 @@ NSLog(@".");
                     [self deleteAllTableData];
                     break;
                 case 1:
-                    
                     break;
                 default:
                     break;
@@ -808,7 +805,7 @@ NSLog(@".");
         default:
             break;
     }
-    
+
     actionSheet = nil;
 }
 
@@ -828,23 +825,22 @@ NSLog(@".");
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     CGFloat rowHeight = 20;
     NSDictionary *tableEntry = [self.tableData objectAtIndex:indexPath.row];
-    
+
     UIFont *font = [UIFont systemFontOfSize:14.0f];
     NSDictionary *attrsDictionary = [NSDictionary dictionaryWithObject:font
                                                                 forKey:NSFontAttributeName];
-    
+
     NSAttributedString *attrString1 = [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"]
                                     attributes:attrsDictionary];
-    
+
     CGFloat label1Height = [attrString1 boundingRectWithSize:CGSizeMake(225, 250) options:NSStringDrawingUsesLineFragmentOrigin  context:nil].size.height;
     // In anticipation of third column
 //    NSAttributedString *attrString1 = [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"] attributes:attrsDictionary];
 
     CGFloat label2Height = 0.0f; // [attrString2 boundingRectWithSize:CGSizeMake(220, 250) options:NSStringDrawingUsesLineFragmentOrigin  context:nil].size.height;
-    
+
     rowHeight += fmaxf(label1Height, label2Height);
 
-    
     return rowHeight;
 }
 
@@ -856,8 +852,7 @@ NSLog(@".");
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     TableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MonitorCellReuseIdentifier forIndexPath:indexPath];
-    
-    
+
     // Configure the cell...
     if ([self.tableData count] > 0) {
         NSDictionary *tableEntry = [self.tableData objectAtIndex:indexPath.row];
@@ -868,7 +863,7 @@ NSLog(@".");
         cell.cellText1Label.text = [tableEntry objectForKey: @"message"];
         cell.cellText2Label.text = [tableEntry objectForKey: @"data"];
     }
-    
+
     return cell;
 }
 

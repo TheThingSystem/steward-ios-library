@@ -258,7 +258,20 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     if (self.httpServer != nil) [self.httpServer stop:NO];
 
-    [self backgroundNotify:@"Terminated. Tap to restart." andTitle:kAttention];
+    if (self.notifyTaskID != UIBackgroundTaskInvalid) {
+        [application endBackgroundTask:self.notifyTaskID];
+        self.notifyTaskID = UIBackgroundTaskInvalid;
+    }
+
+// must do immediately, not put on the main queue...
+    UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+    if (localNotification == nil) return;
+
+    localNotification.alertBody = @"Terminated. Tap to restart.";
+    localNotification.alertAction = kAttention;
+    localNotification.soundName = UILocalNotificationDefaultSoundName;
+    localNotification.applicationIconBadgeNumber = 1;
+    [application presentLocalNotificationNow:localNotification];
 }
 
 -         (void)application:(UIApplication *)application
@@ -299,6 +312,8 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
 
 - (void)backgroundNotify:(NSString *)message
                 andTitle:(NSString *)title {
+    DDLogVerbose(@"backgroundNotify: %@ - %@ working=%@", title, message,
+                 (self.notifyTaskID != UIBackgroundTaskInvalid) ? @"YES" : @"NO");
     if (self.notifyTaskID != UIBackgroundTaskInvalid) return;
 
     // suppress duplicate runs of notifications (they often travel in pairs!)
@@ -311,7 +326,6 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
     if (containsP) return;
 
     UIApplication *application = [UIApplication sharedApplication];
-
     self.notifyTaskID = [application beginBackgroundTaskWithExpirationHandler: ^{
         dispatch_async(dispatch_get_main_queue(), ^{
             [application endBackgroundTask:self.notifyTaskID];
