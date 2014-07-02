@@ -73,6 +73,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 // when monitoring
 @property (        nonatomic) BOOL                       monitoringP;
 @property (strong, nonatomic) NSTimer                   *ticker;
+@property (strong, nonatomic) NSArray                   *permissions;
 
 // device status
 @property (strong, nonatomic) NSMutableDictionary       *entities;
@@ -263,6 +264,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     self.service.authenticate = authURL != nil;
     self.service.delegate = self;
     self.monitoringP = NO;
+    self.permissions = nil;
     [self.service startMonitoring];
 
     [self notifyUser:[NSString stringWithFormat:@"steward at %@", address] withTitle:kConnecting];
@@ -363,6 +365,7 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
     self.service.authenticate = YES;
     self.service.delegate = self;
     self.monitoringP = NO;
+    self.permissions = nil;
     [self.service startMonitoring];
 
     NSString *name = taasIssuer;
@@ -469,6 +472,11 @@ NSLog(@".");
     if ((dictionary == nil) && ([dictionary objectForKey:@"notice"] != nil)) return;
 
     [dictionary enumerateKeysAndObjectsUsingBlock:^(id category, id values, BOOL *stop) {
+        if (([category isEqual:@"notice"]) && ([values isKindOfClass:[NSDictionary class]])) {
+            self.permissions = [values objectForKey:@"permissions"];
+            DDLogInfo(@"permissions: %@", self.permissions);
+            return;
+        }
         if (([category isEqual:@"notice"]) || (![values isKindOfClass:[NSArray class]])) return;
 
         if ([category isEqual:@".updates"]) {
@@ -495,7 +503,7 @@ NSLog(@".");
             if ((date.length == 0) || (message.length == 0)) return;
 
 // TODO: more message simplification here...
-	    if ([data isEqual:@"[Circular]"]) return;
+            if ([data isEqual:@"[Circular]"]) return;
 
             [self pushTableDataDictionary:@{@"when": date, @"message": message, @"data": data}];
         }];

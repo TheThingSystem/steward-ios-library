@@ -17,15 +17,14 @@
 - (id)initWithAddress:(NSString *)ipAddress andPort:(long)port {
   NSString *URI = [NSString stringWithFormat:@"wss://%@:%ld/manage", ipAddress, port];
 
-  return [self initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:URI]]
-		      andOneShotP:YES];
+  return [self initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:URI]]];
 }
 
-- (id)initWithURLRequest:(NSURLRequest *)request andOneShotP:(BOOL)oneShotP {
+- (id)initWithURLRequest:(NSURLRequest *)request {
     if( (self = [super init]) ) {
         self.webSocket = [[SRWebSocket alloc] initWithURLRequest:request];
         self.webSocket.delegate = self;
-        self.oneShotP = oneShotP;
+        self.oneShotP = YES;
         self.opened = NO;
     }
     return self;

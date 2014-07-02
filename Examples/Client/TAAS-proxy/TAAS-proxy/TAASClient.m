@@ -145,8 +145,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         if (appDelegate.pinnedCertValidator != nil) {
             request.SR_SSLPinnedCertificates = appDelegate.pinnedCertValidator.trustedCertificates;
         }
-        self.manager = [[Devices alloc] initWithURLRequest:request andOneShotP:NO];
+        self.manager = [[Devices alloc] initWithURLRequest:request];
         self.manager.delegate = self;
+        self.manager.oneShotP = NO;
     }
     [self.manager listAllDevices];
 }

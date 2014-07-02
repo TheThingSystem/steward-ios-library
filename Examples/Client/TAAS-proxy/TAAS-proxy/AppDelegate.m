@@ -166,6 +166,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     self.httpServer = [[HTTPServer alloc] init];
     [self.httpServer setConnectionClass:[TAASConnection class]];
+    [self.httpServer setInterface:@"lo0"];
     [self.httpServer setPort:8884];
     if (documentRoot != nil) [self.httpServer setDocumentRoot:documentRoot];
 

@@ -6,9 +6,9 @@ function FindProxyForURL(url, host)
     if (!dnsDomainIs(host, ".google.com")) return "DIRECT";
 
     url = url.toLowerCase();
-    plexes = [ 'plex', 'blacks', 'plaques', 'plexes' ];
-    for (i = 0; i < plexes.length; i++) if (url.indexOf(plexes[i]) >= 0) break;
-    if ((i >= plexes.length) || (url.indexOf('search?q=') < 0) || (url.indexOf('&plexignore=true') >= 0)) return "DIRECT";
+    trigger = [ 'steward', 'trigger' ];
+    for (i = 0; i < trigger.length; i++) if (url.indexOf(trigger[i]) >= 0) break;
+    if ((i >= trigger.length) || (url.indexOf('search?q=') < 0) || (url.indexOf('&plexignore=true') >= 0)) return "DIRECT";
 
     return 'PROXY 127.0.0.1:8884';
 }

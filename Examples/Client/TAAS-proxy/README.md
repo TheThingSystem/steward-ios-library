@@ -105,3 +105,5 @@ Acknowledgements
 Many thanks to the folks at [CocoaPods](http://cocoapods.org) for their fine package management system.
 
 A special thanks to Robbie Hanson for his excellent [CocoaHTTPServer](https://github.com/robbiehanson/CocoaHTTPServer) library.
+
+A super thanks to [Nick Lockwood](https://github.com/nicklockwood) for his many excellent packages.
