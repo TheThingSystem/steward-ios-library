@@ -107,20 +107,22 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
     NSString *text = nil;
     const char *bytes = (const char *)[self.body bytes];
     if ((self.body.length > 3) && (bytes[0] == '{')) {
-      NSError *error = nil;
-      NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:self.body
-                                                                 options:kNilOptions
-                                                                   error:&error];
-      NSDictionary *oops;
-      if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
-        text = [oops objectForKey:@"diagnostic"];
-      }
+        NSError *error = nil;
+        NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:self.body
+                                                                   options:kNilOptions
+                                                                     error:&error];
+        NSDictionary *oops;
+        if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
+            text = [oops objectForKey:@"diagnostic"];
+        }
     }
     if (text == nil) {
-      if ([self.behavior isEqualToString:@"perform"]) return YES;
-      text = [NSString stringWithUTF8String:[self.body bytes]];
+        if ([self.behavior isEqualToString:@"perform"]) return YES;
+        text = [NSString stringWithUTF8String:[self.body bytes]];
     }
     HTTPLogVerbose(@"text to speech: %@", text);
+    if (text.length == 0) text = @"no information available";
+
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     AVSpeechUtterance *speechUtterance = [AVSpeechUtterance speechUtteranceWithString:text];
     // based on observation
@@ -235,14 +237,17 @@ didReceiveResponse:(NSURLResponse *)response {
     if (self.upstream == nil)  return;
 
     if ((self.body != nil) && ([self.body length] < 512)) {
-      [self.body appendData:data];
-      if ([self.body length] > 512) [self.body setLength:512];
+        [self.body appendData:data];
+        if ([self.body length] > 512) [self.body setLength:512];
+        u_char bytes[1];
+        bytes[0] = '\0';
+        [self.body appendBytes:bytes length:1];
     }
 
     if (self.data != nil) {
-      [self.data appendData:data];
+        [self.data appendData:data];
     } else {
-      self.data = [data mutableCopy];
+        self.data = [data mutableCopy];
     }
 
     [self.upstream responseHasAvailableData:self];
