@@ -216,7 +216,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
     [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
 
-    [self notifyUser:@"scanning network..." withTitle:@"Discovered"];
+    [self notifyUser:@"scanning network..." withTitle:kDiscovery];
 }
 
 - (IBAction)scanQRcode:(id)sender {
@@ -232,7 +232,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     UIApplication *application = [UIApplication sharedApplication];
     AppDelegate *appDelegate = (AppDelegate *) application.delegate;
-    if (application.applicationState == UIApplicationStateBackground) {
+    if ((application.applicationState == UIApplicationStateBackground) && ([title isEqual:kError])) {
         [appDelegate backgroundNotify:message andTitle:title];
         return;
     }
@@ -265,8 +265,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     self.monitoringP = NO;
     [self.service startMonitoring];
 
-    [self notifyUser:[NSString stringWithFormat:@"steward at %@", address]
-           withTitle:@"Connecting"];
+    [self notifyUser:[NSString stringWithFormat:@"steward at %@", address] withTitle:kConnecting];
 };
 
 - (void)resetSteward:(BOOL)lastP {
@@ -366,7 +365,10 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
     self.monitoringP = NO;
     [self.service startMonitoring];
 
-    [self notifyUser:taasIssuer withTitle:@"Connecting"];
+    NSString *name = taasIssuer;
+    NSRange range = [name rangeOfString:@"."];
+    if (range.location != NSNotFound) name = [name substringToIndex:range.location];
+    [self notifyUser:name withTitle:kConnecting];
 
     return nil;
 }
@@ -422,12 +424,12 @@ didReceiveResponse:(NSURLResponse *)response {
 
     if (self.service != nil) {
         if ([self rememberSteward:info lastP:false]) {
-            [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
+            [self notifyUser:[NSString stringWithFormat:@"found %@", name] withTitle:kDiscovery];
         }
         return;
     }
 
-    [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
+    [self notifyUser:[NSString stringWithFormat:@"found %@", name] withTitle:kDiscovery];
     [self connectToSteward:info localP:YES];
 }
 
@@ -591,13 +593,12 @@ NSLog(@".");
                                            nil];
     if (self.service != nil) {
         if ([self rememberSteward:info lastP:false]) {
-            [self notifyUser:[NSString stringWithFormat:@"Found %@", name] withTitle:@"Discovered"];
+            [self notifyUser:[NSString stringWithFormat:@"found %@", name] withTitle:kDiscovery];
         }
         return;
     }
 
-    [self notifyUser:[NSString stringWithFormat:@"Found %@", [self hostName:info]]
-           withTitle:@"Rendezvous"];
+    [self notifyUser:[NSString stringWithFormat:@"found %@", [self hostName:info]] withTitle:kConnecting];
     [self connectToSteward:info localP:NO];
 }
 

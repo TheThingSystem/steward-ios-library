@@ -65,7 +65,6 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if ([paths count] > 0) {
         documentLogs = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentLogs];
     }
-    DDLogVerbose(@"Logs %@", documentLogs);
     if ((documentLogs != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:documentLogs])) {
         if (![[NSFileManager defaultManager]
                    createDirectoryAtPath:documentLogs
@@ -82,11 +81,12 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
         [DDLog addLogger:[[DDFileLogger alloc] initWithLogFileManager:logFileManager]];
     }
 
+    DDLogVerbose(@"begin");
+
     NSString *documentRoot = nil;
     if ([paths count] > 0) {
         documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentRoot];
     }
-    DDLogVerbose(@"Root %@", documentRoot);
     if ((documentRoot != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:documentRoot])) {
         NSString *src = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:kDocumentRoot];
         error = nil;
@@ -104,7 +104,6 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if ([paths count] > 0) {
         documentCerts = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentCerts];
     }
-    DDLogVerbose(@"Certs %@", documentCerts);
     if ((documentCerts != nil)
             && (![[NSFileManager defaultManager] fileExistsAtPath:documentCerts])) {
         error = nil;
@@ -146,7 +145,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
                 SecCertificateRef certificate =
                     SecCertificateCreateWithData(NULL, (__bridge CFDataRef)(data));
                 [trustedCertificates addObject:CFBridgingRelease(certificate)];
-                DDLogVerbose(@"pin %@", name);
+                DDLogVerbose(@"pin cert %@", name);
             }];
             if (trustedCertificates.count > 0) {
                 self.pinnedCertValidator = [[RNPinnedCertValidator alloc] init];
@@ -312,7 +311,7 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
 
 - (void)backgroundNotify:(NSString *)message
                 andTitle:(NSString *)title {
-    DDLogVerbose(@"backgroundNotify: %@ - %@ working=%@", title, message,
+    DDLogVerbose(@"backgroundNotify: %@ - %@ tasking=%@", title, message,
                  (self.notifyTaskID != UIBackgroundTaskInvalid) ? @"YES" : @"NO");
     if (self.notifyTaskID != UIBackgroundTaskInvalid) return;
 

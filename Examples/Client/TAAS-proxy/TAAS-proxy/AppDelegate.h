@@ -18,6 +18,8 @@
 @interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
 
 #define kAttention    @"Attention"
+#define kConnecting   @"Connecting"
+#define kDiscovery    @"Discovery"
 #define kError        @"Error"
 
 
