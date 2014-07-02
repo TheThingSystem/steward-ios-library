@@ -25,6 +25,7 @@
 
 @property (strong, nonatomic) UIWindow                  *window;
 @property (strong, nonatomic) RootController            *rootController;
+@property (strong, nonatomic) AVAudioSession            *audioSession;
 @property (strong, nonatomic) AVSpeechSynthesizer       *speechSynthesizer;
 @property (strong, nonatomic) RNPinnedCertValidator     *pinnedCertValidator;
 

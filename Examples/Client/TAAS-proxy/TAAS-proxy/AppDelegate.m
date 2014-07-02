@@ -26,7 +26,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (        nonatomic) UIBackgroundTaskIdentifier backgroundTaskID;
 @property (        nonatomic) UIBackgroundTaskIdentifier notifyTaskID;
 @property (strong, nonatomic) HTTPServer                *httpServer;
-@property (strong, nonatomic) AVAudioSession            *audioSession;
 @property (strong, nonatomic) NSMutableArray            *lastNotifications;
 @property (strong, nonatomic) CLLocationManager         *locationManager;
 
@@ -178,15 +177,12 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     self.audioSession = [AVAudioSession sharedInstance];
     error = nil;
-    [self.audioSession setCategory:AVAudioSessionCategoryPlayback error:&error];
-    if (error != nil) {
-      DDLogError(@"error setting audio session category to playback: %@", error);
-    } else {
-      [self.audioSession setActive:YES error:&error];
-      if (error) {
-        DDLogError(@"error setting audio session active: %@", error);
-      }
-    }
+    [self.audioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
+    if (error != nil) DDLogError(@"error setting audio session category to playback: %@", error);
+
+    error = nil;
+    [self.audioSession setActive:YES error:&error];
+    if (error!= nil) DDLogError(@"error setting audio session active: %@", error);
 
     self.speechSynthesizer = [[AVSpeechSynthesizer alloc] init];
 

@@ -97,6 +97,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 }
 
 - (BOOL)isDone {
+    NSError *error;
+
     HTTPLogTrace2(@"%@[%p]: isDone:%@", THIS_FILE, self,
                   (self.downstream != nil) || ((self.data != nil) && ([self.data length] > 0))
                       ? @"NO" : @"YES");
@@ -107,7 +109,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
     NSString *text = nil;
     const char *bytes = (const char *)[self.body bytes];
     if ((self.body.length > 3) && (bytes[0] == '{')) {
-        NSError *error = nil;
+        error = nil;
         NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:self.body
                                                                    options:kNilOptions
                                                                      error:&error];
@@ -122,11 +124,22 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
     }
     HTTPLogVerbose(@"text to speech: %@", text);
     if (text.length == 0) text = @"no information available";
+    
 
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    AVAudioSession *audioSession = appDelegate.audioSession;
+    error = nil;
+    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
+    if (error != nil) HTTPLogError(@"error setting audio session category to play and record: %@", error);
+
+    error = nil;
+    [audioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error];
+    if (error != nil) HTTPLogError(@"error overriding audio port use speaker: %@", error);
+
     AVSpeechUtterance *speechUtterance = [AVSpeechUtterance speechUtteranceWithString:text];
     // based on observation
     speechUtterance.rate = 0.30;
+    speechUtterance.volume = 1.0;
     [appDelegate.speechSynthesizer speakUtterance:speechUtterance];
 
     return YES;
