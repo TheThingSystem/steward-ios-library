@@ -85,7 +85,11 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 // UI
 @property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
-@property (strong, nonatomic) NSMutableArray            *tableData;
+@property (weak,   nonatomic) IBOutlet UISegmentedControl *modeControl;
+@property (strong, nonatomic) NSMutableArray            *tableConsoleData;
+@property (strong, nonatomic) NSMutableArray            *tableDevicesData;
+@property (strong, nonatomic) NSMutableArray            *tableTasksData;
+@property (strong, nonatomic) NSMutableArray            *currentDataTable;
 
 @end
 
@@ -212,7 +216,11 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)viewDidLoad {
-    self.tableData = [NSMutableArray arrayWithCapacity:50];
+    self.tableConsoleData = [NSMutableArray arrayWithCapacity:50];
+    self.tableDevicesData = [NSMutableArray arrayWithCapacity:50];
+    self.tableTasksData = [NSMutableArray arrayWithCapacity:50];
+    self.currentDataTable = [NSMutableArray arrayWithCapacity:50];
+    self.currentDataTable = self.tableConsoleData;
 
     UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
     [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
@@ -505,7 +513,9 @@ NSLog(@".");
 // TODO: more message simplification here...
             if ([data isEqual:@"[Circular]"]) return;
 
-            [self pushTableDataDictionary:@{@"when": date, @"message": message, @"data": data}];
+            NSString *output = [NSString stringWithFormat:@"%@\n%@", message, data];
+//            [self pushTableDataDictionary:@{@"when": date, @"message": message, @"data": data}];
+            [self pushDataDictionary:@{@"when": date, @"data": output} ontoTable:self.tableConsoleData];
         }];
     }];
 }
@@ -769,6 +779,24 @@ NSLog(@".");
     return result;
 }
 
+# pragma mark - Segmented (Mode) control
+
+- (IBAction)setDisplayMode:(UISegmentedControl *)sender {
+    switch (sender.selectedSegmentIndex) {
+        case 0:
+            self.currentDataTable = self.tableConsoleData;
+            break;
+        case 1:
+            self.currentDataTable = self.tableDevicesData;
+            break;
+        case 2:
+            self.currentDataTable = self.tableTasksData;
+            break;
+        default:
+            break;
+    }
+    [self.tableView reloadData];
+}
 
 #pragma mark - Action sheets
 
@@ -777,7 +805,7 @@ NSLog(@".");
                                   initWithTitle:@""
                                   delegate:self
                                   cancelButtonTitle:@"Cancel"
-                                  destructiveButtonTitle:@"Clear Monitor History"
+                                  destructiveButtonTitle:@"Clear Table History"
                                   otherButtonTitles:@"Scan QR Code", nil];
     [actionSheet showFromBarButtonItem:sender animated:YES];
     actionSheet.tag = 0;
@@ -788,7 +816,7 @@ NSLog(@".");
                                   initWithTitle:@"Are you sure?"
                                   delegate:self
                                   cancelButtonTitle:@"Cancel"
-                                  destructiveButtonTitle:@"Clear Monitor History"
+                                  destructiveButtonTitle:@"Clear Table History"
                                   otherButtonTitles:nil];
     [actionSheet showInView:self.view];
     actionSheet.tag = 1;
@@ -834,19 +862,19 @@ NSLog(@".");
 #pragma mark - Table view data source
 
 - (void)deleteAllTableData {
-    [self.tableData removeAllObjects];
+    [self.currentDataTable removeAllObjects];
     [self.tableView reloadData];
 }
 
-- (void)pushTableDataDictionary:(NSDictionary *)dictionary {
-// TODO: decide whether to do sorting here...
-    [self.tableData insertObject:dictionary atIndex:0];
+- (void)pushDataDictionary:(NSDictionary *)dictionary ontoTable:(NSMutableArray *) tableArray {
+    // TODO: decide whether to do sorting here...
+    [tableArray insertObject:dictionary atIndex:0];
     [self.tableView reloadData];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     CGFloat rowHeight = 20;
-    NSDictionary *tableEntry = [self.tableData objectAtIndex:indexPath.row];
+    NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
 
     UIFont *font = [UIFont systemFontOfSize:14.0f];
     NSDictionary *attrsDictionary = [NSDictionary dictionaryWithObject:font
@@ -855,20 +883,16 @@ NSLog(@".");
     NSAttributedString *attrString1 = [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"]
                                     attributes:attrsDictionary];
 
-    CGFloat label1Height = [attrString1 boundingRectWithSize:CGSizeMake(225, 250) options:NSStringDrawingUsesLineFragmentOrigin  context:nil].size.height;
-    // In anticipation of third column
-//    NSAttributedString *attrString1 = [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"] attributes:attrsDictionary];
+    CGFloat label1Height = [attrString1 boundingRectWithSize:CGSizeMake([tableView frame].size.width - 65, 450) options:NSStringDrawingUsesLineFragmentOrigin  context:nil].size.height;
 
-    CGFloat label2Height = 0.0f; // [attrString2 boundingRectWithSize:CGSizeMake(220, 250) options:NSStringDrawingUsesLineFragmentOrigin  context:nil].size.height;
-
-    rowHeight += fmaxf(label1Height, label2Height);
+    rowHeight += label1Height;
 
     return rowHeight;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
-    return [self.tableData count];
+    return [self.currentDataTable count];
 }
 
 
@@ -876,17 +900,22 @@ NSLog(@".");
     TableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MonitorCellReuseIdentifier forIndexPath:indexPath];
 
     // Configure the cell...
-    if ([self.tableData count] > 0) {
-        NSDictionary *tableEntry = [self.tableData objectAtIndex:indexPath.row];
+    if ([self.currentDataTable count] > 0) {
+        NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
         NSString *date = [tableEntry objectForKey: @"when"];
         if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
 
         cell.cellTimeLabel.text = date;
-        cell.cellText1Label.text = [tableEntry objectForKey: @"message"];
-        cell.cellText2Label.text = [tableEntry objectForKey: @"data"];
+        cell.cellText1Label.text = [tableEntry objectForKey: @"data"];
     }
 
     return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (self.currentDataTable == self.tableTasksData) {
+        NSLog(@"Clicked on row %d of the Tasks table.", indexPath.row);
+    }
 }
 
 @end
