@@ -28,6 +28,10 @@
 #define kBonjourDelay    3.0f
 #define kNetworkDelay    1.0f
 
+#define kPushNone        (     0)
+#define kPushRefresh     (1 << 0)
+#define kPushSort        (1 << 1)
+
 
 // Log levels: off, error, warn, info, verbose
 // Other flags: trace
@@ -234,8 +238,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 // the tableView is a IBOutlet
     UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
-    [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];    
-   
+    [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
+
     self.refreshControl = [[UIRefreshControl alloc] init];
     self.refreshControl.tintColor = nil;
     [self.refreshControl addTarget:self
@@ -274,7 +278,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     [self pushDataDictionary:@{ @"when": [self.utcFormatter stringFromDate:[NSDate date]]
                               , @"data": [NSString stringWithFormat:@"%@\n%@", title, message]
                               }
-                   ontoTable:self.tableConsoleData];
+                   ontoTable:self.tableConsoleData
+                 withOptions:kPushRefresh];
 }
 
 - (void)connectToSteward:(NSDictionary *)info
@@ -475,7 +480,6 @@ didReceiveResponse:(NSURLResponse *)response {
 }
 
 - (void)didReceiveMonitor:(NSString *)message {
-NSLog(@".");
       NSError *error = nil;
       NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
       NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
@@ -525,6 +529,9 @@ NSLog(@".");
                 [self.entities setObject:value forKey:whoami];
                 [self updateDevice:value];
             }];
+            [self pushDataDictionary:nil
+                           ontoTable:self.tableDevicesData
+                         withOptions:(kPushRefresh | kPushSort)];
             return;
         }
 
@@ -546,9 +553,11 @@ NSLog(@".");
             [self pushDataDictionary:@{ @"when": date
                                       , @"data": output
                                       }
-                           ontoTable:self.tableConsoleData];
+                           ontoTable:self.tableConsoleData
+                         withOptions:kPushNone];
         }];
     }];
+    [self pushDataDictionary:nil ontoTable:self.tableConsoleData withOptions:(kPushRefresh | kPushSort)];
 }
 
 - (void)didReceiveListing:(NSString *)message {
@@ -582,6 +591,7 @@ NSLog(@".");
             [self updateDevice:entity];
         }];
     }];
+    [self pushDataDictionary:nil ontoTable:self.tableDevicesData withOptions:(kPushRefresh | kPushSort)];
 }
 
 - (void)updateDevice:(NSDictionary *)entity {
@@ -608,7 +618,7 @@ NSLog(@".");
         }
     }
 
-    NSMutableDictionary *state = [[NSMutableDictionary alloc] initWithCapacity:[info count]];
+    NSMutableDictionary *state = [[NSMutableDictionary alloc] initWithCapacity:info.count];
     [info enumerateKeysAndObjectsUsingBlock:^(id key, NSString *value, BOOL *stop) {
         if (([value isKindOfClass:[NSString class]])
                 && ([value isEqualToString:@"********"])) return;
@@ -634,7 +644,7 @@ NSLog(@".");
     if (range.location == NSNotFound) {
         range = [whatami rangeOfString:@"/device/indicator/" options:NSAnchoredSearch];
     }
-    if ((range.location != NSNotFound) || ([state count] < 1) || (meta == nil)) meta = whatami;
+    if ((range.location != NSNotFound) || (state.count < 1) || (meta == nil)) meta = whatami;
 
     NSString *output = [NSString stringWithFormat:@"%@: %@\n%@",
                                  [entity objectForKey:@"name"],
@@ -651,7 +661,9 @@ NSLog(@".");
     [self pushDataDictionary:@{ @"when": date
                               , @"data": output
                               , @"what": whoami
-                              } ontoTable:self.tableDevicesData];
+                              }
+                   ontoTable:self.tableDevicesData
+                 withOptions:kPushNone];
 }
 
 
@@ -972,10 +984,26 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
 }
 
 - (void)pushDataDictionary:(NSDictionary *)dictionary
-                 ontoTable:(NSMutableArray *) tableArray {
-    // TODO: decide whether to do sorting here...
-    [tableArray insertObject:dictionary atIndex:0];
-    if (self.currentDataTable == tableArray) [self.tableView reloadData];
+                 ontoTable:(NSMutableArray *) tableArray
+               withOptions:(unsigned long)options {
+    if (dictionary != nil) [tableArray insertObject:dictionary atIndex:0];
+
+    if ((options & kPushSort) && (tableArray.count > 1)) {
+        NSMutableArray *array =
+            [NSMutableArray arrayWithArray:[tableArray sortedArrayUsingComparator:^(NSDictionary *obj1,
+                                                                                    NSDictionary *obj2) {
+                  return [[obj2 objectForKey:@"when"] compare:[obj1 objectForKey:@"when"]];
+                }]];
+
+        BOOL updateCurrentTable = (self.currentDataTable == tableArray);
+             if (self.tableConsoleData == tableArray) self.tableConsoleData = array;
+        else if (self.tableDevicesData == tableArray) self.tableDevicesData = array;
+        else                                          self.tableTasksData   = array;
+        if (updateCurrentTable) self.currentDataTable = array;
+        tableArray = array;
+    }
+
+    if ((options & kPushRefresh) && (self.currentDataTable == tableArray)) [self.tableView reloadData];
 }
 
 -    (CGFloat)tableView:(UITableView *)tableView
@@ -987,8 +1015,8 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *attrsDictionary = [NSDictionary dictionaryWithObject:font
                                                                 forKey:NSFontAttributeName];
     NSAttributedString *attrString1 =
-        [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"]
-                                         attributes:attrsDictionary];
+        [[NSAttributedString alloc] initWithString:[tableEntry objectForKey:@"data"]
+                                        attributes:attrsDictionary];
     CGFloat label1Height =
         [attrString1 boundingRectWithSize:CGSizeMake([tableView frame].size.width - 65, 450)
                                   options:NSStringDrawingUsesLineFragmentOrigin
@@ -999,7 +1027,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.currentDataTable count];
+    return self.currentDataTable.count;
 }
 
 
@@ -1007,13 +1035,13 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
          cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     TableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MonitorCellReuseIdentifier forIndexPath:indexPath];
 
-    if ([self.currentDataTable count] <= indexPath.row) return cell;
+    if (self.currentDataTable.count <= indexPath.row) return cell;
 
     NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
-    NSString *date = [tableEntry objectForKey: @"when"];
+    NSString *date = [tableEntry objectForKey:@"when"];
     if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
     cell.cellTimeLabel.text = date;
-    cell.cellText1Label.text = [tableEntry objectForKey: @"data"];
+    cell.cellText1Label.text = [tableEntry objectForKey:@"data"];
     return cell;
 }
 
@@ -1031,11 +1059,10 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 - (void)refreshPulled {
     [self.refreshControl endRefreshing];
 
-    if (self.service == nil) return;
-
     [self resetSteward:NO];
     [self setTimeout];
-    [self notifyUser:@"reconnecting..." withTitle:kDiscovery];
+    [self notifyUser:(self.monitoringP ? @"reconnecting..." : @"retrying...")
+           withTitle:kDiscovery];
 }
 
 @end

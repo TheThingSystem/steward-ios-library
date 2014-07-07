@@ -58,7 +58,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     NSString *documentLogs = nil;
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    if ([paths count] > 0) {
+    if (paths.count > 0) {
         documentLogs = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentLogs];
     }
     if ((documentLogs != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:documentLogs])) {
@@ -80,7 +80,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     DDLogVerbose(@"begin");
 
     NSString *documentRoot = nil;
-    if ([paths count] > 0) {
+    if (paths.count > 0) {
         documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentRoot];
     }
     if ((documentRoot != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:documentRoot])) {
@@ -97,7 +97,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     NSString *documentCerts = nil;
     documentCerts = nil;
     self.pinnedCertValidator = nil;
-    if ([paths count] > 0) {
+    if (paths.count > 0) {
         documentCerts = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentCerts];
     }
     if ((documentCerts != nil)
