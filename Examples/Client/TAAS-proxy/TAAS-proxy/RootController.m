@@ -147,7 +147,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                 }
 
                 NSArray *ipAddresses = [info objectForKey:kIpAddresses];
-                if ((ipAddresses == nil) || (ipAddresses.count < 1) || ([info objectForKey:kPort] == nil)) {
+                if ((ipAddresses == nil)
+                        || (ipAddresses.count < 1)
+                        || ([info objectForKey:kPort] == nil)) {
                     [keyChain removeObjectForKey:value];
                     DDLogVerbose(@"removing: %@=%@", value, info);
                     return;
@@ -230,21 +232,24 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     self.tableTasksData   = [NSMutableArray arrayWithCapacity:100];
     self.currentDataTable = self.tableConsoleData;
 
+// the tableView is a IBOutlet
     UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
-    [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
-    
-    // UIRefreshControl
-    UIView *refreshView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
-    [self.tableView insertSubview:refreshView atIndex:0]; //the tableView is a IBOutlet
-    
+    [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];    
+   
     self.refreshControl = [[UIRefreshControl alloc] init];
     self.refreshControl.tintColor = nil;
-    [self.refreshControl addTarget:self action:@selector(refreshPulled) forControlEvents:UIControlEventValueChanged];
-    NSMutableAttributedString *refreshString = [[NSMutableAttributedString alloc] initWithString:@"Pull To Reconnect"];
-    [refreshString addAttributes:@{NSForegroundColorAttributeName : [UIColor grayColor]} range:NSMakeRange(0, refreshString.length)];
+    [self.refreshControl addTarget:self
+                            action:@selector(refreshPulled)
+                  forControlEvents:UIControlEventValueChanged];
+    NSMutableAttributedString *refreshString =
+        [[NSMutableAttributedString alloc] initWithString:@"Pull To Reconnect"];
+    [refreshString addAttributes:@{ NSForegroundColorAttributeName: [UIColor grayColor] }
+                           range:NSMakeRange(0, refreshString.length)];
     self.refreshControl.attributedTitle = refreshString;
-    [refreshView addSubview:self.refreshControl];
 
+    UIView *refreshView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [self.tableView insertSubview:refreshView atIndex:0];
+    [refreshView addSubview:self.refreshControl];
 
     [self notifyUser:@"scanning network..." withTitle:kDiscovery];
 }
@@ -274,7 +279,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (void)connectToSteward:(NSDictionary *)info
                   localP:(BOOL)localP {
-    [self resetSteward:false];
+    [self resetSteward:NO];
 
     if (localP) [self rememberSteward:info lastP:true];
     self.taasName = [self hostName:info];
@@ -417,14 +422,14 @@ didReceiveResponse:(NSURLResponse *)response {
         DDLogError(@"statusCode=%ld, expecting 307", (long)[httpResponse statusCode]);
         [self notifyUser:[NSString stringWithFormat:@"unable to connect to %@", self.taasIssuer]
                withTitle:kError];
-        [self resetSteward:false];
+        [self resetSteward:NO];
     }
 }
 
 - (void)connection:(NSURLConnection *)theConnection
     didReceiveData:(NSData *)data {
     DDLogWarn(@"TAAS rendezvous: %lu octets", (unsigned long)[data length]);
-    [self resetSteward:false];
+    [self resetSteward:NO];
 }
 
 - (void)connection:(NSURLConnection *)theConnection
@@ -432,11 +437,11 @@ didReceiveResponse:(NSURLResponse *)response {
     DDLogError(@"%@: %@", self.taasIssuer, error);
     [self notifyUser:[NSString stringWithFormat:@"failed to connect to %@", self.taasIssuer]
                                       withTitle:kError];
-    [self resetSteward:false];
+    [self resetSteward:NO];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)theConnection {
-    [self resetSteward:false];
+    [self resetSteward:NO];
 }
 
 
@@ -459,7 +464,7 @@ didReceiveResponse:(NSURLResponse *)response {
     }
 
     if (self.service != nil) {
-        if ([self rememberSteward:info lastP:false]) {
+        if ([self rememberSteward:info lastP:NO]) {
             [self notifyUser:[NSString stringWithFormat:@"found %@", name] withTitle:kDiscovery];
         }
         return;
@@ -529,7 +534,8 @@ NSLog(@".");
 
             NSString *date = [entry objectForKey:@"date"];
             NSString *message = [entry objectForKey:@"message"];
-            NSString *meta = ([entry objectForKey:@"meta"] == [NSNull null]) ? @"" : [entry objectForKey:@"meta"];
+            NSString *meta = ([entry objectForKey:@"meta"] == [NSNull null])
+                                 ? @"" : [entry objectForKey:@"meta"];
             NSString *data = [self valuePP:meta];
             if ((date.length == 0) || (message.length == 0)) return;
 
@@ -661,7 +667,7 @@ NSLog(@".");
 }
 
 - (void)doneMonitoring:(NSInteger)code {
-    [self resetSteward:false];
+    [self resetSteward:NO];
 
     [self notifyUser:[NSString stringWithFormat:@"%@: %@", self.taasName, @"disconnected"]
            withTitle:kError];
@@ -707,7 +713,7 @@ NSLog(@".");
                                             URI,                                             kAuthURL,
                                            nil];
     if (self.service != nil) {
-        if ([self rememberSteward:info lastP:false]) {
+        if ([self rememberSteward:info lastP:NO]) {
             [self notifyUser:[NSString stringWithFormat:@"found %@", name] withTitle:kDiscovery];
         }
         return;
@@ -980,13 +986,13 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     UIFont *font = [UIFont systemFontOfSize:14.0f];
     NSDictionary *attrsDictionary = [NSDictionary dictionaryWithObject:font
                                                                 forKey:NSFontAttributeName];
-
-    NSAttributedString *attrString1 = [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"]
-                                                                      attributes:attrsDictionary];
-
-    CGFloat label1Height = [attrString1 boundingRectWithSize:CGSizeMake([tableView frame].size.width - 65, 450)
-                                                     options:NSStringDrawingUsesLineFragmentOrigin
-                                                     context:nil].size.height;
+    NSAttributedString *attrString1 =
+        [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"]
+                                         attributes:attrsDictionary];
+    CGFloat label1Height =
+        [attrString1 boundingRectWithSize:CGSizeMake([tableView frame].size.width - 65, 450)
+                                  options:NSStringDrawingUsesLineFragmentOrigin
+                                  context:nil].size.height;
     rowHeight += label1Height;
 
     return rowHeight;
@@ -1023,10 +1029,13 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 // UIRefreshControl event processing
 
 - (void)refreshPulled {
-    
-    NSLog(@"Act on table refresh action.");
-    
     [self.refreshControl endRefreshing];
+
+    if (self.service == nil) return;
+
+    [self resetSteward:NO];
+    [self setTimeout];
+    [self notifyUser:@"reconnecting..." withTitle:kDiscovery];
 }
 
 @end
