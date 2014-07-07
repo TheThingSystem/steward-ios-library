@@ -319,6 +319,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         [keyChain removeObjectForKey:kLastSteward];
     }
 
+    NSMutableAttributedString *refreshString =
+        [[NSMutableAttributedString alloc] initWithString:@"Pull To Retry"];
+    [refreshString addAttributes:@{ NSForegroundColorAttributeName: [UIColor grayColor] }
+                           range:NSMakeRange(0, refreshString.length)];
+    self.refreshControl.attributedTitle = refreshString;
+
     if (self.service == nil) return;
 
     if (self.taasConnection != nil) {
@@ -498,6 +504,11 @@ didReceiveResponse:(NSURLResponse *)response {
         }
 
         self.monitoringP = YES;
+        NSMutableAttributedString *refreshString =
+            [[NSMutableAttributedString alloc] initWithString:@"Pull To Reconnect"];
+        [refreshString addAttributes:@{ NSForegroundColorAttributeName: [UIColor grayColor] }
+                               range:NSMakeRange(0, refreshString.length)];
+        self.refreshControl.attributedTitle = refreshString;
         [self deleteAllTableData];
         self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName, @"connected"];
         [self.service listDevices];
