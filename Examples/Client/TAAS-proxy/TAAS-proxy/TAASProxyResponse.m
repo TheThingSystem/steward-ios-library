@@ -124,7 +124,6 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
     }
     HTTPLogVerbose(@"text to speech: %@", text);
     if (text.length == 0) text = @"no information available";
-    
 
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     AVAudioSession *audioSession = appDelegate.audioSession;

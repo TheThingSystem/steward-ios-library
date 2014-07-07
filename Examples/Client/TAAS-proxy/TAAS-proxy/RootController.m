@@ -18,14 +18,15 @@
 #import "DDLog.h"
 
 
-#define kAllStewards  @"_allStewards"
-#define kLastSteward  @"_lastSteward"
+#define kAllStewards     @"_allStewards"
+#define kLastSteward     @"_lastSteward"
 
-#define kWhoAmI       @"whoami"
-#define kWhatAmI      @"whatami"
+#define kWhoAmI          @"whoami"
+#define kWhatAmI         @"whatami"
 
-#define kBonjourDelay  3.0f
-#define kNetworkDelay  1.0f
+#define kBackgroundDelay 5.0f
+#define kBonjourDelay    3.0f
+#define kNetworkDelay    1.0f
 
 
 // Log levels: off, error, warn, info, verbose
@@ -101,7 +102,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         DDLogVerbose(@"Client Library v%@", [Client version]);
 
         self.fxReachabilityStatus = FXReachabilityStatusUnknown;
-        [self setTimer];
+        UIApplication *application = [UIApplication sharedApplication];
+        NSTimeInterval seconds = (application.applicationState == UIApplicationStateBackground)
+                                      ? kBackgroundDelay : kBonjourDelay;
+        [self setTimeout:seconds];
 
         TAASClient *sharedClient = [TAASClient sharedClient];
         sharedClient.delegate = self;
@@ -123,6 +127,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                                                  selector:@selector(fxReachabilityStatusDidChange)
                                                      name:FXReachabilityStatusDidChangeNotification
                                                    object:nil];
+
+        self.utcFormatter = [[NSDateFormatter alloc] init];
+        [self.utcFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.zzz'Z'"];
+        [self.utcFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
 
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         NSMutableArray *allStewards = [keyChain objectForKey:kAllStewards];
@@ -175,7 +183,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 // see if we need to start looking for the steward
 - (void)applicationDidBecomeActive {
-    if ((self.timer == nil) && (self.service == nil)) [self setTimer];
+    if ((self.timer == nil) && (self.service == nil)) [self setTimeout];
 }
 
 // stop refreshing the screen
@@ -216,10 +224,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)viewDidLoad {
-    self.tableConsoleData = [NSMutableArray arrayWithCapacity:50];
-    self.tableDevicesData = [NSMutableArray arrayWithCapacity:50];
-    self.tableTasksData = [NSMutableArray arrayWithCapacity:50];
-    self.currentDataTable = [NSMutableArray arrayWithCapacity:50];
+    self.tableConsoleData = [NSMutableArray arrayWithCapacity:100];
+    self.tableDevicesData = [NSMutableArray arrayWithCapacity:100];
+    self.tableTasksData   = [NSMutableArray arrayWithCapacity:100];
     self.currentDataTable = self.tableConsoleData;
 
     UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
@@ -243,8 +250,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     AppDelegate *appDelegate = (AppDelegate *) application.delegate;
     if ((application.applicationState == UIApplicationStateBackground) && ([title isEqual:kError])) {
         [appDelegate backgroundNotify:message andTitle:title];
-        return;
     }
+
+    [self pushDataDictionary:@{ @"when": [self.utcFormatter stringFromDate:[NSDate date]]
+                              , @"data": [NSString stringWithFormat:@"%@\n%@", title, message]
+                              }
+                   ontoTable:self.tableConsoleData];
 }
 
 - (void)connectToSteward:(NSDictionary *)info
@@ -379,7 +390,7 @@ willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challe
     NSString *name = taasIssuer;
     NSRange range = [name rangeOfString:@"."];
     if (range.location != NSNotFound) name = [name substringToIndex:range.location];
-    [self notifyUser:name withTitle:kConnecting];
+    [self notifyUser:[NSString stringWithFormat:@"rendezvous %@", name]  withTitle:kConnecting];
 
     return nil;
 }
@@ -490,16 +501,14 @@ NSLog(@".");
         if ([category isEqual:@".updates"]) {
             [values enumerateObjectsUsingBlock:^(NSDictionary *value, NSUInteger idx, BOOL *stop) {
                 NSString *whoami = [value objectForKey:kWhoAmI];
-                if (whoami != nil) [self.entities setObject:value forKey:whoami];
+                if (whoami == nil) return;
+
+                [self.entities setObject:value forKey:whoami];
+                [self updateDevice:value];
             }];
             return;
         }
 
-        if (self.utcFormatter == nil) {
-            self.utcFormatter = [[NSDateFormatter alloc] init];
-            [self.utcFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.zzz'Z'"];
-            [self.utcFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
-        }
         [values enumerateObjectsUsingBlock:^(NSDictionary *entry, NSUInteger idx, BOOL *stop) {
             NSString *level = [entry objectForKey:@"level"];
             if (([level isEqual:@"debug"]) || ([level isEqual:@"info"])) return;
@@ -514,8 +523,10 @@ NSLog(@".");
             if ([data isEqual:@"[Circular]"]) return;
 
             NSString *output = [NSString stringWithFormat:@"%@\n%@", message, data];
-//            [self pushTableDataDictionary:@{@"when": date, @"message": message, @"data": data}];
-            [self pushDataDictionary:@{@"when": date, @"data": output} ontoTable:self.tableConsoleData];
+            [self pushDataDictionary:@{ @"when": date
+                                      , @"data": output
+                                      }
+                           ontoTable:self.tableConsoleData];
         }];
     }];
 }
@@ -546,9 +557,81 @@ NSLog(@".");
             NSMutableDictionary *entity = [NSMutableDictionary dictionaryWithDictionary:value];
             [entity setObject:whoami forKey:kWhoAmI];
             [entity setObject:entityType forKey:kWhatAmI];
+
             [self.entities setObject:entity forKey:whoami];
+            [self updateDevice:entity];
         }];
     }];
+}
+
+- (void)updateDevice:(NSDictionary *)entity {
+    NSString *whoami = [entity objectForKey:kWhoAmI];
+    NSRange range = [whoami rangeOfString:@"device/" options:NSAnchoredSearch];
+    if (range.location == NSNotFound) {
+        range = [whoami rangeOfString:@"/place/" options:NSAnchoredSearch];
+    }
+    if (range.location == NSNotFound) return;
+
+    NSDictionary *info = [entity objectForKey:@"info"];
+    NSString *date = [entity objectForKey:@"updated"];
+    if (date == nil) date = [info objectForKey:@"lastSample"];
+    if (![date isKindOfClass:[NSString class]]) {
+        NSNumber *ms = (NSNumber *)date;
+        NSDate *timestamp =
+            ![date isKindOfClass:[NSNumber class]]
+                ? [NSDate dateWithTimeIntervalSince1970:([ms doubleValue] / 1000)]
+                : [NSDate date];
+        date = [self.utcFormatter stringFromDate:timestamp];
+        range = [date rangeOfString:@".GMTZ" options:(NSBackwardsSearch | NSAnchoredSearch)];
+        if (range.location != NSNotFound) {
+            date = [NSString stringWithFormat:@"%@.000Z", [date substringToIndex:range.location]];
+        }
+    }
+
+    NSMutableDictionary *state = [[NSMutableDictionary alloc] initWithCapacity:[info count]];
+    [info enumerateKeysAndObjectsUsingBlock:^(id key, NSString *value, BOOL *stop) {
+        if (([value isKindOfClass:[NSString class]])
+                && ([value isEqualToString:@"********"])) return;
+        NSArray *skip = @[ @"authorizeURL",
+                           @"cycleTime",
+                           @"email",
+                           @"lastSample",
+                           @"locations",
+                           @"station"
+                           ];
+        if ([skip indexOfObject:key] != NSNotFound) return;
+        if (([key isEqualToString:@"track"]) && ([value isKindOfClass:[NSDictionary class]])) {
+            NSMutableDictionary *track = [value mutableCopy];
+            [track removeObjectForKey:@"albumArtURI"];
+            value = (id)track;
+        }
+
+        [state setObject:value forKey:key];
+    }];
+    NSString *meta = [self dictionaryPP:state];
+    NSString *whatami = [entity objectForKey:kWhatAmI];
+    range = [whatami rangeOfString:@"/device/gateway/" options:NSAnchoredSearch];
+    if (range.location == NSNotFound) {
+        range = [whatami rangeOfString:@"/device/indicator/" options:NSAnchoredSearch];
+    }
+    if ((range.location != NSNotFound) || ([state count] < 1) || (meta == nil)) meta = whatami;
+
+    NSString *output = [NSString stringWithFormat:@"%@: %@\n%@",
+                                 [entity objectForKey:@"name"],
+                                 [entity objectForKey:@"status"],
+                                 meta];
+
+    [self.tableDevicesData enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+        if (![[value objectForKey:@"what"] isEqualToString:whoami]) return;
+
+        *stop = YES;
+        [self.tableDevicesData removeObjectAtIndex:idx];
+    }];
+
+    [self pushDataDictionary:@{ @"when": date
+                              , @"data": output
+                              , @"what": whoami
+                              } ontoTable:self.tableDevicesData];
 }
 
 
@@ -568,7 +651,7 @@ NSLog(@".");
 
     [self notifyUser:[NSString stringWithFormat:@"%@: %@", self.taasName, @"disconnected"]
            withTitle:kError];
-    if (self.monitoringP) [self setTimer];
+    if (self.monitoringP) [self setTimeout];
 }
 
 
@@ -626,7 +709,7 @@ NSLog(@".");
 - (void)fxReachabilityStatusDidChange {
     FXReachabilityStatus prev = self.fxReachabilityStatus;
     int status;
-    NSArray *choices = @[@"unknown", @"notReachable", @"reachableViaWWAN", @"reachableViaWiFi"];
+    NSArray *choices = @[ @"unknown", @"notReachable", @"reachableViaWWAN", @"reachableViaWiFi" ];
 
     self.fxReachabilityStatus = [FXReachability sharedInstance].status;
     status = (int)self.fxReachabilityStatus + 1;
@@ -699,7 +782,7 @@ NSLog(@".");
         return;
     }
 
-    [self setTimer];
+    [self setTimeout];
 
     if (self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN) {
         [[TAASClient sharedClient] findService];
@@ -710,11 +793,15 @@ NSLog(@".");
 
 #pragma mark - miscellany
 
-- (void)setTimer {
-    if (self.timer != nil) [self.timer invalidate];
-
+- (void)setTimeout {
     NSTimeInterval seconds = (self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN)
                                   ? kBonjourDelay : kNetworkDelay;
+    [self setTimeout:seconds];
+}
+
+- (void)setTimeout:(NSTimeInterval)seconds {
+    if (self.timer != nil) [self.timer invalidate];
+
     self.timer = [NSTimer scheduledTimerWithTimeInterval:seconds
                                                   target:self
                                                 selector:@selector(timeout:)
@@ -753,10 +840,7 @@ NSLog(@".");
     [dict enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
         NSString *string = [self valuePP:value];
         if (string != nil) {
-            if (string.length > 36) {
-                if ([key isEqualToString:@"body"]) return;
-//              string = [[string substringWithRange:NSMakeRange(0, 32)] stringByAppendingString:@"..."];
-            }
+            if ((string.length > 36) && ([key isEqualToString:@"body"])) return;
             [result appendFormat:((result.length > 0) ? @", %@:%@" : @"{%@:%@"), key, string];
         }
     }];
@@ -779,11 +863,13 @@ NSLog(@".");
     return result;
 }
 
-# pragma mark - Segmented (Mode) control
+
+# pragma mark - segmented (mode) control
 
 - (IBAction)setDisplayMode:(UISegmentedControl *)sender {
     switch (sender.selectedSegmentIndex) {
         case 0:
+        default:
             self.currentDataTable = self.tableConsoleData;
             break;
         case 1:
@@ -792,40 +878,38 @@ NSLog(@".");
         case 2:
             self.currentDataTable = self.tableTasksData;
             break;
-        default:
-            break;
     }
     [self.tableView reloadData];
 }
 
-#pragma mark - Action sheets
+
+#pragma mark - action sheets
 
 - (IBAction)rootActionSheet:(id)sender {
-    UIActionSheet *actionSheet = [[UIActionSheet alloc]
-                                  initWithTitle:@""
-                                  delegate:self
-                                  cancelButtonTitle:@"Cancel"
-                                  destructiveButtonTitle:@"Clear Table History"
-                                  otherButtonTitles:@"Scan QR Code", nil];
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@""
+                                                             delegate:self
+                                                    cancelButtonTitle:@"Cancel"
+                                               destructiveButtonTitle:@"Clear History"
+                                                    otherButtonTitles:@"Scan QR Code", nil];
     [actionSheet showFromBarButtonItem:sender animated:YES];
     actionSheet.tag = 0;
 }
 
 - (void)confirmActionSheet:(id)sender {
-    UIActionSheet *actionSheet = [[UIActionSheet alloc]
-                                  initWithTitle:@"Are you sure?"
-                                  delegate:self
-                                  cancelButtonTitle:@"Cancel"
-                                  destructiveButtonTitle:@"Clear Table History"
-                                  otherButtonTitles:nil];
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"Are you sure?"
+                                                             delegate:self
+                                                    cancelButtonTitle:@"Cancel"
+                                               destructiveButtonTitle:@"Clear History"
+                                                    otherButtonTitles:nil];
     [actionSheet showInView:self.view];
     actionSheet.tag = 1;
 }
 
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+-  (void)actionSheet:(UIActionSheet *)actionSheet
+clickedButtonAtIndex:(NSInteger)buttonIndex {
     switch (actionSheet.tag) {
+        // root action sheet
         case 0:
-            // root action sheet
             switch (buttonIndex) {
                 case 0:
                     [self confirmActionSheet:nil];
@@ -834,45 +918,48 @@ NSLog(@".");
                     [self scanQRcode:nil];
                     break;
                 case 2:
-                    break;
                 default:
                     break;
             }
             break;
+
+        // confirm deletion action sheet
         case 1:
-            // confirm deletion action sheet
             switch (buttonIndex) {
                 case 0:
                     [self deleteAllTableData];
                     break;
                 case 1:
-                    break;
                 default:
                     break;
             }
             break;
+
         default:
             break;
     }
-
-    actionSheet = nil;
 }
 
 
-#pragma mark - Table view data source
+#pragma mark - tableView dataSource
 
 - (void)deleteAllTableData {
-    [self.currentDataTable removeAllObjects];
+    [self.tableConsoleData removeAllObjects];
+    [self.tableDevicesData removeAllObjects];
+    [self.tableTasksData removeAllObjects];
+
     [self.tableView reloadData];
 }
 
-- (void)pushDataDictionary:(NSDictionary *)dictionary ontoTable:(NSMutableArray *) tableArray {
+- (void)pushDataDictionary:(NSDictionary *)dictionary
+                 ontoTable:(NSMutableArray *) tableArray {
     // TODO: decide whether to do sorting here...
     [tableArray insertObject:dictionary atIndex:0];
-    [self.tableView reloadData];
+    if (self.currentDataTable == tableArray) [self.tableView reloadData];
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+-    (CGFloat)tableView:(UITableView *)tableView
+heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     CGFloat rowHeight = 20;
     NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
 
@@ -881,41 +968,42 @@ NSLog(@".");
                                                                 forKey:NSFontAttributeName];
 
     NSAttributedString *attrString1 = [[NSAttributedString alloc] initWithString:[tableEntry objectForKey: @"data"]
-                                    attributes:attrsDictionary];
+                                                                      attributes:attrsDictionary];
 
-    CGFloat label1Height = [attrString1 boundingRectWithSize:CGSizeMake([tableView frame].size.width - 65, 450) options:NSStringDrawingUsesLineFragmentOrigin  context:nil].size.height;
-
+    CGFloat label1Height = [attrString1 boundingRectWithSize:CGSizeMake([tableView frame].size.width - 65, 450)
+                                                     options:NSStringDrawingUsesLineFragmentOrigin
+                                                     context:nil].size.height;
     rowHeight += label1Height;
 
     return rowHeight;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    // Return the number of rows in the section.
     return [self.currentDataTable count];
 }
 
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView
+         cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     TableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MonitorCellReuseIdentifier forIndexPath:indexPath];
 
-    // Configure the cell...
-    if ([self.currentDataTable count] > 0) {
-        NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
-        NSString *date = [tableEntry objectForKey: @"when"];
-        if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
+    if ([self.currentDataTable count] <= indexPath.row) return cell;
 
-        cell.cellTimeLabel.text = date;
-        cell.cellText1Label.text = [tableEntry objectForKey: @"data"];
-    }
-
+    NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
+    NSString *date = [tableEntry objectForKey: @"when"];
+    if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
+    cell.cellTimeLabel.text = date;
+    cell.cellText1Label.text = [tableEntry objectForKey: @"data"];
     return cell;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+-       (void)tableView:(UITableView *)tableView
+didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (self.currentDataTable == self.tableTasksData) {
-        NSLog(@"Clicked on row %d of the Tasks table.", indexPath.row);
+        DDLogVerbose(@"clicked on row %ld of the Tasks table.", (long)indexPath.row);
     }
+
+    [tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
 
 @end

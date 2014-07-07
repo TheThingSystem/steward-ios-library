@@ -46,9 +46,6 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if (self.launchedP) {
         [self reportLaunch:application withOptions:launchOptions];
 
-        // should NEVER happen, as we are always running (voip)
-        if ([launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey] != nil) return YES;
-
         if ([launchOptions objectForKey:UIApplicationLaunchOptionsLocationKey] == nil) return YES;
 
         self.locationManager = [[CLLocationManager alloc] init];
@@ -205,6 +202,10 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     [self.window makeKeyAndVisible];
 
+    if (application.applicationState == UIApplicationStateBackground) {
+        [self applicationDidEnterBackground:application];
+    }
+
     self.launchedP = YES;
     return YES;
 }
@@ -212,7 +213,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 - (void)reportLaunch:(UIApplication *)application
          withOptions:(NSDictionary *)launchOptions {
     int state = (int) application.applicationState;
-    NSArray *choices = @[@"active", @"inactive", @"background"];
+    NSArray *choices = @[ @"active", @"inactive", @"background" ];
     DDLogVerbose(@"didFinishLaunchingWithOptions: %@ options=%@",
                  (0 <= state) && (state < choices.count)
                      ? [choices objectAtIndex:state]
@@ -240,7 +241,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     int status = (int) application.backgroundRefreshStatus;
-    NSArray *choices = @[@"restricted", @"denied", @"available"];
+    NSArray *choices = @[ @"restricted", @"denied", @"available" ];
 
     DDLogVerbose(@"applicationDidEnterBackground: %@",
                  (0 <= status) && (status < choices.count)
