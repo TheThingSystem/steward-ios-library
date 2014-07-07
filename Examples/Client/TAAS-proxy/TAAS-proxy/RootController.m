@@ -87,6 +87,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 // UI
 @property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
 @property (weak,   nonatomic) IBOutlet UISegmentedControl *modeControl;
+@property (strong, nonatomic) UIRefreshControl          *refreshControl;
 @property (strong, nonatomic) NSMutableArray            *tableConsoleData;
 @property (strong, nonatomic) NSMutableArray            *tableDevicesData;
 @property (strong, nonatomic) NSMutableArray            *tableTasksData;
@@ -231,6 +232,19 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     UINib *tableViewCellNib = [UINib nibWithNibName:@"TableViewCell" bundle:[NSBundle mainBundle]];
     [self.tableView registerNib:tableViewCellNib forCellReuseIdentifier:MonitorCellReuseIdentifier];
+    
+    // UIRefreshControl
+    UIView *refreshView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [self.tableView insertSubview:refreshView atIndex:0]; //the tableView is a IBOutlet
+    
+    self.refreshControl = [[UIRefreshControl alloc] init];
+    self.refreshControl.tintColor = nil;
+    [self.refreshControl addTarget:self action:@selector(refreshPulled) forControlEvents:UIControlEventValueChanged];
+    NSMutableAttributedString *refreshString = [[NSMutableAttributedString alloc] initWithString:@"Pull To Reconnect"];
+    [refreshString addAttributes:@{NSForegroundColorAttributeName : [UIColor grayColor]} range:NSMakeRange(0, refreshString.length)];
+    self.refreshControl.attributedTitle = refreshString;
+    [refreshView addSubview:self.refreshControl];
+
 
     [self notifyUser:@"scanning network..." withTitle:kDiscovery];
 }
@@ -1004,6 +1018,15 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     }
 
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
+}
+
+// UIRefreshControl event processing
+
+- (void)refreshPulled {
+    
+    NSLog(@"Act on table refresh action.");
+    
+    [self.refreshControl endRefreshing];
 }
 
 @end
