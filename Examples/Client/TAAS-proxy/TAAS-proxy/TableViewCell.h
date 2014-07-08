@@ -12,8 +12,9 @@
 
 @interface TableViewCell : UITableViewCell
 
-@property (nonatomic, strong) IBOutlet UILabel *cellTimeLabel;
-@property (nonatomic, strong) IBOutlet UILabel *cellText1Label;
-@property (nonatomic, strong) IBOutlet UILabel *cellText2Label;
+@property (nonatomic, strong) IBOutlet UILabel      *cellTimeLabel;
+@property (nonatomic, strong) IBOutlet UILabel      *cellText1Label;
+@property (nonatomic, strong) IBOutlet UILabel      *cellText2Label;
+@property (strong, nonatomic) IBOutlet UIImageView  *icon;
 
 @end
