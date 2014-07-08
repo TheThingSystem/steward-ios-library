@@ -277,6 +277,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     [self pushDataDictionary:@{ @"when": [self.utcFormatter stringFromDate:[NSDate date]]
                               , @"data": [NSString stringWithFormat:@"%@\n%@", title, message]
+                              , @"icon": @"place-home"
                               }
                    ontoTable:self.tableConsoleData
                  withOptions:kPushRefresh];
@@ -563,6 +564,7 @@ didReceiveResponse:(NSURLResponse *)response {
             NSString *output = [NSString stringWithFormat:@"%@\n%@", message, data];
             [self pushDataDictionary:@{ @"when": date
                                       , @"data": output
+                                      , @"icon": @"place-home"
                                       }
                            ontoTable:self.tableConsoleData
                          withOptions:kPushNone];
@@ -672,6 +674,7 @@ didReceiveResponse:(NSURLResponse *)response {
     [self pushDataDictionary:@{ @"when": date
                               , @"data": output
                               , @"what": whoami
+                              , @"icon": @"place-home"
                               }
                    ontoTable:self.tableDevicesData
                  withOptions:kPushNone];
@@ -1053,6 +1056,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
     cell.cellTimeLabel.text = date;
     cell.cellText1Label.text = [tableEntry objectForKey:@"data"];
+    cell.icon.image = [UIImage imageNamed:[tableEntry objectForKey:@"icon"]];
     return cell;
 }
 

@@ -3,7 +3,12 @@
     {
       "idiom" : "universal",
       "scale" : "1x",
-      "filename" : "place-home-32x32.png"
+      "filename" : "place-home.png"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x",
+      "filename" : "place-home@2x.png"
     }
   ],
   "info" : {
