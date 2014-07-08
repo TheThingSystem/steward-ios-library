@@ -28,6 +28,10 @@
 #define kBonjourDelay    3.0f
 #define kNetworkDelay    1.0f
 
+#define kWhenEntry       @"when"
+#define kWhoEntry        kWhoAmI
+#define kDataEntry       @"data"
+
 #define kPushNone        (     0)
 #define kPushRefresh     (1 << 0)
 #define kPushSort        (1 << 1)
@@ -275,8 +279,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         [appDelegate backgroundNotify:message andTitle:title];
     }
 
-    [self pushDataDictionary:@{ @"when": [self.utcFormatter stringFromDate:[NSDate date]]
-                              , @"data": [NSString stringWithFormat:@"%@\n%@", title, message]
+    [self pushDataDictionary:@{ kWhenEntry : [self.utcFormatter stringFromDate:[NSDate date]]
+                              , kDataEntry : [NSString stringWithFormat:@"%@\n%@", title, message]
                               }
                    ontoTable:self.tableConsoleData
                  withOptions:kPushRefresh];
@@ -560,9 +564,21 @@ didReceiveResponse:(NSURLResponse *)response {
 // TODO: more message simplification here...
             if ([data isEqual:@"[Circular]"]) return;
 
+            NSRange range = [message rangeOfString:@"device/" options:NSAnchoredSearch];
+            if (range.location == NSNotFound) {
+                range = [message rangeOfString:@"place/" options:NSAnchoredSearch];
+            }
+            NSString *whoami = @"";
+            if (range.location != NSNotFound) {
+              range = [message rangeOfString:@" "];
+              if (range.location != NSNotFound) whoami = [message substringToIndex:range.location];
+	    }
+
+	    NSLog(@"message=%@",message);
             NSString *output = [NSString stringWithFormat:@"%@\n%@", message, data];
-            [self pushDataDictionary:@{ @"when": date
-                                      , @"data": output
+            [self pushDataDictionary:@{ kWhenEntry : date
+                                      , kDataEntry : output
+                                      , kWhoEntry  : whoami
                                       }
                            ontoTable:self.tableConsoleData
                          withOptions:kPushNone];
@@ -649,6 +665,7 @@ didReceiveResponse:(NSURLResponse *)response {
 
         [state setObject:value forKey:key];
     }];
+    NSMutableString *data = [NSMutableString string];
     NSString *meta = [self dictionaryPP:state];
     NSString *whatami = [entity objectForKey:kWhatAmI];
     range = [whatami rangeOfString:@"/device/gateway/" options:NSAnchoredSearch];
@@ -663,15 +680,15 @@ didReceiveResponse:(NSURLResponse *)response {
                                  meta];
 
     [self.tableDevicesData enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
-        if (![[value objectForKey:@"what"] isEqualToString:whoami]) return;
+        if (![[value objectForKey:kWhoEntry] isEqualToString:whoami]) return;
 
         *stop = YES;
         [self.tableDevicesData removeObjectAtIndex:idx];
     }];
 
-    [self pushDataDictionary:@{ @"when": date
-                              , @"data": output
-                              , @"what": whoami
+    [self pushDataDictionary:@{ kWhenEntry : date
+                              , kDataEntry : output
+                              , kWhoEntry  : whoami
                               }
                    ontoTable:self.tableDevicesData
                  withOptions:kPushNone];
@@ -1003,7 +1020,7 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
         NSMutableArray *array =
             [NSMutableArray arrayWithArray:[tableArray sortedArrayUsingComparator:^(NSDictionary *obj1,
                                                                                     NSDictionary *obj2) {
-                  return [[obj2 objectForKey:@"when"] compare:[obj1 objectForKey:@"when"]];
+                  return [[obj2 objectForKey:kWhenEntry] compare:[obj1 objectForKey:kWhenEntry]];
                 }]];
 
         BOOL updateCurrentTable = (self.currentDataTable == tableArray);
@@ -1026,7 +1043,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *attrsDictionary = [NSDictionary dictionaryWithObject:font
                                                                 forKey:NSFontAttributeName];
     NSAttributedString *attrString1 =
-        [[NSAttributedString alloc] initWithString:[tableEntry objectForKey:@"data"]
+        [[NSAttributedString alloc] initWithString:[tableEntry objectForKey:kDataEntry]
                                         attributes:attrsDictionary];
     CGFloat label1Height =
         [attrString1 boundingRectWithSize:CGSizeMake([tableView frame].size.width - 65, 450)
@@ -1049,18 +1066,18 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (self.currentDataTable.count <= indexPath.row) return cell;
 
     NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
-    NSString *date = [tableEntry objectForKey:@"when"];
+    NSString *date = [tableEntry objectForKey:kWhenEntry];
     if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
     cell.cellTimeLabel.text = date;
-    cell.cellText1Label.text = [tableEntry objectForKey:@"data"];
+    cell.cellText1Label.text = [tableEntry objectForKey:kDataEntry];
     return cell;
 }
 
 -       (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.currentDataTable == self.tableTasksData) {
-        DDLogVerbose(@"clicked on row %ld of the Tasks table.", (long)indexPath.row);
-    }
+    NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
+    NSString *whoami = [tableEntry objectForKey:kWhoEntry];
+    DDLogVerbose(@"clicked on row %ld for %@", (long)indexPath.row, whoami);
 
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
