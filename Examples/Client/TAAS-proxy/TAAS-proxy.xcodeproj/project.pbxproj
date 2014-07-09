@@ -57,6 +57,7 @@
 		5F1F9492191D9F7D0026A14A /* TAASWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9491191D9F7D0026A14A /* TAASWebSocket.m */; };
 		5F1F949B191DC4770026A14A /* TAASProxyResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F949A191DC4770026A14A /* TAASProxyResponse.m */; };
 		5F1F949E191DD5090026A14A /* TAASErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F949D191DD5090026A14A /* TAASErrorResponse.m */; };
+		5F30F088196D14FE00284415 /* TAASPrettyPrinter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F30F087196D14FE00284415 /* TAASPrettyPrinter.m */; };
 		5F5D507319400C19002FD93B /* TAASClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F5D507219400C19002FD93B /* TAASClient.m */; };
 		FC96CB0E622F4EF9955F11A5 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D413B9A16D8C461791A3C5B8 /* libPods.a */; };
 /* End PBXBuildFile section */
@@ -139,6 +140,8 @@
 		5F1F949A191DC4770026A14A /* TAASProxyResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASProxyResponse.m; sourceTree = "<group>"; };
 		5F1F949C191DD5090026A14A /* TAASErrorResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASErrorResponse.h; sourceTree = "<group>"; };
 		5F1F949D191DD5090026A14A /* TAASErrorResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASErrorResponse.m; sourceTree = "<group>"; };
+		5F30F086196D14FE00284415 /* TAASPrettyPrinter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASPrettyPrinter.h; sourceTree = "<group>"; };
+		5F30F087196D14FE00284415 /* TAASPrettyPrinter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASPrettyPrinter.m; sourceTree = "<group>"; };
 		5F5D507119400C19002FD93B /* TAASClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASClient.h; sourceTree = "<group>"; };
 		5F5D507219400C19002FD93B /* TAASClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASClient.m; sourceTree = "<group>"; };
 		9EB7B3215C314A9784C32F94 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
@@ -225,6 +228,8 @@
 				008209A418991F6600B05498 /* ScanController.m */,
 				5F5D507119400C19002FD93B /* TAASClient.h */,
 				5F5D507219400C19002FD93B /* TAASClient.m */,
+				5F30F086196D14FE00284415 /* TAASPrettyPrinter.h */,
+				5F30F087196D14FE00284415 /* TAASPrettyPrinter.m */,
 				5F1F948C191D9CBD0026A14A /* HTTP server */,
 				5F1F9423191D85D60026A14A /* Client */,
 				0082097018991D8400B05498 /* Supporting Files */,
@@ -503,6 +508,7 @@
 				0082097618991D8400B05498 /* main.m in Sources */,
 				5F1F9470191D897C0026A14A /* HOTPGenerator.m in Sources */,
 				5F1F9492191D9F7D0026A14A /* TAASWebSocket.m in Sources */,
+				5F30F088196D14FE00284415 /* TAASPrettyPrinter.m in Sources */,
 				5F1F947C191D898E0026A14A /* base64.c in Sources */,
 				3C1B89B4196214D500AAF455 /* TableViewCell.m in Sources */,
 			);

@@ -8,12 +8,12 @@
 
 #import "RootController.h"
 #import "AppDelegate.h"
+#import "TAASPrettyPrinter.h"
 #import "FXKeychain.h"
 #import "FXReachability.h"
 #import <ifaddrs.h>
 #import <net/if.h>
 #import <arpa/inet.h>
-#import "MHPrettyDate.h"
 #import "RequestUtils.h"
 #import "DDLog.h"
 
@@ -43,29 +43,6 @@
 static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 
-@interface MHPrettyDate (TAAS)
-
-+ (NSString *)shortPrettyDateFromDate:(NSDate *)date;
-
-@end
-
-
-@implementation MHPrettyDate (TAAS)
-
-+ (NSString *)shortPrettyDateFromDate:(NSDate *)date {
-    if (date == nil) return nil;
-
-    NSInteger seconds = [date timeIntervalSinceNow];
-    if (seconds <= -60) {
-        return [MHPrettyDate prettyDateFromDate:date withFormat:MHPrettyDateShortRelativeTime];
-    }
-    if (seconds ==  0) return @"now";
-    return [NSString stringWithFormat:@"%ld%@", (long)-seconds,
-                     NSLocalizedStringFromTable(@"s", @"MHPrettyDate", nil)];
-}
-@end
-
-
 @interface RootController ()
 
 // if nothing from bonjour within 3 seconds
@@ -89,6 +66,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSMutableDictionary       *entities;
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
 @property (        nonatomic) BOOL                       customaryP;
+
 
 // network reachability
 @property (        nonatomic) FXReachabilityStatus       fxReachabilityStatus;
@@ -517,6 +495,11 @@ didReceiveResponse:(NSURLResponse *)response {
         self.refreshControl.attributedTitle = refreshString;
         [self deleteAllTableData];
         self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName, @"connected"];
+        [self pushDataDictionary:@{ kWhenEntry : [self.utcFormatter stringFromDate:[NSDate date]]
+                                  , kDataEntry : self.statusLabel.text
+                                  }
+                   ontoTable:self.tableConsoleData
+                 withOptions:kPushRefresh];
         [self.service listDevices];
 
         NSDictionary *result = [dictionary objectForKey:@"result"];
@@ -561,9 +544,7 @@ didReceiveResponse:(NSURLResponse *)response {
             if ((date.length == 0) || (message.length == 0)) return;
             NSString *meta = ([entry objectForKey:@"meta"] != [NSNull null])
                                  ? [entry objectForKey:@"meta"] : @" ";
-            NSString *data = [self valuesPP:meta];
-
-// TODO: more message simplification here...
+            NSString *data = [[TAASPrettyPrinter singleton] valuesPP:meta];
             if ([data isEqual:@"[Circular]"]) return;
 
             NSRange range = [message rangeOfString:@"device/" options:NSAnchoredSearch];
@@ -652,44 +633,19 @@ didReceiveResponse:(NSURLResponse *)response {
         }
     }
 
-    NSMutableDictionary *state = [[NSMutableDictionary alloc] initWithCapacity:info.count];
     [info enumerateKeysAndObjectsUsingBlock:^(id key, NSString *value, BOOL *stop) {
-// TODO: more property simplification here...
-        if (([value isKindOfClass:[NSString class]])
-                && ([value isEqualToString:@"********"])) return;
-        if ([key isEqualToString:@"displayUnits"]) {
-            self.customaryP = [value isEqualToString:@"customary"];
-            return;
-	}
-        NSArray *skip = @[ @"authorizeURL",
-                           @"cycleTime",
-                           @"email",
-                           @"forecasts",
-                           @"identity",
-                           @"lastSample",
-                           @"locations",
-                           @"monitoring",
-                           @"remote",
-                           @"review",
-                           @"station",
-                           @"version"
-                           ];
-        if ([skip indexOfObject:key] != NSNotFound) return;
-        if (([key isEqualToString:@"track"]) && ([value isKindOfClass:[NSDictionary class]])) {
-            NSMutableDictionary *track = [value mutableCopy];
-            [track removeObjectForKey:@"albumArtURI"];
-            value = (id)track;
-        }
-
-        [state setObject:value forKey:key];
+        if (![key isEqualToString:@"displayUnits"]) return;
+        self.customaryP = [value isEqualToString:@"customary"];
+        *stop = YES;
     }];
-    NSString *data = [self valuesPP:state];
+
+    NSString *data = [[TAASPrettyPrinter singleton] infoPP:info withDisplayUnits:self.customaryP];
     NSString *whatami = [entity objectForKey:kWhatAmI];
     range = [whatami rangeOfString:@"/device/gateway/" options:NSAnchoredSearch];
     if (range.location == NSNotFound) {
         range = [whatami rangeOfString:@"/device/indicator/" options:NSAnchoredSearch];
     }
-    if ((range.location != NSNotFound) || (state.count < 1) || (data == nil)) data = @" ";
+    if ((range.location != NSNotFound) || (data == nil)) data = @" ";
 
     NSString *output = [NSString stringWithFormat:@"%@: %@\n%@",
                                  [entity objectForKey:@"name"],
@@ -895,86 +851,6 @@ didReceiveResponse:(NSURLResponse *)response {
 
     return name;
 }
-
-- (NSString *)valuesPP:(id)value {
-    NSMutableString *result = [[NSMutableString alloc] init];
-
-    if ([value isKindOfClass:[NSDictionary class]]) {
-        [value enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
-            NSString *string = [self valuePP:value];
-            if (string == nil) return;
-            if ((string.length > 36) && ([key isEqualToString:@"body"])) return;
-
-            char keystring[20];
-            snprintf(keystring, sizeof keystring, "%s:", (const char *)[key UTF8String]);
-            if (result.length > 0) [result appendString:@"\n"];
-            [result appendFormat:@"%-16.16s %@", keystring, value];
-        }];
-
-        return result;
-    }
-
-    if ([value isKindOfClass:[NSDictionary class]]) {
-        [value enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
-            NSString *string = [self valuePP:value];
-            if (string == nil) return;
-
-            char keystring[20];
-            snprintf(keystring, sizeof keystring, "%lu:", (unsigned long) idx);
-            if (result.length > 0) [result appendString:@"\n"];
-            [result appendFormat:@"%-3.3s %@", keystring, value];
-       }];
-
-        return result;
-    }
-
-    return [self valuePP:value];
-}
-
-- (NSString *)valuePP:(id)value {
-    if ((value == nil) || ([value isKindOfClass:[NSNull class]])) return nil;
-
-    if ([value isKindOfClass:[NSDictionary class]]) return [self dictionaryPP:value];
-    if ([value isKindOfClass:[NSArray class]]) return [self arrayPP:value];
-    if (![value isKindOfClass:[NSString class]]) return [NSString stringWithFormat:@"%@", value];
-
-    NSError *error = nil;
-    NSData *data = [value dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                               options:kNilOptions
-                                                                 error:&error];
-    return (dictionary ? [self dictionaryPP:dictionary] : value);
-}
-
-- (NSString *)dictionaryPP:(NSDictionary *)dict {
-    NSMutableString *result = [[NSMutableString alloc] init];
-
-    [dict enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
-        NSString *string = [self valuePP:value];
-        if (string != nil) {
-            if ((string.length > 36) && ([key isEqualToString:@"body"])) return;
-            [result appendFormat:((result.length > 0) ? @", %@:%@" : @"{%@:%@"), key, string];
-        }
-    }];
-    if (result.length == 0) return nil;
-    [result appendString:@"}"];
-
-    return result;
-}
-
-- (NSString *)arrayPP:(NSArray *)array {
-    NSMutableString *result = [[NSMutableString alloc] init];
-
-    [array enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
-        NSString *string = [self valuePP:value];
-        if (string != nil) [result appendFormat:((result.length > 0) ? @", %@" : @"[%@"), string];
-    }];
-    if (result.length == 0) return nil;
-    [result appendString:@"]"];
-
-    return result;
-}
-
 
 # pragma mark - segmented (mode) control
 
