@@ -7,6 +7,7 @@
 //
 
 #import "TAASPrettyPrinter.h"
+#import "ZFCardinalDirection.h"
 #import "DDLog.h"
 
 
@@ -27,12 +28,17 @@ enum PPenum {
     kLux,
     kMeters,
     kMetersPerSecond,
+    kMetersApprox,
     kMilliBars,
     kMilliMeters,
+    kMilliMetersPerHour,
+    kPcsPerLiter,
     kPPM,
     kPercentage,
     kTimestamp,
     kTrack,
+    kWatts,
+    kVolts,
 
     kDefault
 };
@@ -56,22 +62,27 @@ enum PPenum {
 
 - (id) init {
     if ((self = [super init])) {
-        self.enums = @{ @"accuracy"        : @(kMeters)
+        self.enums = @{ @"accuracy"        : @(kMetersApprox)
                       , @"airQuality"      : @(kPPM)
                       , @"altitude"        : @(kMeters)
                       , @"authorizeURL"    : @(kIgnore)
+                      , @"battery"         : @(kVolts)
                       , @"batteryLevel"    : @(kPercentage)
                       , @"brightness"      : @(kPercentage)
                       , @"co"              : @(kPPM)
                       , @"co2"             : @(kPPM)
+                      , @"concentration"   : @(kPcsPerLiter)
                       , @"conditions"      : @(kConditions)
                       , @"cycleTime"       : @(kIgnore)
                       , @"displayUnits"    : @(kIgnore)
                       , @"distance"        : @(kKilometers)
                       , @"email"           : @(kIgnore)
+                      , @"exporting"       : @(kWatts)
                       , @"extTemperature"  : @(kCelcius)
+                      , @"fanSpeed"        : @(kPercentage)
                       , @"flow"            : @(kPPM)
                       , @"forecasts"       : @(kIgnore)
+                      , @"generating"      : @(kWatts)
                       , @"goalTemperature" : @(kCelcius)
                       , @"hcho"            : @(kPPM)
                       , @"heading"         : @(kDegrees)
@@ -79,6 +90,7 @@ enum PPenum {
                       , @"identity"        : @(kIgnore)
                       , @"intTemperature"  : @(kCelcius)
                       , @"lastSample"      : @(kTimestamp)
+                      , @"lastupdated"     : @(kTimestamp)
                       , @"light"           : @(kLux)
                       , @"location"        : @(kLocation)
                       , @"locations"       : @(kIgnore)
@@ -89,9 +101,10 @@ enum PPenum {
                       , @"noise"           : @(kDecibels)
                       , @"odometer"        : @(kKilometers)
                       , @"pressure"        : @(kMilliBars)
-                      , @"rainRate"        : @(kMilliMeters)
+                      , @"rainRate"        : @(kMilliMetersPerHour)
                       , @"rainTotal"       : @(kMilliMeters)
                       , @"range"           : @(kKilometers)
+                      , @"rankings"        : @(kIgnore)
                       , @"remote"          : @(kIgnore)
                       , @"review"          : @(kIgnore)
                       , @"rssi"            : @(kDecibels)
@@ -113,10 +126,13 @@ enum PPenum {
                       , @"color"           : @(kColor)
 
                         dial last value
+                      , @"currentUsage"
+                      , @"dailyUsage"
                       , @"actor"
                       , @"property" -> lastValue
                       , @"gauges"
                       , @"plugs"
+                      , @"sensors"
  */
 
                       };
@@ -157,9 +173,12 @@ withDisplayUnits:(BOOL)customaryP {
     int iType = (nType != nil) ? [nType intValue] : kDefault;
 
     long vlong;
+    NSArray *varray;
     NSDate *vdate;
-    NSMutableDictionary *props;
+    NSNumber *vnumber;
+    NSMutableDictionary *vdict;
     NSString *vstring;
+    ZFCardinalDirection *vcardinal;
     switch (iType) {
         case kCelcius:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
@@ -168,16 +187,13 @@ withDisplayUnits:(BOOL)customaryP {
             if (customaryP) vlong = ((vlong * 9) / 5) + 32;
             return [NSString stringWithFormat:@"%ld%@", vlong, customaryP ? @"\u2109" : @"\u2103"];
 
-        case kColor:
-            return value;
-
         case kConditions:
             if (![value isKindOfClass:[NSDictionary class]]) break;
-            props = [value mutableCopy];
-            [props removeObjectForKey:@"code"];
-            [self normalize:props withDisplayUnits:customaryP];
+            vdict = [value mutableCopy];
+            [vdict removeObjectForKey:@"code"];
+            [self normalize:vdict withDisplayUnits:customaryP];
 // TODO: make it nested...
-            return props;
+            return vdict;
 
         case kDecibels:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
@@ -186,10 +202,13 @@ withDisplayUnits:(BOOL)customaryP {
             return [NSString stringWithFormat:@"%ld\u33c8", vlong];
 
         case kDegrees:
-                 if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
-            else if (![value isKindOfClass:[NSNumber class]]) break;
-            else vlong = [value longValue];
-            return [NSString stringWithFormat:@"%ld\u00b0", vlong];
+                   if ([value isKindOfClass:[NSString class]]) {
+                vnumber = [NSNumber numberWithDouble:[value doubleValue]];
+            } else if (![value isKindOfClass:[NSNumber class]]) break;
+            else vnumber = value;
+            vcardinal = [[ZFCardinalDirection alloc] initWithCompassHeadingInDegrees:vnumber];
+            if (vcardinal == nil) return [NSString stringWithFormat:@"%ld\u00b0", [vnumber longValue]];
+            return [vcardinal headingAbbreviation];
 
         case kIgnore:
           return nil;
@@ -203,6 +222,25 @@ withDisplayUnits:(BOOL)customaryP {
 
         case kLocation:
             if (![value isKindOfClass:[NSArray class]]) break;
+            varray = value;
+            if (varray.count >= 2) {
+                NSString *latitude  = [self decimal2sexagesimal:varray[0]
+                                                withNorthOrEast:@"N"
+                                                 andSouthOrWest:@"S"],
+                         *longitude = [self decimal2sexagesimal:varray[1]
+                                                withNorthOrEast:@"E"
+                                                 andSouthOrWest:@"W"];
+              if ((latitude != nil) || (longitude != nil)) {
+                  vstring = [NSString stringWithFormat:@"%@ %@", latitude, longitude];
+                  if (varray.count >= 3) {
+                    vstring = [vstring stringByAppendingFormat:@" %@",
+                                             [self normalize:varray[2]
+                                                      forKey:@"altitude"
+                                            withDisplayUnits:customaryP]];
+                  }
+                  return vstring;
+              }
+            }
             return [NSString stringWithFormat:@"(%@)", [value componentsJoinedByString:@", "]];
 
         case kLux:
@@ -216,7 +254,14 @@ withDisplayUnits:(BOOL)customaryP {
             else if (![value isKindOfClass:[NSNumber class]]) break;
             else vlong = [value longValue];
             if (customaryP) vlong *= 3.28084;
-            return [NSString stringWithFormat:@"%ld%@", vlong, customaryP ? @" feet" : @"m"];
+            return [NSString stringWithFormat:@"%ld%@", vlong, customaryP ? @"ft" : @"m"];
+
+        case kMetersApprox:
+                 if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
+            else if (![value isKindOfClass:[NSNumber class]]) break;
+            else vlong = [value longValue];
+            if (customaryP) vlong *= 3.28084;
+            return [NSString stringWithFormat:@"\u00b1%ld%@", vlong, customaryP ? @" feet" : @"m"];
 
          case kMetersPerSecond:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
@@ -232,11 +277,14 @@ withDisplayUnits:(BOOL)customaryP {
             return [NSString stringWithFormat:@"%ld mbars", vlong];
 
         case kMilliMeters:
+        case kMilliMetersPerHour:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
             else if (![value isKindOfClass:[NSNumber class]]) break;
             else vlong = [value longValue];
             if (customaryP) vlong *= 0.0393701;
-            return [NSString stringWithFormat:@"%ld%@", vlong, customaryP ? @" inches" : @"mm"];
+            return [NSString stringWithFormat:@"%ld%@", vlong, 
+                             iType == (kMilliMeters) ? (customaryP ? @" inches"      : @"mm")
+                                                     : (customaryP ? @" inches/hour" : @"mm/h")];
 
         case kPPM:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
@@ -244,12 +292,18 @@ withDisplayUnits:(BOOL)customaryP {
             else vlong = [value longValue];
             return [NSString stringWithFormat:@"%ld ppm", vlong];
 
+        case kPcsPerLiter:
+                 if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
+            else if (![value isKindOfClass:[NSNumber class]]) break;
+            else vlong = [value longValue];
+            return [NSString stringWithFormat:@"%ld pcs/liter", vlong];
+
         case kPercentage:
 // TODO: handle array case as well
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
             else if (![value isKindOfClass:[NSNumber class]]) break;
             else vlong = [value longValue];
-            return [NSString stringWithFormat:@"%d%%", vlong];
+            return [NSString stringWithFormat:@"%ld%%", vlong];
 
         case kTimestamp:
                  if ([value isKindOfClass:[NSDate class]]) vdate = value;
@@ -262,13 +316,25 @@ withDisplayUnits:(BOOL)customaryP {
         case kTrack:
 // TODO: make it nested...
             if (![value isKindOfClass:[NSDictionary class]]) break;
-            props = [value mutableCopy];
-            [props removeObjectForKey:@"albumArtURI"];
-            vstring = [self milliseconds:[props objectForKey:@"duration"]];
-            if (vstring != nil) [props setObject:vstring forKey:@"duration"];
-            vstring = [self milliseconds:[props objectForKey:@"position"]];
-            if (vstring != nil) [props setObject:vstring forKey:@"position"];
-            return props;
+            vdict = [value mutableCopy];
+            [vdict removeObjectForKey:@"albumArtURI"];
+            vstring = [self milliseconds:[vdict objectForKey:@"duration"]];
+            if (vstring != nil) [vdict setObject:vstring forKey:@"duration"];
+            vstring = [self milliseconds:[vdict objectForKey:@"position"]];
+            if (vstring != nil) [vdict setObject:vstring forKey:@"position"];
+            return vdict;
+
+        case kVolts:
+                 if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
+            else if (![value isKindOfClass:[NSNumber class]]) break;
+            else vlong = [value longValue];
+            return [NSString stringWithFormat:@"%ld volts", vlong];
+
+        case kWatts:
+                 if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
+            else if (![value isKindOfClass:[NSNumber class]]) break;
+            else vlong = [value longValue];
+            return [NSString stringWithFormat:@"%ld watts", vlong];
 
         default:
             break;
@@ -276,6 +342,32 @@ withDisplayUnits:(BOOL)customaryP {
 
     return value;
 }
+
+- (NSString *)decimal2sexagesimal:(NSNumber *)value
+                   withNorthOrEast:(NSString *)northOrEast
+                   andSouthOrWest:(NSString *)southOrWest {
+    if (value == nil) return nil;
+
+    if ((![value isKindOfClass:[NSNumber class]]) && (![value isKindOfClass:[NSString class]]))return nil;
+    double dd = [value doubleValue];
+    NSString *direction = northOrEast;
+    if (dd < 0) {
+        dd = -dd;
+        direction = southOrWest;
+    }
+
+    double degrees = floor(dd);
+    dd = (dd - degrees) * 60;
+
+    double minutes = floor(dd);
+    dd = (dd - minutes) * 60;
+
+    double seconds = round(dd);
+
+    return [NSString stringWithFormat:@"%.0f\u00b0%02.0f\u2032%02.0f\u2033%@",
+                     degrees, minutes, seconds, direction];
+}
+
 
 - (NSString *)milliseconds:(NSNumber *)value {
     if ((value == nil) || (![value isKindOfClass:[NSNumber class]])) return nil;
