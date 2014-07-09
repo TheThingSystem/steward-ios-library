@@ -559,7 +559,7 @@ didReceiveResponse:(NSURLResponse *)response {
             NSString *message = [entry objectForKey:@"message"];
             NSString *meta = ([entry objectForKey:@"meta"] == [NSNull null])
                                  ? @"" : [entry objectForKey:@"meta"];
-            NSString *data = [self valuePP:meta];
+            NSString *data = [self valuesPP:meta];
             if ((date.length == 0) || (message.length == 0)) return;
 
 // TODO: more message simplification here...
@@ -573,9 +573,9 @@ didReceiveResponse:(NSURLResponse *)response {
             if (range.location != NSNotFound) {
               range = [message rangeOfString:@" "];
               if (range.location != NSNotFound) whoami = [message substringToIndex:range.location];
-	    }
+            }
 
-	    NSLog(@"message=%@",message);
+            NSLog(@"message=%@",message);
             NSString *output = [NSString stringWithFormat:@"%@\n%@", message, data];
             [self pushDataDictionary:@{ kWhenEntry : date
                                       , kDataEntry : output
@@ -666,18 +666,18 @@ didReceiveResponse:(NSURLResponse *)response {
 
         [state setObject:value forKey:key];
     }];
-    NSString *meta = [self dictionaryPP:state];
+    NSString *data = [self valuesPP:state];
     NSString *whatami = [entity objectForKey:kWhatAmI];
     range = [whatami rangeOfString:@"/device/gateway/" options:NSAnchoredSearch];
     if (range.location == NSNotFound) {
         range = [whatami rangeOfString:@"/device/indicator/" options:NSAnchoredSearch];
     }
-    if ((range.location != NSNotFound) || (state.count < 1) || (meta == nil)) meta = whatami;
+    if ((range.location != NSNotFound) || (state.count < 1) || (data == nil)) data = @"";
 
     NSString *output = [NSString stringWithFormat:@"%@: %@\n%@",
                                  [entity objectForKey:@"name"],
                                  [entity objectForKey:@"status"],
-                                 meta];
+                                 data];
 
     [self.tableDevicesData enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
         if (![[value objectForKey:kWhoEntry] isEqualToString:whoami]) return;
@@ -877,6 +877,41 @@ didReceiveResponse:(NSURLResponse *)response {
     if (range.location != NSNotFound) name = [name substringToIndex:range.location];
 
     return name;
+}
+
+- (NSString *)valuesPP:(id)value {
+    NSMutableString *result = [[NSMutableString alloc] init];
+
+    if ([value isKindOfClass:[NSDictionary class]]) {
+        [value enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+            NSString *string = [self valuePP:value];
+            if (string == nil) return;
+            if ((string.length > 36) && ([key isEqualToString:@"body"])) return;
+
+            char keystring[20];
+            snprintf(keystring, sizeof keystring, "%s:", (const char *)[key UTF8String]);
+            if (result.length > 0) [result appendString:@"\n"];
+            [result appendFormat:@"%-16.16s %@", keystring, value];
+        }];
+
+        return result;
+    }
+
+    if ([value isKindOfClass:[NSDictionary class]]) {
+        [value enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+            NSString *string = [self valuePP:value];
+            if (string == nil) return;
+
+            char keystring[20];
+            snprintf(keystring, sizeof keystring, "%lu:", (unsigned long) idx);
+            if (result.length > 0) [result appendString:@"\n"];
+            [result appendFormat:@"%-3.3s %@", keystring, value]; 
+       }];
+
+        return result;
+    }
+
+    return [self valuePP:value];
 }
 
 - (NSString *)valuePP:(id)value {
@@ -1089,12 +1124,12 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
             else if ([minor isEqualToString:@"temperature"]) minor = @"meteo";
             else if ([minor isEqualToString:@"sensor"])      minor = @"generic";
             else imageName = [NSString stringWithFormat:@"sensor-%@", minor];
-	} else if ([major isEqualToString:@"lighting"]) {
+        } else if ([major isEqualToString:@"lighting"]) {
                  if ([minor isEqualToString:@"rgb"])         minor = @"lightstrip";
             else if ([minor isEqualToString:@"color"])       minor = @"led";
-	} else if ([major isEqualToString:@"motive"]) {
+        } else if ([major isEqualToString:@"motive"]) {
                  if ([minor isEqualToString:@"model-s"])     minor = @"vehicle";
-	} else if ([major isEqualToString:@"sensor"]) {
+        } else if ([major isEqualToString:@"sensor"]) {
                  if ([minor isEqualToString:@"sensortag"])   minor = @"generic";
             else if ([minor isEqualToString:@"spotter"])     minor = @"generic";
         }
