@@ -1092,10 +1092,11 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
 
 -    (CGFloat)tableView:(UITableView *)tableView
 heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    CGFloat rowHeight = 20;
+    CGFloat rowHeight = 54.0f;
+    CGFloat fontSize = 13.0f;
     NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
 
-    UIFont *font = [UIFont systemFontOfSize:14.0f];
+    UIFont *font = [UIFont fontWithName:@"Menlo-Regular" size:fontSize];
     NSDictionary *attrsDictionary = [NSDictionary dictionaryWithObject:font
                                                                 forKey:NSFontAttributeName];
     NSAttributedString *attrString1 =
@@ -1105,9 +1106,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
         [attrString1 boundingRectWithSize:CGSizeMake([tableView frame].size.width - 65, 450)
                                   options:NSStringDrawingUsesLineFragmentOrigin
                                   context:nil].size.height;
-    rowHeight += label1Height;
-
-    return rowHeight;
+    return fmax(rowHeight, label1Height + fontSize);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
