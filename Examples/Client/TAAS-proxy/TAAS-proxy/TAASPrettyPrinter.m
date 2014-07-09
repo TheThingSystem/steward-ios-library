@@ -282,7 +282,7 @@ withDisplayUnits:(BOOL)customaryP {
             else if (![value isKindOfClass:[NSNumber class]]) break;
             else vlong = [value longValue];
             if (customaryP) vlong *= 0.0393701;
-            return [NSString stringWithFormat:@"%ld%@", vlong, 
+            return [NSString stringWithFormat:@"%ld%@", vlong,
                              iType == (kMilliMeters) ? (customaryP ? @" inches"      : @"mm")
                                                      : (customaryP ? @" inches/hour" : @"mm/h")];
 

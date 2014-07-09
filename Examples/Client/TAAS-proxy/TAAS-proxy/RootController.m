@@ -948,15 +948,13 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
         NSMutableArray *array =
             [NSMutableArray arrayWithArray:[tableArray sortedArrayUsingComparator:^(NSDictionary *obj1,
                                                                                     NSDictionary *obj2) {
-                NSString *whoami = [obj1 objectForKey:kWhoEntry];
-                NSRange range = [whoami rangeOfString:@"place/" options:NSAnchoredSearch];
-                whoami = [obj2 objectForKey:kWhoEntry];
-                if (range.location != NSNotFound) {
-                    range = [whoami rangeOfString:@"place/" options:NSAnchoredSearch];
+                NSRange range = [[obj1 objectForKey:kWhoEntry] rangeOfString:@"place/"
+                                                                     options:NSAnchoredSearch];
+                BOOL placeP = range.location != NSNotFound;
+                range = [[obj2 objectForKey:kWhoEntry] rangeOfString:@"place/" options:NSAnchoredSearch];
+                if (placeP) {
                     if (range.location == NSNotFound) return NSOrderedAscending;
-                }
-                range = [whoami rangeOfString:@"place/" options:NSAnchoredSearch];
-                if (range.location != NSNotFound) return NSOrderedDescending;
+                } else if (range.location != NSNotFound) return NSOrderedDescending;
 
                 return [[obj2 objectForKey:kWhenEntry] compare:[obj1 objectForKey:kWhenEntry]];
             }]];
