@@ -88,6 +88,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 // device status
 @property (strong, nonatomic) NSMutableDictionary       *entities;
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
+@property (        nonatomic) BOOL                       customaryP;
 
 // network reachability
 @property (        nonatomic) FXReachabilityStatus       fxReachabilityStatus;
@@ -557,10 +558,10 @@ didReceiveResponse:(NSURLResponse *)response {
 
             NSString *date = [entry objectForKey:@"date"];
             NSString *message = [entry objectForKey:@"message"];
+            if ((date.length == 0) || (message.length == 0)) return;
             NSString *meta = ([entry objectForKey:@"meta"] != [NSNull null])
                                  ? [entry objectForKey:@"meta"] : @" ";
             NSString *data = [self valuesPP:meta];
-            if ((date.length == 0) || (message.length == 0)) return;
 
 // TODO: more message simplification here...
             if ([data isEqual:@"[Circular]"]) return;
@@ -653,17 +654,22 @@ didReceiveResponse:(NSURLResponse *)response {
 
     NSMutableDictionary *state = [[NSMutableDictionary alloc] initWithCapacity:info.count];
     [info enumerateKeysAndObjectsUsingBlock:^(id key, NSString *value, BOOL *stop) {
+// TODO: more property simplification here...
         if (([value isKindOfClass:[NSString class]])
                 && ([value isEqualToString:@"********"])) return;
+        if ([key isEqualToString:@"displayUnits"]) {
+            self.customaryP = [value isEqualToString:@"customary"];
+            return;
+	}
         NSArray *skip = @[ @"authorizeURL",
                            @"cycleTime",
-                           @"displayUnits",
                            @"email",
                            @"forecasts",
                            @"identity",
                            @"lastSample",
                            @"locations",
                            @"monitoring",
+                           @"remote",
                            @"review",
                            @"station",
                            @"version"
