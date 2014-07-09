@@ -23,6 +23,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @interface AppDelegate ()
 
 @property (        nonatomic) BOOL                       launchedP;
+@property (        nonatomic) BOOL                       backgroundSupported;
 @property (        nonatomic) UIBackgroundTaskIdentifier backgroundTaskID;
 @property (        nonatomic) UIBackgroundTaskIdentifier notifyTaskID;
 @property (strong, nonatomic) HTTPServer                *httpServer;
@@ -187,12 +188,14 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     self.speechSynthesizer = [[AVSpeechSynthesizer alloc] init];
 
-    BOOL backgroundSupported = NO;
+    self.backgroundSupported = NO;
     UIDevice *device = [UIDevice currentDevice];
     if ([device respondsToSelector:@selector(isMultitaskingSupported)]) {
-      backgroundSupported = device.multitaskingSupported;
+      self.backgroundSupported = device.multitaskingSupported;
     }
-    if (!backgroundSupported) DDLogError(@"background processing not supported");
+    if (!self.backgroundSupported) DDLogError(@"background processing not supported");
+    NSArray *backgroundModes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"UIBackgroundModes"];
+    if ([backgroundModes indexOfObject:@"voip"] == NSNotFound) self.backgroundSupported = NO;
     self.backgroundTaskID = UIBackgroundTaskInvalid;
     self.notifyTaskID = UIBackgroundTaskInvalid;
 
@@ -287,6 +290,8 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
 
 - (void)keepAlive:(UIApplication *)application
             onoff:(BOOL)onoff {
+    if (!self.backgroundSupported) return;
+
     DDLogVerbose(@"keepAlive onoff=%@", onoff ? @"YES" : @"NO");
 
     if (self.backgroundTaskID != UIBackgroundTaskInvalid) {

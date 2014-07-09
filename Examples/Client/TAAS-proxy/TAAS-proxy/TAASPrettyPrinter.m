@@ -16,6 +16,8 @@
 // static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 
+#define kKeyLength    (12)
+
 enum PPenum {
     kCelcius,
     kColor,
@@ -46,6 +48,7 @@ enum PPenum {
 
 
 @interface  TAASPrettyPrinter ()
+@property (strong, nonatomic) NSDictionary    *alias;
 @property (strong, nonatomic) NSDictionary    *enums;
 @property (strong, nonatomic) NSDateFormatter *utcFormatter;
 @end
@@ -63,6 +66,11 @@ enum PPenum {
 
 - (id) init {
     if ((self = [super init])) {
+        self.alias = @{ @"extTemperature"  : @"outsideTemp"
+                      , @"goalTemperature" : @"goalTemp"
+                      , @"intTemperature"  : @"insideTemp"
+                      , @"temperature"     : @"temp"
+                      };
         self.enums = @{ @"accuracy"        : @(kMetersApprox)
                       , @"airQuality"      : @(kPPM)
                       , @"altitude"        : @(kMeters)
@@ -256,7 +264,7 @@ withDisplayUnits:(BOOL)customaryP {
             else if (![value isKindOfClass:[NSNumber class]]) break;
             else vlong = [value longValue];
             if (customaryP) vlong *= 3.28084;
-            return [NSString stringWithFormat:@"%ld%@", vlong, customaryP ? @"ft" : @"m"];
+            return [NSString stringWithFormat:@"%ld%@", vlong, customaryP ? @" feet" : @"m"];
 
         case kMetersApprox:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
@@ -315,7 +323,7 @@ withDisplayUnits:(BOOL)customaryP {
                   [dict setObject:[self normalize:varray[1]
                                            forKey:key
                                         withDisplayUnits:customaryP]
-                           forKey:@"allowedCharge"];
+                           forKey:@"goalCharge"];
                   [dict setObject:[self normalize:varray[2]
                                            forKey:key
                                         withDisplayUnits:customaryP]
@@ -442,11 +450,13 @@ withDisplayUnits:(BOOL)customaryP {
             if (string == nil) return;
             if ((string.length > 36) && ([key isEqualToString:@"body"])) return;
 
-            char keystring[20];
+            char keystring[kKeyLength + 1];
+            NSString *alias = [self.alias objectForKey:key];
+            if (alias != nil) key = alias;
             snprintf(keystring, sizeof keystring, "%s:", (const char *)[key UTF8String]);
             if (result.length > 0) [result appendString:@"\n"];
             [result appendFormat:@"%*.*s%-*.*s %@", indentLevel, indentLevel, "",
-                    16 - indentLevel, 16-indentLevel, keystring, value];
+                    kKeyLength - indentLevel, kKeyLength-indentLevel, keystring, value];
         }];
 
         return result;
@@ -458,7 +468,7 @@ withDisplayUnits:(BOOL)customaryP {
             if (string == nil) return;
 
             if (result.length > 0) [result appendString:@"\n"];
-            [result appendFormat:@"%-16.16s %@", "", value];
+            [result appendFormat:@"%-*.*s %@", kKeyLength, kKeyLength, "", value];
        }];
 
         return result;
