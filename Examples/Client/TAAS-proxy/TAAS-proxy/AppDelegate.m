@@ -173,13 +173,17 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     }
 
     self.audioSession = [AVAudioSession sharedInstance];
+
     error = nil;
     [self.audioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
     if (error != nil) DDLogError(@"error setting audio session category to playback: %@", error);
 
     error = nil;
     [self.audioSession setActive:YES error:&error];
-    if (error!= nil) DDLogError(@"error setting audio session active: %@", error);
+    if (error!= nil) {
+        DDLogError(@"error setting audio session active: %@", error);
+        self.audioSession = nil;
+    }
 
     self.speechSynthesizer = [[AVSpeechSynthesizer alloc] init];
 

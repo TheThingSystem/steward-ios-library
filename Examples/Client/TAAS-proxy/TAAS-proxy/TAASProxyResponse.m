@@ -127,13 +127,21 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     AVAudioSession *audioSession = appDelegate.audioSession;
+    if (audioSession == nil) {
+        appDelegate.audioSession = [AVAudioSession sharedInstance];
+        audioSession = appDelegate.audioSession;
+    }
+
     error = nil;
     [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
     if (error != nil) HTTPLogError(@"error setting audio session category to play and record: %@", error);
 
     error = nil;
     [audioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error];
-    if (error != nil) HTTPLogError(@"error overriding audio port use speaker: %@", error);
+    if (error != nil) {
+        HTTPLogError(@"error overriding audio port use speaker: %@", error);
+        appDelegate.audioSession = nil;
+    }
 
     AVSpeechUtterance *speechUtterance = [AVSpeechUtterance speechUtteranceWithString:text];
     // based on observation
