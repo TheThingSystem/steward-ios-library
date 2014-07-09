@@ -330,7 +330,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     NSMutableArray *allStewards = [keyChain objectForKey:kAllStewards];
     allStewards = (allStewards != nil) ? [allStewards mutableCopy]
-                                       : [[NSMutableArray alloc] initWithCapacity:1];
+                                       : [NSMutableArray arrayWithCapacity:1];
 
     BOOL foundP = [allStewards indexOfObject:name] != NSNotFound;
     if (!foundP) {
@@ -493,13 +493,9 @@ didReceiveResponse:(NSURLResponse *)response {
         [refreshString addAttributes:@{ NSForegroundColorAttributeName: [UIColor grayColor] }
                                range:NSMakeRange(0, refreshString.length)];
         self.refreshControl.attributedTitle = refreshString;
-        [self deleteAllTableData];
+        [self deleteAllTableData:NO];
         self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName, @"connected"];
-        [self pushDataDictionary:@{ kWhenEntry : [self.utcFormatter stringFromDate:[NSDate date]]
-                                  , kDataEntry : self.statusLabel.text
-                                  }
-                   ontoTable:self.tableConsoleData
-                 withOptions:kPushRefresh];
+        [self notifyUser:self.taasName withTitle:@"Connected"];
         [self.service listDevices];
 
         NSDictionary *result = [dictionary objectForKey:@"result"];
@@ -767,7 +763,7 @@ didReceiveResponse:(NSURLResponse *)response {
         struct ifaddrs *ifa;
 
         for (ifa = addrs, count = 0; ifa; ifa = ifa -> ifa_next, count++) continue;
-        addresses = [[NSMutableArray alloc] initWithCapacity:count];
+        addresses = [NSMutableArray arrayWithCapacity:count];
 
         for (ifa = addrs; ifa; ifa = ifa -> ifa_next) {
             if ((ifa -> ifa_flags & IFF_LOOPBACK)
@@ -903,9 +899,11 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
                 case 0:
                     [self confirmActionSheet:nil];
                     break;
+
                 case 1:
                     [self scanQRcode:nil];
                     break;
+
                 case 2:
                 default:
                     break;
@@ -916,8 +914,9 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
         case 1:
             switch (buttonIndex) {
                 case 0:
-                    [self deleteAllTableData];
+                    [self deleteAllTableData:YES];
                     break;
+
                 case 1:
                 default:
                     break;
@@ -932,8 +931,18 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
 
 #pragma mark - tableView dataSource
 
-- (void)deleteAllTableData {
-    [self.tableConsoleData removeAllObjects];
+- (void)deleteAllTableData:(BOOL)forceP {
+    if (forceP) [self.tableConsoleData removeAllObjects];
+    else {
+        [self.tableConsoleData enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+            if ([value objectForKey:kWhoEntry] == nil) return;
+
+            *stop = YES;
+            NSUInteger length = self.tableConsoleData.count - idx;
+            [self.tableConsoleData removeObjectsInRange:NSMakeRange(idx, length - 1)];
+        }];
+    }
+
     [self.tableDevicesData removeAllObjects];
     [self.tableTasksData removeAllObjects];
 
@@ -1059,6 +1068,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 
     [self resetSteward:NO];
     [self setTimeout];
+    [self deleteAllTableData:YES];
     [self notifyUser:(self.monitoringP ? @"reconnecting..." : @"retrying...")
            withTitle:kDiscovery];
 }

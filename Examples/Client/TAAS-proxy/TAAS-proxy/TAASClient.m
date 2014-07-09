@@ -153,7 +153,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)stopManaging {
-    NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:2];
+    NSMutableArray *array = [NSMutableArray arrayWithCapacity:2];
     if (self.monitor != nil) {
         [self.monitor stopMonitoringEvents];
         [array addObject:self.monitor];
@@ -184,7 +184,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (void)stewardFoundAtService:(NSNetService *)service {
     NSDictionary *txt = [NSNetService dictionaryFromTXTRecordData:[service TXTRecordData]];
-    NSMutableDictionary *utf8 = [[NSMutableDictionary alloc] initWithCapacity:txt.count];
+    NSMutableDictionary *utf8 = [NSMutableDictionary dictionaryWithCapacity:txt.count];
     for (NSString *key in txt) {
         NSString *value = [[NSString alloc] initWithData:[txt objectForKey:key]
                                                 encoding:NSUTF8StringEncoding];

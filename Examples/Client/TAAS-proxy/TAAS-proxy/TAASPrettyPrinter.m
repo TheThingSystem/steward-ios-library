@@ -33,6 +33,7 @@ enum PPenum {
     kMilliMeters,
     kMilliMetersPerHour,
     kPcsPerLiter,
+    kPhysical,
     kPPM,
     kPercentage,
     kTimestamp,
@@ -100,6 +101,7 @@ enum PPenum {
                       , @"no2"             : @(kPPM)
                       , @"noise"           : @(kDecibels)
                       , @"odometer"        : @(kKilometers)
+                      , @"physical"        : @(kPhysical)
                       , @"pressure"        : @(kMilliBars)
                       , @"rainRate"        : @(kMilliMetersPerHour)
                       , @"rainTotal"       : @(kMilliMeters)
@@ -108,7 +110,6 @@ enum PPenum {
                       , @"remote"          : @(kIgnore)
                       , @"review"          : @(kIgnore)
                       , @"rssi"            : @(kDecibels)
-                      , @"smoke"           : @(kPPM)
                       , @"station"         : @(kIgnore)
                       , @"temperature"     : @(kCelcius)
                       , @"track"           : @(kTrack)
@@ -145,7 +146,7 @@ enum PPenum {
 
 - (NSString *)infoPP:(NSDictionary *)info
     withDisplayUnits:(BOOL)customaryP {
-    NSMutableDictionary *state = [[NSMutableDictionary alloc] initWithCapacity:info.count];
+    NSMutableDictionary *state = [NSMutableDictionary dictionaryWithCapacity:info.count];
 
     [info enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
         value = [self normalize:value forKey:key withDisplayUnits:customaryP];
@@ -192,8 +193,7 @@ withDisplayUnits:(BOOL)customaryP {
             vdict = [value mutableCopy];
             [vdict removeObjectForKey:@"code"];
             [self normalize:vdict withDisplayUnits:customaryP];
-// TODO: make it nested...
-            return vdict;
+            return [NSString stringWithFormat:@"\n%@", [self valuesPP:vdict withIndentLevel:2]];
 
         case kDecibels:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
@@ -208,7 +208,7 @@ withDisplayUnits:(BOOL)customaryP {
             else vnumber = value;
             vcardinal = [[ZFCardinalDirection alloc] initWithCompassHeadingInDegrees:vnumber];
             if (vcardinal == nil) return [NSString stringWithFormat:@"%ld\u00b0", [vnumber longValue]];
-            return [vcardinal headingAbbreviation];
+            return [[vcardinal headingInEnglish] lowercaseString];
 
         case kIgnore:
           return nil;
@@ -231,14 +231,16 @@ withDisplayUnits:(BOOL)customaryP {
                                                 withNorthOrEast:@"E"
                                                  andSouthOrWest:@"W"];
               if ((latitude != nil) || (longitude != nil)) {
-                  vstring = [NSString stringWithFormat:@"%@ %@", latitude, longitude];
+                  NSMutableArray *array = [NSMutableArray arrayWithCapacity:3];
+                  [array addObject:latitude];
+                  [array addObject:longitude];
                   if (varray.count >= 3) {
-                    vstring = [vstring stringByAppendingFormat:@" %@",
-                                             [self normalize:varray[2]
-                                                      forKey:@"altitude"
-                                            withDisplayUnits:customaryP]];
+                      [array addObject:[self normalize:varray[2]
+                                                forKey:@"altitude"
+                                      withDisplayUnits:customaryP]];
                   }
-                  return vstring;
+                  vstring = [self valuesPP:array withIndentLevel:2];
+                  return [vstring stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
               }
             }
             return [NSString stringWithFormat:@"(%@)", [value componentsJoinedByString:@", "]];
@@ -286,6 +288,11 @@ withDisplayUnits:(BOOL)customaryP {
                              iType == (kMilliMeters) ? (customaryP ? @" inches"      : @"mm")
                                                      : (customaryP ? @" inches/hour" : @"mm/h")];
 
+        case kPhysical:
+            if (![value isKindOfClass:[NSString class]]) break;
+            vstring = [self valuesPP:[value componentsSeparatedByString:@", "] withIndentLevel:2];
+            return [vstring stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+
         case kPPM:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
             else if (![value isKindOfClass:[NSNumber class]]) break;
@@ -299,10 +306,37 @@ withDisplayUnits:(BOOL)customaryP {
             return [NSString stringWithFormat:@"%ld pcs/liter", vlong];
 
         case kPercentage:
-// TODO: handle array case as well
-                 if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
-            else if (![value isKindOfClass:[NSNumber class]]) break;
-            else vlong = [value longValue];
+             varray = value;
+                   if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
+              else if (([value isKindOfClass:[NSArray class]])
+                           && (varray.count >= 3)
+                           && ([key isEqualToString:@"batteryLevel"])) {
+                  NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:2];
+                  [dict setObject:[self normalize:varray[1]
+                                           forKey:key
+                                        withDisplayUnits:customaryP]
+                           forKey:@"allowedCharge"];
+                  [dict setObject:[self normalize:varray[2]
+                                           forKey:key
+                                        withDisplayUnits:customaryP]
+                           forKey:@"maxCharge"];
+                  if (varray.count >= 4) {
+                      vnumber = varray[3];
+                           if ([vnumber isKindOfClass:[NSString class]]) vlong = [vnumber doubleValue];
+                      else if (![value isKindOfClass:[NSNumber class]]) vlong = 0;
+                      else vlong = [value longValue];
+                      if (vlong != 0) {
+                          [dict setObject:[self normalize:[NSDate dateWithTimeIntervalSinceNow:vlong]
+                                                   forKey:@"nextSample"
+                                                withDisplayUnits:customaryP]
+                                   forKey:@"chargeComplete"];
+                      }
+                  }
+                  return [NSString stringWithFormat:@"%@\n%@",
+                                    [self normalize:varray[0] forKey:key withDisplayUnits:customaryP],
+                                     [self valuesPP:dict withIndentLevel:2]];
+            } else if (![value isKindOfClass:[NSNumber class]]) break;
+              else vlong = [value longValue];
             return [NSString stringWithFormat:@"%ld%%", vlong];
 
         case kTimestamp:
@@ -315,7 +349,6 @@ withDisplayUnits:(BOOL)customaryP {
             return [MHPrettyDate shortPrettyDateWithDate:vdate];
 
         case kTrack:
-// TODO: make it nested...
             if (![value isKindOfClass:[NSDictionary class]]) break;
             vdict = [value mutableCopy];
             [vdict removeObjectForKey:@"albumArtURI"];
@@ -323,7 +356,7 @@ withDisplayUnits:(BOOL)customaryP {
             if (vstring != nil) [vdict setObject:vstring forKey:@"duration"];
             vstring = [self milliseconds:[vdict objectForKey:@"position"]];
             if (vstring != nil) [vdict setObject:vstring forKey:@"position"];
-            return vdict;
+            return [NSString stringWithFormat:@"\n%@", [self valuesPP:vdict withIndentLevel:2]];
 
         case kVolts:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
@@ -396,6 +429,11 @@ withDisplayUnits:(BOOL)customaryP {
 }
 
 - (NSString *)valuesPP:(id)value {
+  return [self valuesPP:value withIndentLevel:0];
+}
+
+- (NSString *)valuesPP:(id)value
+       withIndentLevel:(int)indentLevel {
     NSMutableString *result = [[NSMutableString alloc] init];
 
     if ([value isKindOfClass:[NSDictionary class]]) {
@@ -407,21 +445,20 @@ withDisplayUnits:(BOOL)customaryP {
             char keystring[20];
             snprintf(keystring, sizeof keystring, "%s:", (const char *)[key UTF8String]);
             if (result.length > 0) [result appendString:@"\n"];
-            [result appendFormat:@"%-16.16s %@", keystring, value];
+            [result appendFormat:@"%*.*s%-*.*s %@", indentLevel, indentLevel, "",
+                    16 - indentLevel, 16-indentLevel, keystring, value];
         }];
 
         return result;
     }
 
-    if ([value isKindOfClass:[NSDictionary class]]) {
+    if ([value isKindOfClass:[NSArray class]]) {
         [value enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
             NSString *string = [self valuePP:value];
             if (string == nil) return;
 
-            char keystring[20];
-            snprintf(keystring, sizeof keystring, "%lu:", (unsigned long) idx);
             if (result.length > 0) [result appendString:@"\n"];
-            [result appendFormat:@"%-3.3s %@", keystring, value];
+            [result appendFormat:@"%-16.16s %@", "", value];
        }];
 
         return result;
