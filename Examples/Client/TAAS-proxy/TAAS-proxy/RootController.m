@@ -31,6 +31,7 @@
 #define kWhenEntry       @"when"
 #define kWhoEntry        kWhoAmI
 #define kDataEntry       @"data"
+#define kIkonEntry       @"ikon"
 
 #define kPushNone        (     0)
 #define kPushRefresh     (1 << 0)
@@ -665,7 +666,6 @@ didReceiveResponse:(NSURLResponse *)response {
 
         [state setObject:value forKey:key];
     }];
-    NSMutableString *data = [NSMutableString string];
     NSString *meta = [self dictionaryPP:state];
     NSString *whatami = [entity objectForKey:kWhatAmI];
     range = [whatami rangeOfString:@"/device/gateway/" options:NSAnchoredSearch];
@@ -1066,10 +1066,44 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (self.currentDataTable.count <= indexPath.row) return cell;
 
     NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
+
     NSString *date = [tableEntry objectForKey:kWhenEntry];
     if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
     cell.cellTimeLabel.text = date;
+
     cell.cellText1Label.text = [tableEntry objectForKey:kDataEntry];
+
+    NSString *ikon = [tableEntry objectForKey:kIkonEntry];
+    NSString *imageName = (ikon != nil) ? ikon : @"place-home";
+    NSString *whoami = (ikon == nil) ? [tableEntry objectForKey:kWhoEntry] : nil;
+    NSDictionary *entry = (whoami != nil) ? [self.entities objectForKey:whoami] : nil;
+    NSString *whatami = (entry != nil) ? [entry objectForKey:kWhatAmI] : nil;
+    NSArray *components = (whatami != nil) ? [whatami componentsSeparatedByString:@"/"] : nil;
+    if ((components != nil) && (components.count == 5)) {
+        NSString *major = components[2], *minor = components[4];
+
+        if ([major isEqualToString:@"climate"]) {
+            major = @"sensor";
+                 if ([minor isEqualToString:@"control"])   { minor = @"thermostat"; major = @"control"; }
+            else if ([minor isEqualToString:@"monitor"])     minor = @"meteo";
+            else if ([minor isEqualToString:@"temperature"]) minor = @"meteo";
+            else if ([minor isEqualToString:@"sensor"])      minor = @"generic";
+            else imageName = [NSString stringWithFormat:@"sensor-%@", minor];
+	} else if ([major isEqualToString:@"lighting"]) {
+                 if ([minor isEqualToString:@"rgb"])         minor = @"lightstrip";
+            else if ([minor isEqualToString:@"color"])       minor = @"led";
+	} else if ([major isEqualToString:@"motive"]) {
+                 if ([minor isEqualToString:@"model-s"])     minor = @"vehicle";
+	} else if ([major isEqualToString:@"sensor"]) {
+                 if ([minor isEqualToString:@"sensortag"])   minor = @"generic";
+            else if ([minor isEqualToString:@"spotter"])     minor = @"generic";
+        }
+        imageName = [NSString stringWithFormat:@"%@-%@", major, minor];
+        NSMutableDictionary *info = [tableEntry mutableCopy];
+        [info setObject:imageName forKey:kIkonEntry];
+        [self.currentDataTable replaceObjectAtIndex:indexPath.row withObject:info];
+    }
+    cell.icon.image = [UIImage imageNamed:imageName];
     return cell;
 }
 
