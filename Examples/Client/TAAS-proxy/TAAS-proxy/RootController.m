@@ -575,7 +575,6 @@ didReceiveResponse:(NSURLResponse *)response {
               if (range.location != NSNotFound) whoami = [message substringToIndex:range.location];
             }
 
-            NSLog(@"message=%@",message);
             NSString *output = [NSString stringWithFormat:@"%@\n%@", message, data];
             [self pushDataDictionary:@{ kWhenEntry : date
                                       , kDataEntry : output
@@ -607,13 +606,19 @@ didReceiveResponse:(NSURLResponse *)response {
 
     self.entities = [[NSMutableDictionary alloc] init];
     NSDictionary *result = [dictionary objectForKey:@"result"];
-    [result enumerateKeysAndObjectsUsingBlock:^(id entityType, id values, BOOL *stop) {
-        if ([entityType isEqual:@"actors"]) return;
+    [result enumerateKeysAndObjectsUsingBlock:^(id whatami, id values, BOOL *stop) {
+        if ([whatami isEqual:@"actors"]) return;
+
+        NSRange range = [whatami rangeOfString:@"/device/" options:NSAnchoredSearch];
+        if (range.location == NSNotFound) {
+            range = [whatami rangeOfString:@"/place" options:NSAnchoredSearch];
+        }
+        if (range.location == NSNotFound) return;
 
         [values enumerateKeysAndObjectsUsingBlock:^(id whoami, id value, BOOL *stop) {
             NSMutableDictionary *entity = [NSMutableDictionary dictionaryWithDictionary:value];
             [entity setObject:whoami forKey:kWhoAmI];
-            [entity setObject:entityType forKey:kWhatAmI];
+            [entity setObject:whatami forKey:kWhatAmI];
 
             [self.entities setObject:entity forKey:whoami];
             [self updateDevice:entity];
@@ -626,7 +631,7 @@ didReceiveResponse:(NSURLResponse *)response {
     NSString *whoami = [entity objectForKey:kWhoAmI];
     NSRange range = [whoami rangeOfString:@"device/" options:NSAnchoredSearch];
     if (range.location == NSNotFound) {
-        range = [whoami rangeOfString:@"/place/" options:NSAnchoredSearch];
+        range = [whoami rangeOfString:@"place/" options:NSAnchoredSearch];
     }
     if (range.location == NSNotFound) return;
 
@@ -652,10 +657,16 @@ didReceiveResponse:(NSURLResponse *)response {
                 && ([value isEqualToString:@"********"])) return;
         NSArray *skip = @[ @"authorizeURL",
                            @"cycleTime",
+                           @"displayUnits",
                            @"email",
+                           @"forecasts",
+                           @"identity",
                            @"lastSample",
                            @"locations",
-                           @"station"
+                           @"monitoring",
+                           @"review",
+                           @"station",
+                           @"version"
                            ];
         if ([skip indexOfObject:key] != NSNotFound) return;
         if (([key isEqualToString:@"track"]) && ([value isKindOfClass:[NSDictionary class]])) {
@@ -905,7 +916,7 @@ didReceiveResponse:(NSURLResponse *)response {
             char keystring[20];
             snprintf(keystring, sizeof keystring, "%lu:", (unsigned long) idx);
             if (result.length > 0) [result appendString:@"\n"];
-            [result appendFormat:@"%-3.3s %@", keystring, value]; 
+            [result appendFormat:@"%-3.3s %@", keystring, value];
        }];
 
         return result;
@@ -1055,8 +1066,18 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
         NSMutableArray *array =
             [NSMutableArray arrayWithArray:[tableArray sortedArrayUsingComparator:^(NSDictionary *obj1,
                                                                                     NSDictionary *obj2) {
-                  return [[obj2 objectForKey:kWhenEntry] compare:[obj1 objectForKey:kWhenEntry]];
-                }]];
+                NSString *whoami = [obj1 objectForKey:kWhoEntry];
+                NSRange range = [whoami rangeOfString:@"place/" options:NSAnchoredSearch];
+                whoami = [obj2 objectForKey:kWhoEntry];
+                if (range.location != NSNotFound) {
+                    range = [whoami rangeOfString:@"place/" options:NSAnchoredSearch];
+                    if (range.location == NSNotFound) return NSOrderedAscending;
+                }
+                range = [whoami rangeOfString:@"place/" options:NSAnchoredSearch];
+                if (range.location != NSNotFound) return NSOrderedDescending;
+
+                return [[obj2 objectForKey:kWhenEntry] compare:[obj1 objectForKey:kWhenEntry]];
+            }]];
 
         BOOL updateCurrentTable = (self.currentDataTable == tableArray);
              if (self.tableConsoleData == tableArray) self.tableConsoleData = array;
@@ -1123,7 +1144,6 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
             else if ([minor isEqualToString:@"monitor"])     minor = @"meteo";
             else if ([minor isEqualToString:@"temperature"]) minor = @"meteo";
             else if ([minor isEqualToString:@"sensor"])      minor = @"generic";
-            else imageName = [NSString stringWithFormat:@"sensor-%@", minor];
         } else if ([major isEqualToString:@"lighting"]) {
                  if ([minor isEqualToString:@"rgb"])         minor = @"lightstrip";
             else if ([minor isEqualToString:@"color"])       minor = @"led";
@@ -1138,6 +1158,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
         [info setObject:imageName forKey:kIkonEntry];
         [self.currentDataTable replaceObjectAtIndex:indexPath.row withObject:info];
     }
+NSLog(@"%@ -> %@",whoami,imageName);
     cell.icon.image = [UIImage imageNamed:imageName];
     return cell;
 }
