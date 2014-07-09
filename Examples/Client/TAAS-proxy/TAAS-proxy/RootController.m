@@ -557,8 +557,8 @@ didReceiveResponse:(NSURLResponse *)response {
 
             NSString *date = [entry objectForKey:@"date"];
             NSString *message = [entry objectForKey:@"message"];
-            NSString *meta = ([entry objectForKey:@"meta"] == [NSNull null])
-                                 ? @"" : [entry objectForKey:@"meta"];
+            NSString *meta = ([entry objectForKey:@"meta"] != [NSNull null])
+                                 ? [entry objectForKey:@"meta"] : @" ";
             NSString *data = [self valuesPP:meta];
             if ((date.length == 0) || (message.length == 0)) return;
 
@@ -683,7 +683,7 @@ didReceiveResponse:(NSURLResponse *)response {
     if (range.location == NSNotFound) {
         range = [whatami rangeOfString:@"/device/indicator/" options:NSAnchoredSearch];
     }
-    if ((range.location != NSNotFound) || (state.count < 1) || (data == nil)) data = @"";
+    if ((range.location != NSNotFound) || (state.count < 1) || (data == nil)) data = @" ";
 
     NSString *output = [NSString stringWithFormat:@"%@: %@\n%@",
                                  [entity objectForKey:@"name"],
@@ -1159,6 +1159,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
         [self.currentDataTable replaceObjectAtIndex:indexPath.row withObject:info];
     }
     cell.icon.image = [UIImage imageNamed:imageName];
+
     return cell;
 }
 
