@@ -1158,7 +1158,6 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
         [info setObject:imageName forKey:kIkonEntry];
         [self.currentDataTable replaceObjectAtIndex:indexPath.row withObject:info];
     }
-NSLog(@"%@ -> %@",whoami,imageName);
     cell.icon.image = [UIImage imageNamed:imageName];
     return cell;
 }
