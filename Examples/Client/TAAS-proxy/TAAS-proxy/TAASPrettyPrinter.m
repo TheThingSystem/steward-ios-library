@@ -306,9 +306,10 @@ withDisplayUnits:(BOOL)customaryP {
             return [NSString stringWithFormat:@"%ld%%", vlong];
 
         case kTimestamp:
-                 if ([value isKindOfClass:[NSDate class]]) vdate = value;
-            else if ([value isKindOfClass:[NSString class]]) vdate = [self.utcFormatter dateFromString:value];
-            else if (![value isKindOfClass:[NSNumber class]]) break;
+                   if ([value isKindOfClass:[NSDate class]]) vdate = value;
+              else if ([value isKindOfClass:[NSString class]]) {
+                vdate = [self.utcFormatter dateFromString:value];
+            } else if (![value isKindOfClass:[NSNumber class]]) break;
             else vdate = [NSDate dateWithTimeIntervalSince1970:([value doubleValue] / 1000)];
             if (vdate == nil) break;
             return [MHPrettyDate shortPrettyDateWithDate:vdate];

@@ -506,7 +506,8 @@ didReceiveResponse:(NSURLResponse *)response {
         if (result != nil) {
             NSDictionary *client = [dictionary objectForKey:@"client"];
             if (client != nil) {
-                self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName, @"authenticated"];
+                self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName,
+                                                  @"authenticated"];
             }
             return;
         }
