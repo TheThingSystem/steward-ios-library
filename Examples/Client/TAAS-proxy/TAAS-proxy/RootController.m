@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 The Thing System. All rights reserved.
 //
 
+#import <CoreTelephony/CTCallCenter.h>
 #import "RootController.h"
 #import "AppDelegate.h"
 #import "TAASPrettyPrinter.h"
@@ -66,6 +67,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 // network reachability
 @property (        nonatomic) FXReachabilityStatus       fxReachabilityStatus;
 @property (strong, nonatomic) NSArray                   *fxAddresses;
+@property (strong, nonatomic) CTCallCenter              *ctCallCenter;
 
 // UI
 @property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
@@ -152,6 +154,17 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             [keyChain removeObjectForKey:kLastSteward];
             DDLogVerbose(@"removing lastSteward=%@", lastSteward);
         }
+
+        self.ctCallCenter = [[CTCallCenter alloc] init];
+        self.ctCallCenter.callEventHandler = ^(CTCall *ctCall) {
+            DDLogVerbose(@"callEventHander: %@", ctCall);
+
+            CTCallCenter *callCenter = [[CTCallCenter alloc] init];
+            NSSet *calls = [callCenter currentCalls];
+            if ((calls != nil) || (calls.count > 0)) return;
+            [[NSNotificationCenter defaultCenter]
+                  postNotificationName:FXReachabilityStatusDidChangeNotification object:nil];
+        };
     }
     return self;
 };

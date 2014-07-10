@@ -60,6 +60,7 @@
 		5F30F088196D14FE00284415 /* TAASPrettyPrinter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F30F087196D14FE00284415 /* TAASPrettyPrinter.m */; };
 		5F5D507319400C19002FD93B /* TAASClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F5D507219400C19002FD93B /* TAASClient.m */; };
 		5FA9D7D5196D4FEF00E94512 /* compassPoint.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5FA9D7D4196D4FEF00E94512 /* compassPoint.plist */; };
+		5FC7DB1A196E67C30069834B /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FC7DB19196E67C30069834B /* CoreTelephony.framework */; };
 		FC96CB0E622F4EF9955F11A5 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D413B9A16D8C461791A3C5B8 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -146,6 +147,7 @@
 		5F5D507119400C19002FD93B /* TAASClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASClient.h; sourceTree = "<group>"; };
 		5F5D507219400C19002FD93B /* TAASClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASClient.m; sourceTree = "<group>"; };
 		5FA9D7D4196D4FEF00E94512 /* compassPoint.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = compassPoint.plist; sourceTree = "<group>"; };
+		5FC7DB19196E67C30069834B /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		9EB7B3215C314A9784C32F94 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		D413B9A16D8C461791A3C5B8 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -155,6 +157,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5FC7DB1A196E67C30069834B /* CoreTelephony.framework in Frameworks */,
 				5F1F93D5191D7DED0026A14A /* libxml2.dylib in Frameworks */,
 				00820C631899228900B05498 /* libicucore.dylib in Frameworks */,
 				00820C611899228000B05498 /* Security.framework in Frameworks */,
@@ -205,6 +208,7 @@
 				00820C581899226600B05498 /* AVFoundation.framework */,
 				00820C561899225F00B05498 /* QuartzCore.framework */,
 				00820C541899225900B05498 /* ImageIO.framework */,
+				5FC7DB19196E67C30069834B /* CoreTelephony.framework */,
 				00820C521899225400B05498 /* CoreVideo.framework */,
 				00820C501899224E00B05498 /* CoreMedia.framework */,
 				0082096918991D8400B05498 /* Foundation.framework */,
