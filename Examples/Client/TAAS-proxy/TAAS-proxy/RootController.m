@@ -21,9 +21,6 @@
 #define kAllStewards     @"_allStewards"
 #define kLastSteward     @"_lastSteward"
 
-#define kWhoAmI          @"whoami"
-#define kWhatAmI         @"whatami"
-
 #define kBackgroundDelay 5.0f
 #define kBonjourDelay    3.0f
 #define kNetworkDelay    1.0f
@@ -63,9 +60,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSArray                   *permissions;
 
 // device status
-@property (strong, nonatomic) NSMutableDictionary       *entities;
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
-@property (        nonatomic) BOOL                       customaryP;
 
 
 // network reachability
@@ -600,6 +595,19 @@ didReceiveResponse:(NSURLResponse *)response {
             [entity setObject:whatami forKey:kWhatAmI];
 
             [self.entities setObject:entity forKey:whoami];
+        }];
+    }];
+    [result enumerateKeysAndObjectsUsingBlock:^(id whatami, id values, BOOL *stop) {
+        if ([whatami isEqual:@"actors"]) return;
+
+        NSRange range = [whatami rangeOfString:@"/device/" options:NSAnchoredSearch];
+        if (range.location == NSNotFound) {
+            range = [whatami rangeOfString:@"/place" options:NSAnchoredSearch];
+        }
+        if (range.location == NSNotFound) return;
+
+        [values enumerateKeysAndObjectsUsingBlock:^(id whoami, id value, BOOL *stop) {
+            NSDictionary *entity = (whoami != nil) ? [self.entities objectForKey:whoami] : nil;
             [self updateDevice:entity];
         }];
     }];
@@ -636,12 +644,9 @@ didReceiveResponse:(NSURLResponse *)response {
         *stop = YES;
     }];
 
-    NSString *data = [[TAASPrettyPrinter singleton] infoPP:info withDisplayUnits:self.customaryP];
+    NSString *data = [[TAASPrettyPrinter singleton] infoPP:info];
     NSString *whatami = [entity objectForKey:kWhatAmI];
     range = [whatami rangeOfString:@"/device/gateway/" options:NSAnchoredSearch];
-    if (range.location == NSNotFound) {
-        range = [whatami rangeOfString:@"/device/indicator/" options:NSAnchoredSearch];
-    }
     if ((range.location != NSNotFound) || (data == nil)) data = @" ";
 
     NSString *output = [NSString stringWithFormat:@"%@: %@\n%@",
@@ -1021,8 +1026,8 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *ikon = [tableEntry objectForKey:kIkonEntry];
     NSString *imageName = (ikon != nil) ? ikon : @"place-home";
     NSString *whoami = (ikon == nil) ? [tableEntry objectForKey:kWhoEntry] : nil;
-    NSDictionary *entry = (whoami != nil) ? [self.entities objectForKey:whoami] : nil;
-    NSString *whatami = (entry != nil) ? [entry objectForKey:kWhatAmI] : nil;
+    NSDictionary *entity = (whoami != nil) ? [self.entities objectForKey:whoami] : nil;
+    NSString *whatami = (entity != nil) ? [entity objectForKey:kWhatAmI] : nil;
     NSArray *components = (whatami != nil) ? [whatami componentsSeparatedByString:@"/"] : nil;
     if ((components != nil) && (components.count == 5)) {
         NSString *major = components[2], *minor = components[4];

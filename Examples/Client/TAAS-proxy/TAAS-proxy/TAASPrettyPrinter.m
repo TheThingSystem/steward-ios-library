@@ -7,6 +7,7 @@
 //
 
 #import "TAASPrettyPrinter.h"
+#import "AppDelegate.h"
 #import "ZFCardinalDirection.h"
 #import "DDLog.h"
 
@@ -19,6 +20,7 @@
 #define kKeyLength    (12)
 
 enum PPenum {
+    kActor,
     kCelcius,
     kColor,
     kConditions,
@@ -72,6 +74,7 @@ enum PPenum {
                       , @"temperature"     : @"temp"
                       };
         self.enums = @{ @"accuracy"        : @(kMetersApprox)
+                      , @"actor"           : @(kActor)
                       , @"airQuality"      : @(kPPM)
                       , @"altitude"        : @(kMeters)
                       , @"authorizeURL"    : @(kIgnore)
@@ -80,6 +83,7 @@ enum PPenum {
                       , @"brightness"      : @(kPercentage)
                       , @"co"              : @(kPPM)
                       , @"co2"             : @(kPPM)
+                      , @"color"           : @(kColor)
                       , @"concentration"   : @(kPcsPerLiter)
                       , @"conditions"      : @(kConditions)
                       , @"cycleTime"       : @(kIgnore)
@@ -91,6 +95,7 @@ enum PPenum {
                       , @"fanSpeed"        : @(kPercentage)
                       , @"flow"            : @(kPPM)
                       , @"forecasts"       : @(kIgnore)
+                      , @"gauges"          : @(kActor)
                       , @"generating"      : @(kWatts)
                       , @"goalTemperature" : @(kCelcius)
                       , @"hcho"            : @(kPPM)
@@ -109,15 +114,20 @@ enum PPenum {
                       , @"no2"             : @(kPPM)
                       , @"noise"           : @(kDecibels)
                       , @"odometer"        : @(kKilometers)
+                      , @"organization"    : @(kIgnore)
                       , @"physical"        : @(kPhysical)
+                      , @"plugs"           : @(kActor)
                       , @"pressure"        : @(kMilliBars)
                       , @"rainRate"        : @(kMilliMetersPerHour)
                       , @"rainTotal"       : @(kMilliMeters)
                       , @"range"           : @(kKilometers)
+                      , @"rankings"        : @(kActor)
                       , @"rankings"        : @(kIgnore)
                       , @"remote"          : @(kIgnore)
+                      , @"review"          : @(kActor)
                       , @"review"          : @(kIgnore)
                       , @"rssi"            : @(kDecibels)
+                      , @"sensors"         : @(kActor)
                       , @"station"         : @(kIgnore)
                       , @"temperature"     : @(kCelcius)
                       , @"track"           : @(kTrack)
@@ -132,16 +142,8 @@ enum PPenum {
                       , @"windchill"       : @(kCelcius)
 
 /* TODO:
-                      , @"color"           : @(kColor)
-
-                        dial last value
                       , @"currentUsage"
                       , @"dailyUsage"
-                      , @"actor"
-                      , @"property" -> lastValue
-                      , @"gauges"
-                      , @"plugs"
-                      , @"sensors"
  */
 
                       };
@@ -152,35 +154,35 @@ enum PPenum {
     return self;
 }
 
-- (NSString *)infoPP:(NSDictionary *)info
-    withDisplayUnits:(BOOL)customaryP {
+- (NSString *)infoPP:(NSDictionary *)info {
     NSMutableDictionary *state = [NSMutableDictionary dictionaryWithCapacity:info.count];
 
     [info enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
-        value = [self normalize:value forKey:key withDisplayUnits:customaryP];
+        value = [self normalize:value forKey:key];
         if (value != nil) [state setObject:value forKey:key];
     }];
 
     return (state.count > 0) ? [self valuesPP:state] : @"";
 };
 
--  (void)normalize:(NSMutableDictionary *)props
-  withDisplayUnits:(BOOL)customaryP {
+-  (void)normalize:(NSMutableDictionary *)props {
     [props enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
-        value = [self normalize:value forKey:key withDisplayUnits:customaryP];
+        value = [self normalize:value forKey:key];
         if (value != nil) [props setObject:value forKey:key];
     }];
 }
 
 -  (id)normalize:(id)value
-          forKey:(NSString *)key
-withDisplayUnits:(BOOL)customaryP {
+          forKey:(NSString *)key {
     if (value == nil) return nil;
     if (([value isKindOfClass:[NSString class]]) && ([value isEqualToString:@"********"])) return nil;
 
     NSNumber *nType = [self.enums objectForKey:key];
     int iType = (nType != nil) ? [nType intValue] : kDefault;
 
+    AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
+    RootController *rootController = appDelegate.rootController;
+    BOOL customaryP = rootController.customaryP;
     long vlong;
     NSArray *varray;
     NSDate *vdate;
@@ -189,6 +191,22 @@ withDisplayUnits:(BOOL)customaryP {
     NSString *vstring;
     ZFCardinalDirection *vcardinal;
     switch (iType) {
+        case kActor:
+            if ([value isKindOfClass:[NSArray class]]) {
+                varray = value;
+                NSMutableArray *array = [NSMutableArray arrayWithCapacity:varray.count];
+                [value enumerateObjectsUsingBlock:^(id actor, NSUInteger idx, BOOL *stop) {
+                    [array addObject:[self normalize:actor forKey:key]];
+                }];
+                vstring = [self valuesPP:array withIndentLevel:2];
+                return [vstring stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+            } else if ([value isKindOfClass:[NSString class]]) {
+                NSDictionary *entity = [rootController.entities objectForKey:value];
+                vstring = (entity != nil) ? [entity objectForKey:@"name"] : nil;
+                if (vstring != nil) return vstring;
+            }
+           break;
+
         case kCelcius:
                  if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
             else if (![value isKindOfClass:[NSNumber class]]) break;
@@ -196,11 +214,19 @@ withDisplayUnits:(BOOL)customaryP {
             if (customaryP) vlong = ((vlong * 9) / 5) + 32;
             return [NSString stringWithFormat:@"%ld%@", vlong, customaryP ? @"\u2109" : @"\u2103"];
 
+        case kColor:
+            if (![value isKindOfClass:[NSDictionary class]]) break;
+            vstring = [value objectForKey:@"model"];
+            vdict = (vstring != nil) ? [value objectForKey:vstring] : nil;
+            if (vdict == nil) break;
+            return [NSString stringWithFormat:@"%@\n%*.*s %@", vstring, kKeyLength, kKeyLength, "",
+                             [self paramsPP:vdict]];
+
         case kConditions:
             if (![value isKindOfClass:[NSDictionary class]]) break;
             vdict = [value mutableCopy];
             [vdict removeObjectForKey:@"code"];
-            [self normalize:vdict withDisplayUnits:customaryP];
+            [self normalize:vdict];
             return [NSString stringWithFormat:@"\n%@", [self valuesPP:vdict withIndentLevel:2]];
 
         case kDecibels:
@@ -244,8 +270,7 @@ withDisplayUnits:(BOOL)customaryP {
                   [array addObject:longitude];
                   if (varray.count >= 3) {
                       [array addObject:[self normalize:varray[2]
-                                                forKey:@"altitude"
-                                      withDisplayUnits:customaryP]];
+                                                forKey:@"altitude"]];
                   }
                   vstring = [self valuesPP:array withIndentLevel:2];
                   return [vstring stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
@@ -321,12 +346,10 @@ withDisplayUnits:(BOOL)customaryP {
                            && ([key isEqualToString:@"batteryLevel"])) {
                   NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:2];
                   [dict setObject:[self normalize:varray[1]
-                                           forKey:key
-                                        withDisplayUnits:customaryP]
+                                           forKey:key]
                            forKey:@"goalCharge"];
                   [dict setObject:[self normalize:varray[2]
-                                           forKey:key
-                                        withDisplayUnits:customaryP]
+                                           forKey:key]
                            forKey:@"maxCharge"];
                   if (varray.count >= 4) {
                       vnumber = varray[3];
@@ -335,14 +358,13 @@ withDisplayUnits:(BOOL)customaryP {
                       else vlong = [value longValue];
                       if (vlong != 0) {
                           [dict setObject:[self normalize:[NSDate dateWithTimeIntervalSinceNow:vlong]
-                                                   forKey:@"nextSample"
-                                                withDisplayUnits:customaryP]
+                                                   forKey:@"nextSample"]
                                    forKey:@"chargeComplete"];
                       }
                   }
                   return [NSString stringWithFormat:@"%@\n%@",
-                                    [self normalize:varray[0] forKey:key withDisplayUnits:customaryP],
-                                     [self valuesPP:dict withIndentLevel:2]];
+                                   [self normalize:varray[0] forKey:key],
+                                   [self valuesPP:dict withIndentLevel:2]];
             } else if (![value isKindOfClass:[NSNumber class]]) break;
               else vlong = [value longValue];
             return [NSString stringWithFormat:@"%ld%%", vlong];
@@ -434,6 +456,25 @@ withDisplayUnits:(BOOL)customaryP {
     if (vlong == 0) return [NSString stringWithFormat:@"%d:%d:%d%@", hours, mins, secs, suffix];
 
     return [NSString stringWithFormat:@"%ld:%d:%d:%d%@", vlong, hours, mins, secs, suffix];
+}
+
+- (NSString *)paramsPP:(NSDictionary *)dict {
+    NSUInteger capacity, *cptr;
+    cptr = &capacity;
+
+    capacity = 1;
+    [dict enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+        NSString *param = [NSString stringWithFormat:@"%@:%@", key, value];
+        *cptr += param.length + 1;
+    }];
+
+    NSMutableString *result = [NSMutableString stringWithCapacity:capacity];
+    [dict enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+        [result appendFormat:@"%@%@:%@", (result.length > 0) ? @"," : @"<", key, value];
+    }];
+    [result appendString:@">"];
+
+    return result;
 }
 
 - (NSString *)valuesPP:(id)value {

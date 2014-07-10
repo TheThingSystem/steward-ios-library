@@ -14,8 +14,7 @@
 
 + (TAASPrettyPrinter *)singleton;
 
-- (NSString *)infoPP:(NSDictionary *)info
-    withDisplayUnits:(BOOL)customaryP;
+- (NSString *)infoPP:(NSDictionary *)info;
 - (NSString *)valuesPP:(id)value;
 
 @end
