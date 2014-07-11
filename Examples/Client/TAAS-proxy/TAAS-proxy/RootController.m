@@ -70,13 +70,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) CTCallCenter              *ctCallCenter;
 
 // UI
-@property (weak,   nonatomic) IBOutlet UILabel          *statusLabel;
+@property (weak,   nonatomic) IBOutlet UILabel            *statusLabel;
 @property (weak,   nonatomic) IBOutlet UISegmentedControl *modeControl;
-@property (strong, nonatomic) UIRefreshControl          *refreshControl;
-@property (strong, nonatomic) NSMutableArray            *tableConsoleData;
-@property (strong, nonatomic) NSMutableArray            *tableDevicesData;
-@property (strong, nonatomic) NSMutableArray            *tableTasksData;
-@property (strong, nonatomic) NSMutableArray            *currentDataTable;
+@property (strong, nonatomic) UIRefreshControl            *refreshControl;
+@property (strong, nonatomic) NSMutableArray              *tableConsoleData;
+@property (strong, nonatomic) NSMutableArray              *tableDevicesData;
+@property (strong, nonatomic) NSMutableArray              *tableTasksData;
+@property (strong, nonatomic) NSMutableArray              *currentDataTable;
+@property (strong, nonatomic) NSMutableDictionary         *actionSheetChoices;
 
 @end
 
@@ -930,9 +931,28 @@ didReceiveResponse:(NSURLResponse *)response {
 - (IBAction)rootActionSheet:(id)sender {
     UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@""
                                                              delegate:self
-                                                    cancelButtonTitle:@"Cancel"
-                                               destructiveButtonTitle:@"Clear History"
-                                                    otherButtonTitles:@"Scan QR Code", nil];
+                                                    cancelButtonTitle:nil
+                                               destructiveButtonTitle:nil
+                                                    otherButtonTitles:nil];
+
+    FXKeychain *keyChain = [FXKeychain defaultKeychain];
+    NSArray *allStewards = [keyChain objectForKey:kAllStewards];
+    self.actionSheetChoices = nil;
+    if ((allStewards != nil) && (allStewards.count > 1)) {
+        self.actionSheetChoices = [NSMutableDictionary dictionaryWithCapacity:allStewards.count];
+        [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+            NSDictionary *info = [keyChain objectForKey:value];
+            if (info == nil) return;
+            NSInteger offset = [actionSheet
+                                    addButtonWithTitle:[NSString stringWithFormat:@"Connect to %@",
+                                                                 [self hostName:info]]];
+            [self.actionSheetChoices setObject:info forKey:[NSNumber numberWithInteger:offset]];
+        }];
+    }
+    [actionSheet addButtonWithTitle:@"Scan QR code"];
+    actionSheet.destructiveButtonIndex = [actionSheet addButtonWithTitle:@"Clear History"];
+    actionSheet.cancelButtonIndex = [actionSheet addButtonWithTitle:@"Cancel"];
+
     [actionSheet showFromBarButtonItem:sender animated:YES];
     actionSheet.tag = 0;
 }
@@ -949,35 +969,25 @@ didReceiveResponse:(NSURLResponse *)response {
 
 -  (void)actionSheet:(UIActionSheet *)actionSheet
 clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (actionSheet.cancelButtonIndex == buttonIndex) return;
+
+    NSDictionary *info;
+    NSNumber *index;
     switch (actionSheet.tag) {
         // root action sheet
         case 0:
-            switch (buttonIndex) {
-                case 0:
-                    [self confirmActionSheet:nil];
-                    break;
-
-                case 1:
-                    [self scanQRcode:nil];
-                    break;
-
-                case 2:
-                default:
-                    break;
-            }
-            break;
+          if (actionSheet.destructiveButtonIndex == buttonIndex) {
+              [self confirmActionSheet:nil];
+              break;
+          }
+          index = [NSNumber numberWithInteger:buttonIndex];
+          info = (self.actionSheetChoices != nil) ? [self.actionSheetChoices objectForKey:index] : nil;
+          if (info != nil) [self connectToSteward:info localP:NO]; else [self scanQRcode:nil];
+          break;
 
         // confirm deletion action sheet
         case 1:
-            switch (buttonIndex) {
-                case 0:
-                    [self deleteAllTableData:YES];
-                    break;
-
-                case 1:
-                default:
-                    break;
-            }
+            [self deleteAllTableData:YES];
             break;
 
         default:
@@ -999,11 +1009,13 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
             [self.tableConsoleData removeObjectsInRange:NSMakeRange(idx, length - 1)];
         }];
     }
+    if (self.tableConsoleData == self.currentDataTable) [self.tableView reloadData];
 
+/*
     [self.tableDevicesData removeAllObjects];
     [self.tableTasksData removeAllObjects];
-
     [self.tableView reloadData];
+ */
 }
 
 - (void)pushDataDictionary:(NSDictionary *)dictionary
