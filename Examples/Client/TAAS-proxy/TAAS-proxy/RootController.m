@@ -118,6 +118,19 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         [self.utcFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.zzz'Z'"];
         [self.utcFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
 
+
+        self.ctCallCenter = [[CTCallCenter alloc] init];
+        self.ctCallCenter.callEventHandler = ^(CTCall *ctCall) {
+            DDLogVerbose(@"callEventHander: %@", ctCall);
+
+            CTCallCenter *callCenter = [[CTCallCenter alloc] init];
+            NSSet *calls = [callCenter currentCalls];
+            if ((calls != nil) || (calls.count > 0)) return;
+            [[NSNotificationCenter defaultCenter]
+                  postNotificationName:FXReachabilityStatusDidChangeNotification object:nil];
+        };
+
+        // sometimes when prototyping, it helps to have sanity-checking...
         FXKeychain *keyChain = [FXKeychain defaultKeychain];
         NSMutableArray *allStewards = [keyChain objectForKey:kAllStewards];
         if (allStewards != nil) {
@@ -154,17 +167,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             [keyChain removeObjectForKey:kLastSteward];
             DDLogVerbose(@"removing lastSteward=%@", lastSteward);
         }
-
-        self.ctCallCenter = [[CTCallCenter alloc] init];
-        self.ctCallCenter.callEventHandler = ^(CTCall *ctCall) {
-            DDLogVerbose(@"callEventHander: %@", ctCall);
-
-            CTCallCenter *callCenter = [[CTCallCenter alloc] init];
-            NSSet *calls = [callCenter currentCalls];
-            if ((calls != nil) || (calls.count > 0)) return;
-            [[NSNotificationCenter defaultCenter]
-                  postNotificationName:FXReachabilityStatusDidChangeNotification object:nil];
-        };
     }
     return self;
 };
@@ -204,9 +206,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         return;
     }
 
+    FXKeychain *keyChain = [FXKeychain defaultKeychain];
+
     NSDictionary *info = (NSDictionary *)[timer userInfo];
+    // if we're now on a mobile network, verify we have credentials
+    if ((info != nil)
+            && (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
+            && ([info objectForKey:kAuthURL] == nil)) info = nil;
     if (info == nil) {
-        FXKeychain *keyChain = [FXKeychain defaultKeychain];
         NSString *lastSteward = [keyChain objectForKey:kLastSteward];
         info = (lastSteward != nil) ? [keyChain objectForKey:lastSteward] : nil;
         if (info == nil) {
@@ -219,7 +226,30 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         return;
     }
 
-    [self connectToSteward:info localP:NO];
+    // ditto
+    if ((self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN)
+            || ([info objectForKey:kAuthURL] != nil)) {
+        [self connectToSteward:info localP:NO];
+        return;
+    }
+
+    // find a steward for which we have credentials
+    BOOL foundP, *fptr;
+    foundP = NO;
+    fptr = &foundP;
+    NSArray *allStewards = [keyChain objectForKey:kAllStewards];
+    if (allStewards != nil) {
+        [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+            NSDictionary *info = [keyChain objectForKey:value];
+            if ((info == nil) || ([info objectForKey:kAuthURL] == nil)) return;
+
+            [self connectToSteward:info localP:NO];
+            *fptr = YES;
+            *stop = YES;
+        }];
+    }
+
+    if (!foundP) [self notifyUser:@"no stewards available for rendezvous" withTitle:kAttention];
 }
 
 - (void)viewDidLoad {
