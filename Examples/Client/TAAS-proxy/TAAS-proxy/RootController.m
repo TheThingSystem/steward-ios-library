@@ -999,23 +999,22 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
 #pragma mark - tableView dataSource
 
 - (void)deleteAllTableData:(BOOL)forceP {
-    if (forceP) [self.tableConsoleData removeAllObjects];
-    else {
-        [self.tableConsoleData enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
-            if ([value objectForKey:kWhoEntry] == nil) return;
-
-            *stop = YES;
-            NSUInteger length = self.tableConsoleData.count - idx;
-            [self.tableConsoleData removeObjectsInRange:NSMakeRange(idx, length - 1)];
-        }];
+    if (forceP) {
+        [self.tableConsoleData removeAllObjects];
+        if (self.tableConsoleData == self.currentDataTable) [self.tableView reloadData];
+        return;
     }
-    if (self.tableConsoleData == self.currentDataTable) [self.tableView reloadData];
 
-/*
+    [self.tableConsoleData enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+        if ([value objectForKey:kWhoEntry] == nil) return;
+
+        *stop = YES;
+        NSUInteger length = self.tableConsoleData.count - idx;
+        [self.tableConsoleData removeObjectsInRange:NSMakeRange(idx, length - 1)];
+    }];
     [self.tableDevicesData removeAllObjects];
     [self.tableTasksData removeAllObjects];
     [self.tableView reloadData];
- */
 }
 
 - (void)pushDataDictionary:(NSDictionary *)dictionary
