@@ -213,7 +213,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     // if we're now on a mobile network, verify we have credentials
     if ((info != nil)
             && (self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
-            && ([info objectForKey:kAuthURL] == nil)) info = nil;
+            && ([self issuer:info] == nil)) info = nil;
     if (info == nil) {
         NSString *lastSteward = [keyChain objectForKey:kLastSteward];
         info = (lastSteward != nil) ? [keyChain objectForKey:lastSteward] : nil;
@@ -229,7 +229,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     // ditto
     if ((self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN)
-            || ([info objectForKey:kAuthURL] != nil)) {
+            || ([self issuer:info] != nil)) {
         [self connectToSteward:info localP:NO];
         return;
     }
@@ -242,7 +242,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if (allStewards != nil) {
         [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
             NSDictionary *info = [keyChain objectForKey:value];
-            if ((info == nil) || ([info objectForKey:kAuthURL] == nil)) return;
+            if ((info == nil) || ([self issuer:info] == nil)) return;
 
             [self connectToSteward:info localP:NO];
             *fptr = YES;
@@ -314,14 +314,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     NSString *authURI = [info objectForKey:kAuthURL];
     NSURL *authURL = (authURI.length > 0) ? [NSURL URLWithString:authURI] : nil;
-    NSString *issuer = nil;
-    if ((!localP) && (authURL != nil)) {
-        NSArray *array = [authURI componentsSeparatedByString:@"/"];
-        if (array.count > 3) {
-            issuer = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"]
-                           objectAtIndex:0];
-        }
-    }
+    NSString *issuer = (!localP) ? [self issuer:info] : nil;
     if (issuer != nil) return [self rendezvous:issuer withAuthURL:authURL];
 
     NSString *address = [[info objectForKey:kIpAddresses] objectAtIndex:0];
@@ -905,6 +898,20 @@ didReceiveResponse:(NSURLResponse *)response {
     if (range.location != NSNotFound) name = [name substringToIndex:range.location];
 
     return name;
+}
+
+- (NSString *)issuer:(NSDictionary *)info {
+    NSString *authURI = [info objectForKey:kAuthURL];
+    NSURL *authURL = (authURI.length > 0) ? [NSURL URLWithString:authURI] : nil;
+    if (authURL == nil) return nil;
+
+    NSArray *array = [authURI componentsSeparatedByString:@"/"];
+    if (array.count < 4) return nil;
+    NSString *issuer = [[[array objectAtIndex:(array.count - 4)] componentsSeparatedByString:@":"]
+                            objectAtIndex:0];
+    if (issuer.length == 0) return nil;
+
+    return issuer;
 }
 
 # pragma mark - segmented (mode) control
