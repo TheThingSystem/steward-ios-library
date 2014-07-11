@@ -18,7 +18,7 @@ The TODO list is:
 
 Please note that this program is **NOT** intended to be submitted to the AppStore.
 It is for testing and demonstration purposes only!
-Also, you'll need a device running iOS 7 to run
+Also, the app requires iOS 7.0 or later.
 
 A Persient Proxy to the Steward
 -------------------------------
@@ -50,6 +50,8 @@ it does several things:
 then those will be used for [SSL pinning](http://en.wikipedia.org/wiki/Transport_Layer_Security#Certificate_pinning)
 (A CER file is a certificate file that is encoded using the
 [the DER binary format](http://en.wikipedia.org/wiki/Distinguished_Encoding_Rules#DER_encoding))
+
+        openssl x509 -outform der -in server.crt -out server.cer
 
 * as the device's network configuration changes,
 the connection to the steward is pre-emptively re-established

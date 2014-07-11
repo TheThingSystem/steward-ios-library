@@ -185,11 +185,32 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)stewardFoundAtService:(NSNetService *)service {
     NSDictionary *txt = [NSNetService dictionaryFromTXTRecordData:[service TXTRecordData]];
     NSMutableDictionary *utf8 = [NSMutableDictionary dictionaryWithCapacity:txt.count];
+
+    // TXT records from Linux may not decode "entirely properly"
     for (NSString *key in txt) {
-        NSString *value = [[NSString alloc] initWithData:[txt objectForKey:key]
-                                                encoding:NSUTF8StringEncoding];
+        NSNull *null = [txt objectForKey:key];
+
+        if (![null isKindOfClass:[NSNull class]]) break;
+        NSArray *tokens = [key componentsSeparatedByString:@" "];
+        if (tokens.count % 2) break;
+        NSMutableDictionary *txt2 = [NSMutableDictionary dictionaryWithCapacity:(tokens.count / 2)];
+        [tokens enumerateObjectsUsingBlock:^(id k, NSUInteger idx, BOOL *stop) {
+            if (idx % 2) return;
+            [txt2 setObject:[tokens[idx + 1] dataUsingEncoding:NSUTF8StringEncoding] forKey:k];
+        }];
+        txt = txt2;
+        break;
+    }
+
+    for (NSString *key in txt) {
+        NSData *data = [txt objectForKey:key];
+        if (![data isKindOfClass:[NSData class]]) {
+            DDLogError(@"invalid value for TXT %@: %@ (%@)", key, data, [data class]);
+            continue;
+        }
+        NSString *value = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         if (value == nil) {
-            DDLogError(@"invalid encoding for TXT %@", key);
+            DDLogError(@"invalid encoding for TXT %@: %@", key, data);
             continue;
         }
         [utf8 setObject:value forKey:key];

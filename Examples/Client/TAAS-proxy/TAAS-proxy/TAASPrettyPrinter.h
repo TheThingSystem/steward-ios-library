@@ -10,6 +10,8 @@
 #import "MHPrettyDate.h"
 
 
+#define kKeyLength    (12)
+
 @interface TAASPrettyPrinter : NSObject
 
 + (TAASPrettyPrinter *)singleton;

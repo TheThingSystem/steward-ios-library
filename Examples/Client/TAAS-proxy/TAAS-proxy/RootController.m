@@ -502,16 +502,15 @@ didReceiveResponse:(NSURLResponse *)response {
                                range:NSMakeRange(0, refreshString.length)];
         self.refreshControl.attributedTitle = refreshString;
         [self deleteAllTableData:NO];
-        self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName, @"connected"];
-        [self notifyUser:self.taasName withTitle:@"Connected"];
+        [self notifyUser:self.taasName withTitle:kConnected];
         [self.service listDevices];
 
         NSDictionary *result = [dictionary objectForKey:@"result"];
         if (result != nil) {
             NSDictionary *client = [dictionary objectForKey:@"client"];
             if (client != nil) {
-                self.statusLabel.text = [NSString stringWithFormat:@"%@: %@", self.taasName,
-                                                  @"authenticated"];
+                [self notifyUser:[NSString stringWithFormat:@"%@: authenticated", self.taasName]
+                       withTitle:kConnected];
             }
             return;
         }
@@ -522,6 +521,12 @@ didReceiveResponse:(NSURLResponse *)response {
         if (([category isEqual:@"notice"]) && ([values isKindOfClass:[NSDictionary class]])) {
             self.permissions = [values objectForKey:@"permissions"];
             DDLogInfo(@"permissions: %@", self.permissions);
+
+            NSString *level =   [self.permissions containsObject:@"manage"]  ? @"manager"
+                              : [self.permissions containsObject:@"write"]   ? @"resident"
+                              : [self.permissions containsObject:@"perform"] ? @"guest" : @"monitor";
+            [self notifyUser:[NSString stringWithFormat:@"%@: %@", self.taasName, level]
+                   withTitle:kConnected];
             return;
         }
         if (([category isEqual:@"notice"]) || (![values isKindOfClass:[NSArray class]])) return;
@@ -662,8 +667,12 @@ didReceiveResponse:(NSURLResponse *)response {
     range = [whatami rangeOfString:@"/device/gateway/" options:NSAnchoredSearch];
     if ((range.location != NSNotFound) || (data == nil)) data = @" ";
 
-    NSString *output = [NSString stringWithFormat:@"%@: %@\n%@",
-                                 [entity objectForKey:@"name"],
+    NSString *name = [entity objectForKey:@"name"];
+    if (name == nil) name = whoami;
+    name = [NSString stringWithFormat:@"%@:", name];
+    char keystring[BUFSIZ];
+    snprintf(keystring, sizeof keystring, "%s", (const char *)[name UTF8String]);
+    NSString *output = [NSString stringWithFormat:@"%-*s %@\n%@", kKeyLength, keystring,
                                  [entity objectForKey:@"status"],
                                  data];
 

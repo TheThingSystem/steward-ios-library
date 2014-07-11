@@ -8,6 +8,7 @@
 
 #import "TAASPrettyPrinter.h"
 #import "AppDelegate.h"
+#import "TAASColorNames.h"
 #import "ZFCardinalDirection.h"
 #import "DDLog.h"
 
@@ -16,8 +17,6 @@
 // Other flags: trace
 // static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
-
-#define kKeyLength    (12)
 
 enum PPenum {
     kActor,
@@ -93,6 +92,7 @@ enum PPenum {
                       , @"exporting"       : @(kWatts)
                       , @"extTemperature"  : @(kCelcius)
                       , @"fanSpeed"        : @(kPercentage)
+                      , @"feed"            : @(kIgnore)
                       , @"flow"            : @(kPPM)
                       , @"forecasts"       : @(kIgnore)
                       , @"gauges"          : @(kActor)
@@ -130,6 +130,7 @@ enum PPenum {
                       , @"sensors"         : @(kActor)
                       , @"station"         : @(kIgnore)
                       , @"temperature"     : @(kCelcius)
+                      , @"thing"           : @(kIgnore)
                       , @"track"           : @(kTrack)
                       , @"velocity"        : @(kMetersPerSecond)
                       , @"version"         : @(kIgnore)
@@ -145,7 +146,6 @@ enum PPenum {
                       , @"currentUsage"
                       , @"dailyUsage"
  */
-
                       };
         self.utcFormatter = [[NSDateFormatter alloc] init];
         [self.utcFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.zzz'Z'"];
@@ -219,6 +219,23 @@ enum PPenum {
             vstring = [value objectForKey:@"model"];
             vdict = (vstring != nil) ? [value objectForKey:vstring] : nil;
             if (vdict == nil) break;
+            if ([vstring isEqualToString:@"rgb"]) {
+              NSArray *rgb = [NSArray arrayWithObjects:[vdict objectForKey:@"r"],
+                                      [vdict objectForKey:@"g"],
+                                      [vdict objectForKey:@"b"],
+                                      nil];
+              NSString *vstring = [[TAASColorNames singleton] rgb2string:rgb];
+              if (vstring != nil) return [vstring lowercaseString];
+            }
+            value = [vdict objectForKey:@"temperature"];
+            if (value != nil) {
+                vlong = -1;
+                     if ([value isKindOfClass:[NSString class]]) vlong = [value doubleValue];
+                else if ([value isKindOfClass:[NSNumber class]]) vlong = [value longValue];
+                if (vlong > 0) {
+                    return [NSString stringWithFormat:@"%d\u00b0K", (int)round(1000000.0 / vlong)];
+                }
+            }
             return [NSString stringWithFormat:@"%@\n%*.*s %@", vstring, kKeyLength, kKeyLength, "",
                              [self paramsPP:vdict]];
 
