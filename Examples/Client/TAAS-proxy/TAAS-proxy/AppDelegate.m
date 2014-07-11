@@ -322,6 +322,13 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
                  (self.notifyTaskID != UIBackgroundTaskInvalid) ? @"YES" : @"NO");
     if (self.notifyTaskID != UIBackgroundTaskInvalid) return;
 
+    // don't be too noisy!
+    UIApplication *application = [UIApplication sharedApplication];
+    if (application.applicationIconBadgeNumber != 0) {
+        DDLogVerbose(@"badgeNumber = %lu", (unsigned long)application.applicationIconBadgeNumber);
+        return;
+    }
+
     // suppress duplicate runs of notifications (they often travel in pairs!)
     if (self.lastNotifications == nil) {
         self.lastNotifications = [NSMutableArray arrayWithCapacity:4];
@@ -331,7 +338,6 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
     if (self.lastNotifications.count > 3) [self.lastNotifications removeLastObject];
     if (containsP) return;
 
-    UIApplication *application = [UIApplication sharedApplication];
     self.notifyTaskID = [application beginBackgroundTaskWithExpirationHandler: ^{
         dispatch_async(dispatch_get_main_queue(), ^{
             [application endBackgroundTask:self.notifyTaskID];
