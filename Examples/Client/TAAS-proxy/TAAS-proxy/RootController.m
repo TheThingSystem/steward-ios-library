@@ -310,7 +310,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     [self resetSteward:NO];
 
     if (localP) [self rememberSteward:info lastP:true];
-    self.taasName = [self hostName:info];
+    self.taasName = [self serverName:info];
 
     NSString *authURI = [info objectForKey:kAuthURL];
     NSURL *authURL = (authURI.length > 0) ? [NSURL URLWithString:authURI] : nil;
@@ -484,6 +484,7 @@ didReceiveResponse:(NSURLResponse *)response {
         if (authURI != nil) [info setObject:authURI forKey:kAuthURL];
     }
 
+    name = [self serverName:info];
     NSArray *ipaddrs = [info objectForKey:kIpAddresses];
     if (ipaddrs.count == 0) {
         [self notifyUser:[NSString stringWithFormat:@"no addresses for %@", name] withTitle:kError];
@@ -780,7 +781,8 @@ didReceiveResponse:(NSURLResponse *)response {
         return;
     }
 
-    [self notifyUser:[NSString stringWithFormat:@"found %@", [self hostName:info]] withTitle:kConnecting];
+    [self notifyUser:[NSString stringWithFormat:@"found %@", [self serverName:info]]
+           withTitle:kConnecting];
     [self connectToSteward:info localP:NO];
 }
 
@@ -890,6 +892,16 @@ didReceiveResponse:(NSURLResponse *)response {
                                                  repeats:NO];
 }
 
+- (NSString *)serverName:(NSDictionary *)info {
+    NSDictionary *txt = [info objectForKey:kTXT];
+    NSString *name = (txt != nil) ? [txt objectForKey:kName] : nil;
+    if (name == nil) name = [self hostName:info];
+    NSRange range = [name rangeOfString:@"."];
+    if (range.location != NSNotFound) name = [name substringToIndex:range.location];
+
+    return name;
+}
+
 - (NSString *)hostName:(NSDictionary *)info {
     NSString *name = [info objectForKey:kHostName];
     NSRange range = [name rangeOfString:@"." options:(NSBackwardsSearch | NSAnchoredSearch)];
@@ -946,13 +958,26 @@ didReceiveResponse:(NSURLResponse *)response {
     NSArray *allStewards = [keyChain objectForKey:kAllStewards];
     self.actionSheetChoices = nil;
     if ((allStewards != nil) && (allStewards.count > 1)) {
+        allStewards = [allStewards sortedArrayUsingComparator:^(NSString *obj1, NSString *obj2) {
+            NSDictionary *info1 = [keyChain objectForKey:obj1];
+            NSString *name1 = (info1 != nil) ? [self serverName:info1] : nil;
+
+            NSDictionary *info2 = [keyChain objectForKey:obj2];
+            NSString *name2 = (info2 != nil) ? [self serverName:info2] : nil;
+
+            if (name1 != nil) return ((name2 != nil) ? [name1 compare:name2] : NSOrderedDescending);
+            return ((name2 != nil) ? NSOrderedAscending : NSOrderedSame);
+        }];
+
         self.actionSheetChoices = [NSMutableDictionary dictionaryWithCapacity:allStewards.count];
         [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
             NSDictionary *info = [keyChain objectForKey:value];
             if (info == nil) return;
-            NSInteger offset = [actionSheet
-                                    addButtonWithTitle:[NSString stringWithFormat:@"Connect to %@",
-                                                                 [self hostName:info]]];
+
+            NSInteger offset = [actionSheet addButtonWithTitle:
+                                                [NSString stringWithFormat:@"Connect to %@",
+                                                              [self serverName:info]]];
+
             [self.actionSheetChoices setObject:info forKey:[NSNumber numberWithInteger:offset]];
         }];
     }
