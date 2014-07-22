@@ -1118,34 +1118,16 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 
     cell.cellText1Label.text = [tableEntry objectForKey:kDataEntry];
 
-    NSString *ikon = [tableEntry objectForKey:kIkonEntry];
-    NSString *imageName = (ikon != nil) ? ikon : @"place-home";
-    NSString *whoami = (ikon == nil) ? [tableEntry objectForKey:kWhoEntry] : nil;
+    NSString *whoami = [tableEntry objectForKey:kWhoEntry];
     NSDictionary *entity = (whoami != nil) ? [self.entities objectForKey:whoami] : nil;
-    NSString *whatami = (entity != nil) ? [entity objectForKey:kWhatAmI] : nil;
-    NSArray *components = (whatami != nil) ? [whatami componentsSeparatedByString:@"/"] : nil;
-    if ((components != nil) && (components.count == 5)) {
-        NSString *major = components[2], *minor = components[4];
-
-        if ([major isEqualToString:@"climate"]) {
-            major = @"sensor";
-                 if ([minor isEqualToString:@"control"])   { minor = @"thermostat"; major = @"control"; }
-            else if ([minor isEqualToString:@"monitor"])     minor = @"meteo";
-            else if ([minor isEqualToString:@"temperature"]) minor = @"meteo";
-            else if ([minor isEqualToString:@"sensor"])      minor = @"generic";
-        } else if ([major isEqualToString:@"lighting"]) {
-                 if ([minor isEqualToString:@"rgb"])         minor = @"lightstrip";
-            else if ([minor isEqualToString:@"color"])       minor = @"led";
-        } else if ([major isEqualToString:@"motive"]) {
-                 if ([minor isEqualToString:@"model-s"])     minor = @"vehicle";
-        } else if ([major isEqualToString:@"sensor"]) {
-                 if ([minor isEqualToString:@"sensortag"])   minor = @"generic";
-            else if ([minor isEqualToString:@"spotter"])     minor = @"generic";
+    NSString *ikon = (entity != nil) ? [entity objectForKey:kIkonEntry] : nil;
+    NSString *imageName = (ikon != nil) ? ikon : @"place-home";
+    if (ikon == nil) {
+        NSString *whatami = (entity != nil) ? [entity objectForKey:kWhatAmI] : nil;
+        NSArray *components = (whatami != nil) ? [whatami componentsSeparatedByString:@"/"] : nil;
+        if ((components != nil) && (components.count == 5)) {
+            imageName = [NSString stringWithFormat:@"%@-%@", components[2], components[4]];
         }
-        imageName = [NSString stringWithFormat:@"%@-%@", major, minor];
-        NSMutableDictionary *info = [tableEntry mutableCopy];
-        [info setObject:imageName forKey:kIkonEntry];
-        [self.currentDataTable replaceObjectAtIndex:indexPath.row withObject:info];
     }
     cell.icon.image = [UIImage imageNamed:imageName];
 

@@ -3,12 +3,12 @@
     {
       "idiom" : "universal",
       "scale" : "1x",
-      "filename" : "sensor-wind.png"
+      "filename" : "climate-generic.png"
     },
     {
       "idiom" : "universal",
       "scale" : "2x",
-      "filename" : "sensor-wind@2x.png"
+      "filename" : "climate-generic@2x.png"
     }
   ],
   "info" : {

@@ -3,12 +3,12 @@
     {
       "idiom" : "universal",
       "scale" : "1x",
-      "filename" : "sensor-meteo.png"
+      "filename" : "climate-meteo.png"
     },
     {
       "idiom" : "universal",
       "scale" : "2x",
-      "filename" : "sensor-meteo@2x.png"
+      "filename" : "climate-meteo@2x.png"
     }
   ],
   "info" : {
