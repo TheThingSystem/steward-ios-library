@@ -530,6 +530,9 @@ didReceiveResponse:(NSURLResponse *)response {
         [self notifyUser:self.taasName withTitle:kConnected];
         [self.service listDevices];
 
+        UIApplication *application = [UIApplication sharedApplication];
+        application.applicationIconBadgeNumber = 0;
+
         NSDictionary *result = [dictionary objectForKey:@"result"];
         if (result != nil) {
             NSDictionary *client = [dictionary objectForKey:@"client"];
