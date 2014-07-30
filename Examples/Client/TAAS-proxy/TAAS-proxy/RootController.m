@@ -649,7 +649,7 @@ didReceiveResponse:(NSURLResponse *)response {
     }
 
     NSDictionary *oops;
-&& (self.tasks != nil)) {    if ((oops = [dictionary objectForKey:@"error"]) != nil) {
+    if ((oops = [dictionary objectForKey:@"error"]) != nil) {
         NSString *diagnostic = [oops objectForKey:@"diagnostic"];
         if (diagnostic == nil) diagnostic = @"invalid response";
         [self notifyUser:diagnostic withTitle:kError];
