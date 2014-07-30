@@ -66,8 +66,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
 
 // activities
-@property (        nonatomic) NSUInteger                 request1ID;
-@property (        nonatomic) NSUInteger                 request2ID;
 @property (strong, nonatomic) NSMutableDictionary       *groups;
 @property (strong, nonatomic) NSMutableDictionary       *tasks;
 
@@ -532,9 +530,7 @@ didReceiveResponse:(NSURLResponse *)response {
         self.entities = nil;
         self.groups = nil;
         self.tasks = nil;
-        self.request1ID = [self.service listDevices];
-        // will be the first
-        if (self.request1ID == 0) self.request1ID++;
+        [self.service listDevices];
 
         AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         if (appDelegate.documentScripts != nil) {
@@ -646,33 +642,21 @@ didReceiveResponse:(NSURLResponse *)response {
 - (void)didReceiveResult:(NSDictionary *)dictionary {
     if (dictionary == nil) return;
 
-    NSDictionary *result = nil;
-    if (dictionary != nil) {
-        result = [dictionary objectForKey:@"result"];
-
-        NSUInteger requestID = [[dictionary objectForKey:@"requestID"] integerValue];
-        if (requestID == self.request2ID) {
-            [self didReceiveActivities:result];
-            return;
-        }
-        if (requestID != self.request1ID) {
-            [self didReceiveResponse:dictionary];
-            return;
-        }
+    NSDictionary *result = [dictionary objectForKey:@"result"];
+    if (self.entities != nil) {
+        if (self.tasks != nil) [self didReceiveResponse:dictionary]; else [self didReceiveActivities:result];
+        return;
     }
 
-    self.entities = nil;
-    self.request2ID = [self.service listActivities];
-
     NSDictionary *oops;
-    if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
+&& (self.tasks != nil)) {    if ((oops = [dictionary objectForKey:@"error"]) != nil) {
         NSString *diagnostic = [oops objectForKey:@"diagnostic"];
         if (diagnostic == nil) diagnostic = @"invalid response";
         [self notifyUser:diagnostic withTitle:kError];
         return;
     }
-
     self.entities = [[NSMutableDictionary alloc] init];
+    [self.service listActivities];
 
     [result enumerateKeysAndObjectsUsingBlock:^(id whatami, id values, BOOL *stop) {
         if ([whatami isEqual:@"actors"]) return;
