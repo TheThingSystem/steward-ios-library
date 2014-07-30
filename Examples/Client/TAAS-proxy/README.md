@@ -5,17 +5,6 @@ This example shows how to operate a background proxy to the steward,
 which may be useful if running a program that talks to the steward,
 but the steward isn't available locally.
 
-This example is still a work in progress.
-The TODO list is:
-
-- repurpose the main screen to show status and console notices from the steward
-    - scrollable, time-aware console messages
-    - last status message
-
-- use the "betterthansiri" PAC approach
-
-- test, test, and test!
-
 Please note that this program is **NOT** intended to be submitted to the AppStore.
 It is for testing and demonstration purposes only!
 Also, the app requires iOS 7.0 or later.
@@ -79,8 +68,8 @@ which allows us to mark a connection to the steward as persistent
 which allows us to receive significant location change (SLC) notifications in the background
 
 It turns out that you have to do both of these things in order to make things work.
-In particular, the app may not be able to reach the steward either locally or via the TAAS cloud,
-so there is no connection to mark as persistent.
+In particular, the app may not be able to reach the steward either locally or via the TAAS cloud;
+so it's possible that there isn't a connection to mark as persistent.
 
 When the app enters the background,
 it begins a background task that's designed to keep the app running until iOS runs the clock down and suspends the app.

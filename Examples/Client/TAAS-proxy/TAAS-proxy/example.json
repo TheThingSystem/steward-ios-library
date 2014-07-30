@@ -1,0 +1,199 @@
+{ "commands":
+              [ { "name"    : "office time"
+                , "perform" : { "entity"     : "group"
+                              , "id"         : 205
+                              }
+                }
+              , { "name"    : "quiet time"
+                , "perform" : { "entity"     : "group"
+                              , "id"         : 28
+                              }
+                }
+              , { "name"    : "light it up"
+                , "perform" : { "entity"     : "actor"
+                              , "prefix"     : "/device/lighting"
+                              , "perform"    : "on"
+                              }
+                }
+              , { "name"    : "deluminate"
+                , "perform" : { "entity"     : "actor"
+                              , "prefix"     : "/device/lighting"
+                              , "perform"    : "off"
+                              }
+                }
+              , { "name"    : "garage door open"
+                , "perform" : { "entity"     : "actor"
+                              , "prefix"     : "/device/motive/myq/garage-door"
+                              , "perform"    : "open"
+                              }
+                }
+              , { "name"    : "garage door close"
+                , "perform" : { "entity"     : "actor"
+                              , "prefix"     : "/device/motive/myq/garage-door"
+                              , "perform"    : "close"
+                              }
+                }
+              , { "name"    : "bedroom lights off"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 5
+                              }
+                }
+              , { "name"    : "bedroom lights on"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 8
+                              }
+                }
+              , { "name"    : "dining lights off"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 23
+                              }
+                }
+              , { "name"    : "dining lights on"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 24
+                              }
+                }
+              , { "name"    : "entry lights off"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 15
+                              }
+                }
+              , { "name"    : "entry lights on"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 7
+                              }
+                }
+              , { "name"    : "hall lights off"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 14
+                              }
+                }
+              , { "name"    : "hall lights on"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 16
+                              }
+                }
+              , { "name"    : "icon lights off"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 3
+                              }
+                }
+              , { "name"    : "icon lights on"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 1
+                              }
+                }
+              , { "name"    : "living lights off"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 9
+                              }
+                }
+              , { "name"    : "living lights on"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 6
+                              }
+                }
+              , { "name"    : "office lights off"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 25
+                              }
+                }
+              , { "name"    : "office lights on"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 26
+                              }
+                }
+              , { "name"    : "reading lights off"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 12
+                              }
+                }
+              , { "name"    : "reading lights on"
+                , "perform" : { "entity"     : "task"
+                              , "id"         : 13
+                              }
+                }
+              , { "name"    : "set nimbus to car"
+                , "perform" : { "entity"     : "group"
+                              , "id"         : 200
+                              }
+                }
+              , { "name"    : "set nimbus to home"
+                , "perform" : { "entity"     : "group"
+                              , "id"         : 100
+                              }
+                }
+              , { "name"    : "tell me about garage door"
+                , "report"  : { "entity"     : "actor"
+                              , "prefix"     : "/device/motive/myq/garage-door"
+                              , "properties" : [ "status" ]
+                              }
+                }
+              , { "name"    : "tell me about indoors"
+                , "report"  : { "entity"     : "device"
+                              , "id"         : 129
+                              , "properties" : [ "temperature", "humidity", "noise", "co2" ]
+                              }
+                }
+              , { "name"    : "tell me about outdoors"
+                , "report"  : { "entity"     : "device"
+                              , "id"         : 130
+                              , "properties" : [ "temperature", "humidity", "noise", "co2" ]
+                              }
+                }
+              , { "name"    : "tell me about bedroom"
+                , "report"  : { "entity"     : "device"
+                              , "id"         : 513
+                              , "properties" : [ "temperature", "humidity", "noise", "voc", "light", "pressure" ]
+                              }
+                }
+              , { "name"    : "tell me about reading room"
+                , "report"  : { "entity"     : "device"
+                              , "id"         : 509
+                              , "properties" : [ "temperature", "humidity", "noise", "voc", "light", "pressure" ]
+                              }
+                }
+              , { "name"    : "tell me about office"
+                , "report"  : { "entity"     : "device"
+                              , "id"         : 510
+                              , "properties" : [ "temperature", "humidity", "noise", "voc", "light", "pressure" ]
+                              }
+                }
+              , { "name"    : "tell me about power"
+                , "report"  : { "entity"     : "actor"
+                              , "prefix"     : "/device/switch"
+                              , "properties" : [ "status" ]
+                              }
+                }
+              , { "name"    : "tell me about lights"
+                , "report"  : { "entity"     : "actor"
+                              , "prefix"     : "/device/lighting"
+                              , "properties" : [ "status" ]
+                              }
+                }
+              , { "name"    : "tell me about locks"
+                , "report"  : { "entity"     : "actor"
+                              , "prefix"     : "/device/motive/lockitron/lock"
+                              , "properties" : [ "status" ]
+                              }
+                }
+              , { "name"    : "tell me about plants"
+                , "report"  : { "entity"     : "actor"
+                              , "prefix"     : "/device/climate/koubachi/plant"
+                              , "properties" :[ "status", "needsWater", "needsMist", "needsFertilizer" ]
+                              }
+                }
+              , { "name"    : "tell me about air quality"
+                , "report"  : { "entity"     : "actor"
+                              , "prefix": "/device/sensor"
+                              , "properties" : [ "smoke", "co", "co2", "no", "no2", "voc" ]
+                              }
+                }
+              , { "name"    : "where's my car?"
+                , "report"  : { "entity"     : "device"
+                              , "id"         : 72
+                              , "properties" : [ "physical" ]
+                              }
+                }
+              ]
+}
