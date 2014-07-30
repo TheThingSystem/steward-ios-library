@@ -29,6 +29,7 @@
 @property (strong, nonatomic) AVAudioSession            *audioSession;
 @property (strong, nonatomic) AVSpeechSynthesizer       *speechSynthesizer;
 @property (strong, nonatomic) RNPinnedCertValidator     *pinnedCertValidator;
+@property (strong, nonatomic) NSString                  *documentScripts;
 
 
 - (void)backgroundNotify:(NSString *)message

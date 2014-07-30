@@ -117,11 +117,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (NSString *)authenticatorJSON {
 #define AUTHENTICATE_USER \
-        @"{\"path\":\"/api/v1/user/authenticate/%@\",\"requestID\":\"%d\",\"response\":\"%@\"}"
+        @"{\"path\":\"/api/v1/user/authenticate/%@\",\"requestID\":\"%lu\",\"response\":\"%@\"}"
 
+    NSUInteger requestID = self.client.requestCounter;
     self.client.requestCounter++;
     return [NSString stringWithFormat:AUTHENTICATE_USER,
-                     self.client.clientID, self.client.requestCounter, [self.client generateTOTP]];
+                     self.client.clientID, (unsigned long)requestID, [self.client generateTOTP]];
 }
 
 
@@ -134,7 +135,13 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     [self.monitor startMonitoringEvents];
 }
 
-- (void)listDevices {
+- (NSUInteger)listActivities {
+    if (self.manager == nil) [self listDevices];
+
+    return [self.manager listAllActivities];
+}
+
+- (NSUInteger)listDevices {
     if (self.manager == nil) {
         self.managerP = NO;
 
@@ -149,7 +156,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         self.manager.delegate = self;
         self.manager.oneShotP = NO;
     }
-    [self.manager listAllDevices];
+
+    return [self.manager listAllDevices];
+}
+
+- (void)roundTrip:(NSString *)message {
+    if (self.manager == nil) [self listDevices];
+
+    [self.manager roundTrip:message];
 }
 
 - (void)stopManaging {
@@ -265,7 +279,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if ((self.delegate == nil)
             || (![self.delegate respondsToSelector:@selector(didReceiveMonitor:)])) return;
 
-    [self.delegate didReceiveMonitor:message];
+    NSError *error = nil;
+    NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                                 options:kNilOptions
+                                                                   error:&error];
+    if (error != nil) DDLogError(@"invalid JSON message: %@", error);
+
+    [self.delegate didReceiveMonitor:dictionary];
 }
 
 - (void)monitoringFailedWithError:(NSError *)error {
@@ -302,9 +323,16 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     }
 
     if ((self.delegate == nil)
-            || (![self.delegate respondsToSelector:@selector(didReceiveListing:)])) return;
+            || (![self.delegate respondsToSelector:@selector(didReceiveResult:)])) return;
 
-    [self.delegate didReceiveListing:message];
+    NSError *error = nil;
+    NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                                 options:kNilOptions
+                                                                   error:&error];
+    if (error != nil) DDLogError(@"invalid JSON message: %@", error);
+
+    [self.delegate didReceiveResult:dictionary];
 }
 
 - (void)listingFailedWithError:(NSError *)error {

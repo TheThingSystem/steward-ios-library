@@ -14,9 +14,9 @@
 @required
 - (void)foundService:(NSMutableDictionary *)info;
 
-- (void)didReceiveMonitor:(NSString *)message;
+- (void)didReceiveMonitor:(NSDictionary *)response;
 
-- (void)didReceiveListing:(NSString *)message;
+- (void)didReceiveResult:(NSDictionary *)response;
 
 @optional
 - (void)didNotFindService:(NSDictionary *)errorDict;
@@ -63,7 +63,9 @@
 - (void)findService;
 
 - (void)startMonitoring;
-- (void)listDevices;
+- (NSUInteger)listActivities;
+- (NSUInteger)listDevices;
+- (void)roundTrip:(NSString *)message;
 - (void)stopManaging;
 
 @end

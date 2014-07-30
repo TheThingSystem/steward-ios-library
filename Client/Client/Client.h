@@ -122,7 +122,9 @@
 - (id)initWithAddress:(NSString *)ipAddress;
 - (id)initWithAddress:(NSString *)ipAddress andPort:(long)port;
 - (id)initWithURLRequest:(NSURLRequest *)request;
-- (void)listAllDevices;
+- (NSUInteger)listAllDevices;
+- (NSUInteger)listAllActivities;
+- (BOOL)roundTrip:(NSString *)json;
 - (void)stopListingDevices;
 
 @end
@@ -187,7 +189,7 @@
 @property (nonatomic, strong) Devices *devices;
 @property (nonatomic, strong) Perform *perform;
 @property (nonatomic) BOOL debug;
-@property (nonatomic) int requestCounter;
+@property (nonatomic) NSUInteger requestCounter;
 
 @property (nonatomic) BOOL authenticate;
 @property (nonatomic, strong) NSString *secret;

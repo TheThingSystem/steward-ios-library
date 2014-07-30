@@ -30,10 +30,12 @@
 #define kWhoEntry        kWhoAmI
 #define kDataEntry       @"data"
 #define kIkonEntry       @"ikon"
+#define kScriptInfo      @"script"
 
 #define kPushNone        (     0)
 #define kPushRefresh     (1 << 0)
 #define kPushSort        (1 << 1)
+#define kPushInvert      (1 << 2)
 
 
 // Log levels: off, error, warn, info, verbose
@@ -63,6 +65,11 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 // device status
 @property (strong, nonatomic) NSDateFormatter           *utcFormatter;
 
+// activities
+@property (        nonatomic) NSUInteger                 request1ID;
+@property (        nonatomic) NSUInteger                 request2ID;
+@property (strong, nonatomic) NSMutableDictionary       *groups;
+@property (strong, nonatomic) NSMutableDictionary       *tasks;
 
 // network reachability
 @property (        nonatomic) FXReachabilityStatus       fxReachabilityStatus;
@@ -502,20 +509,14 @@ didReceiveResponse:(NSURLResponse *)response {
     [self connectToSteward:info localP:YES];
 }
 
-- (void)didReceiveMonitor:(NSString *)message {
-      NSError *error = nil;
-      NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
-      NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                                 options:kNilOptions
-                                                                   error:&error];
-
+- (void)didReceiveMonitor:(NSDictionary *)dictionary {
     if (!self.monitoringP) {
         NSDictionary *oops;
         if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
             [self resetSteward:true];
 
             NSString *diagnostic = [oops objectForKey:@"diagnostic"];
-            if (diagnostic == nil) diagnostic = message;
+            if (diagnostic == nil) diagnostic = @"invalid response";
             [self notifyUser:diagnostic withTitle:kError];
             return;
         }
@@ -528,7 +529,42 @@ didReceiveResponse:(NSURLResponse *)response {
         self.refreshControl.attributedTitle = refreshString;
         [self deleteAllTableData:NO];
         [self notifyUser:self.taasName withTitle:kConnected];
-        [self.service listDevices];
+        self.entities = nil;
+        self.groups = nil;
+        self.tasks = nil;
+        self.request1ID = [self.service listDevices];
+        // will be the first
+        if (self.request1ID == 0) self.request1ID++;
+
+        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        if (appDelegate.documentScripts != nil) {
+            NSString *scriptPath = [[appDelegate.documentScripts stringByAppendingPathComponent:self.taasName]
+                                        stringByAppendingPathExtension:@"json"];
+            NSData *data = [[NSFileManager defaultManager] fileExistsAtPath:scriptPath]
+                               ? [[NSFileManager defaultManager] contentsAtPath:scriptPath] : nil;
+            NSError *error = nil;
+            NSDictionary *scripts = (data != nil) ? [NSJSONSerialization JSONObjectWithData:data
+                                                                                    options:kNilOptions
+                                                                                      error:&error]
+                                                  : nil;
+            if (scripts != nil) {
+                [scripts enumerateKeysAndObjectsUsingBlock:^(NSString *property, id values, BOOL *stop) {
+                    if ((![property isEqualToString:@"commands"]) || (![values isKindOfClass:[NSArray class]])) return;
+                    [values enumerateObjectsUsingBlock:^(NSDictionary *value, NSUInteger idx, BOOL *stop) {
+                        [self pushDataDictionary:@{ kDataEntry  : [value objectForKey:@"name"]
+                                                  , kScriptInfo : value
+                                                  }
+                                       ontoTable:self.tableTasksData
+                                     withOptions:kPushNone];
+
+                    }];
+
+                    [self pushDataDictionary:nil
+                                   ontoTable:self.tableTasksData
+                                 withOptions:(kPushRefresh | kPushInvert)];
+                }];
+            }
+        }
 
         UIApplication *application = [UIApplication sharedApplication];
         application.applicationIconBadgeNumber = 0;
@@ -543,7 +579,7 @@ didReceiveResponse:(NSURLResponse *)response {
             return;
         }
     }
-    if ((dictionary == nil) && ([dictionary objectForKey:@"notice"] != nil)) return;
+    if ((dictionary == nil) || ([dictionary objectForKey:@"notice"] != nil)) return;
 
     [dictionary enumerateKeysAndObjectsUsingBlock:^(id category, id values, BOOL *stop) {
         if (([category isEqual:@"notice"]) && ([values isKindOfClass:[NSDictionary class]])) {
@@ -607,25 +643,37 @@ didReceiveResponse:(NSURLResponse *)response {
     [self pushDataDictionary:nil ontoTable:self.tableConsoleData withOptions:(kPushRefresh | kPushSort)];
 }
 
-- (void)didReceiveListing:(NSString *)message {
-    NSError *error = nil;
-    NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                               options:kNilOptions
-                                                                 error:&error];
+- (void)didReceiveResult:(NSDictionary *)dictionary {
     if (dictionary == nil) return;
+
+    NSDictionary *result = nil;
+    if (dictionary != nil) {
+        result = [dictionary objectForKey:@"result"];
+
+        NSUInteger requestID = [[dictionary objectForKey:@"requestID"] integerValue];
+        if (requestID == self.request2ID) {
+            [self didReceiveActivities:result];
+            return;
+        }
+        if (requestID != self.request1ID) {
+            [self didReceiveResponse:dictionary];
+            return;
+        }
+    }
+
     self.entities = nil;
+    self.request2ID = [self.service listActivities];
 
     NSDictionary *oops;
     if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
         NSString *diagnostic = [oops objectForKey:@"diagnostic"];
-        if (diagnostic == nil) diagnostic = message;
+        if (diagnostic == nil) diagnostic = @"invalid response";
         [self notifyUser:diagnostic withTitle:kError];
         return;
     }
 
     self.entities = [[NSMutableDictionary alloc] init];
-    NSDictionary *result = [dictionary objectForKey:@"result"];
+
     [result enumerateKeysAndObjectsUsingBlock:^(id whatami, id values, BOOL *stop) {
         if ([whatami isEqual:@"actors"]) return;
 
@@ -633,7 +681,10 @@ didReceiveResponse:(NSURLResponse *)response {
         if (range.location == NSNotFound) {
             range = [whatami rangeOfString:@"/place" options:NSAnchoredSearch];
         }
-        if (range.location == NSNotFound) return;
+        if (range.location == NSNotFound) {
+          if ([whatami isEqualToString:@"/group"]) self.groups = [values mutableCopy];
+          return;
+        }
 
         [values enumerateKeysAndObjectsUsingBlock:^(id whoami, id value, BOOL *stop) {
             NSMutableDictionary *entity = [NSMutableDictionary dictionaryWithDictionary:value];
@@ -643,6 +694,19 @@ didReceiveResponse:(NSURLResponse *)response {
             [self.entities setObject:entity forKey:whoami];
         }];
     }];
+
+    if (self.groups != nil) {
+        [self.groups enumerateKeysAndObjectsUsingBlock:^(id whoami, NSMutableDictionary *group, BOOL *stop) {
+            NSArray *members = [group valueForKey:@"members"];
+            if ((members == nil) || (members.count < 1)) return;
+
+            group = [group mutableCopy];
+            [group setObject:[self recurseMembers:members alreadySeen:[NSMutableArray arrayWithCapacity:self.groups.count]]
+                                           forKey:@"members"];
+            [self.groups setObject:group forKey:whoami];
+        }];
+    }
+
     [result enumerateKeysAndObjectsUsingBlock:^(id whatami, id values, BOOL *stop) {
         if ([whatami isEqual:@"actors"]) return;
 
@@ -658,6 +722,153 @@ didReceiveResponse:(NSURLResponse *)response {
         }];
     }];
     [self pushDataDictionary:nil ontoTable:self.tableDevicesData withOptions:(kPushRefresh | kPushSort)];
+
+    [self processTasksData];
+}
+
+- (void)didReceiveActivities:(NSDictionary *)result {
+    self.tasks = [result objectForKey:@"tasks"];
+    if (self.tasks != nil) [self processTasksData];
+}
+
+// we do ALL this just to get a pretty icon on the "Tasks" tab...
+- (void)processTasksData {
+    [self.tableTasksData enumerateObjectsUsingBlock:^(NSDictionary *value, NSUInteger idx, BOOL *stop) {
+        NSMutableDictionary *entry = [value mutableCopy];
+        NSString *ikon = [entry objectForKey:kIkonEntry];
+        if (ikon != nil) return;
+
+        NSDictionary *script = [value objectForKey:kScriptInfo];
+        NSDictionary *action = [script objectForKey:@"perform"];
+        if (action == nil) action = [script objectForKey:@"report"];
+        if (action == nil) return;
+
+        NSString *entity = [action objectForKey:@"entity"];
+        if ([entity isEqualToString:@"actor"]) {
+            NSString *prefix = [action objectForKey:@"prefix"];
+            if (prefix == nil) return;
+
+            NSRange range = [prefix rangeOfString:@"/device/" options:NSAnchoredSearch];
+            if (range.location == NSNotFound) return;
+
+            NSArray *components = [prefix componentsSeparatedByString:@"/"];
+            switch (components.count) {
+                case 2:
+                case 3: {
+                    NSDictionary *pairs = @{ @"climate"   : @"climate-generic"
+                                           , @"gateway"   : @"gateway-cloud"
+                                           , @"indicator" : @"indicator-gauge"
+                                           , @"lighting"  : @"lighting-bulb"
+                                           , @"media"     : @"media-video"
+                                           , @"motive"    : @"motive-drone"
+                                           , @"presence"  : @"presence-fob"
+                                           , @"sensor"    : @"sensor-generic"
+                                           , @"switch"    : @"switch-meter"
+                                           , @"wearable"  : @"wearable-watch"
+                                           };
+                    ikon = [pairs objectForKey:components[2]];
+                    if (ikon == nil) return;
+                    [entry setObject:ikon forKey:kIkonEntry];
+                    break;
+                }
+
+                case 5:
+                    [entry setObject:[NSString stringWithFormat:@"%@-%@", components[2], components[4]] forKey:kIkonEntry];
+                    break;
+
+                default:
+                    return;
+            }
+
+            [self.tableTasksData replaceObjectAtIndex:idx withObject:entry];
+            return;
+        }
+
+        NSNumber *entityID = [action objectForKey:@"id"];
+        if ((entityID == nil) || ([entityID integerValue] < 0)) return;
+
+        NSArray *members;
+        NSDictionary *group, *task;
+        NSRange range;
+        if ([entity isEqualToString:@"group"]) {
+            group = (self.groups != nil) ? [self.groups objectForKey:[NSString stringWithFormat:@"group/%@", entityID]] : nil;
+            members = (group != nil) ? [group valueForKey:@"members"] : nil;
+            if ((members == nil) || (members.count < 1)) return;
+
+            entity = [group valueForKey:@"type"];
+            if ([entity isEqualToString:@"device"]) {
+                range = [members[0] rangeOfString:@"device/" options:NSAnchoredSearch];
+                if (range.location == NSNotFound) return;
+                entityID = [NSNumber numberWithInteger:[[members[0] substringFromIndex:7] integerValue]];
+            } else if ([entity isEqualToString:@"task"]) {
+                range = [members[0] rangeOfString:@"task/" options:NSAnchoredSearch];
+                if (range.location == NSNotFound) return;
+                entityID = [NSNumber numberWithInteger:[[members[0] substringFromIndex:6] integerValue]];
+            } else {
+                return;
+            }
+        }
+
+        if ([entity isEqualToString:@"device"]) {
+            [entry setObject:[NSString stringWithFormat:@"device/%@", entityID] forKey:kWhoEntry];
+        } else if ([entity isEqualToString:@"task"]) {
+            task = (self.tasks != nil) ? [self.tasks objectForKey:[NSString stringWithFormat:@"task/%@", entityID]] : nil;
+            NSString *actor = (task != nil) ? [task objectForKey:@"actor"] : nil;
+            if (actor == nil) return;
+
+            range = [actor rangeOfString:@"device/" options:NSAnchoredSearch];
+            if (range.location != NSNotFound) {
+                entityID = [NSNumber numberWithInteger:[[actor substringFromIndex:7] integerValue]];
+                [entry setObject:[NSString stringWithFormat:@"device/%@", entityID] forKey:kWhoEntry];
+            } else {
+                range = [actor rangeOfString:@"group/" options:NSAnchoredSearch];
+                if (range.location == NSNotFound) return;
+
+                entityID = [NSNumber numberWithInteger:[[actor substringFromIndex:6] integerValue]];
+                group = (self.groups != nil)
+                            ? [self.groups objectForKey:[NSString stringWithFormat:@"group/%@", entityID]]
+                            : nil;
+                members = (group != nil) ? [group valueForKey:@"members"] : nil;
+                if ((members == nil) || (members.count < 1)) return;
+
+                entity = [group valueForKey:@"type"];
+                if (![entity isEqualToString:@"device"]) return;
+
+                range = [members[0] rangeOfString:@"device/" options:NSAnchoredSearch];
+                if (range.location == NSNotFound) return;
+                entityID = [NSNumber numberWithInteger:[[members[0] substringFromIndex:7] integerValue]];
+                [entry setObject:[NSString stringWithFormat:@"device/%@", entityID] forKey:kWhoEntry];
+            }
+        }
+
+        [self.tableTasksData replaceObjectAtIndex:idx withObject:entry];
+    }];
+}
+
+- (NSArray *)recurseMembers:(NSArray *)members
+                alreadySeen:(NSMutableArray *)groups {
+    NSMutableArray *array = [NSMutableArray arrayWithCapacity:members.count];
+
+    [members enumerateObjectsUsingBlock:^(NSString *member, NSUInteger idx, BOOL *stop) {
+        NSRange range = [member rangeOfString:@"group/" options:NSAnchoredSearch];
+        if (range.location == NSNotFound) {
+            [array addObject:member];
+            return;
+        }
+
+        if ([groups containsObject:member]) return;
+        [groups addObject:member];
+
+        NSMutableDictionary *group = [self.groups objectForKey:member];
+        if (group == nil) return;
+
+        NSArray *children = [group valueForKey:@"members"];
+        if ((children == nil) || (children.count < 1)) return;
+
+        [array addObjectsFromArray:[self recurseMembers:children alreadySeen:groups]];
+    }];
+
+    return array;
 }
 
 - (void)updateDevice:(NSDictionary *)entity {
@@ -717,6 +928,16 @@ didReceiveResponse:(NSURLResponse *)response {
                               }
                    ontoTable:self.tableDevicesData
                  withOptions:kPushNone];
+}
+
+- (void)didReceiveResponse:(NSDictionary *)dictionary {
+    NSDictionary *oops;
+
+    if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
+        NSString *diagnostic = [oops objectForKey:@"diagnostic"];
+        if (diagnostic == nil) diagnostic = @"invalid response";
+        [self notifyUser:diagnostic withTitle:kError];
+    }
 }
 
 
@@ -1055,12 +1276,14 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
 - (void)pushDataDictionary:(NSDictionary *)dictionary
                  ontoTable:(NSMutableArray *) tableArray
                withOptions:(unsigned long)options {
+  NSMutableArray *array;
+
     if (dictionary != nil) [tableArray insertObject:dictionary atIndex:0];
 
-    if ((options & kPushSort) && (tableArray.count > 1)) {
-        NSMutableArray *array =
-            [NSMutableArray arrayWithArray:[tableArray sortedArrayUsingComparator:^(NSDictionary *obj1,
-                                                                                    NSDictionary *obj2) {
+    if (tableArray.count > 1) {
+        if (options & kPushSort) {
+            array = [NSMutableArray arrayWithArray:[tableArray sortedArrayUsingComparator:^(NSDictionary *obj1,
+                                                                                            NSDictionary *obj2) {
                 NSRange range = [[obj1 objectForKey:kWhoEntry] rangeOfString:@"place/"
                                                                      options:NSAnchoredSearch];
                 BOOL placeP = range.location != NSNotFound;
@@ -1071,13 +1294,22 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
 
                 return [[obj2 objectForKey:kWhenEntry] compare:[obj1 objectForKey:kWhenEntry]];
             }]];
+        } else if (options & kPushInvert) {
+            array = [NSMutableArray arrayWithArray:tableArray];
+            NSUInteger count = tableArray.count - 1;
+            [tableArray enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+                [array replaceObjectAtIndex:idx withObject:[tableArray objectAtIndex:(count - idx)]];
+          }];
+        }
 
-        BOOL updateCurrentTable = (self.currentDataTable == tableArray);
-             if (self.tableConsoleData == tableArray) self.tableConsoleData = array;
-        else if (self.tableDevicesData == tableArray) self.tableDevicesData = array;
-        else                                          self.tableTasksData   = array;
-        if (updateCurrentTable) self.currentDataTable = array;
-        tableArray = array;
+        if (options & (kPushSort | kPushInvert)) {
+            BOOL updateCurrentTable = (self.currentDataTable == tableArray);
+                 if (self.tableConsoleData == tableArray) self.tableConsoleData = array;
+            else if (self.tableDevicesData == tableArray) self.tableDevicesData = array;
+            else                                          self.tableTasksData   = array;
+            if (updateCurrentTable) self.currentDataTable = array;
+            tableArray = array;
+        }
     }
 
     if ((options & kPushRefresh) && (self.currentDataTable == tableArray)) [self.tableView reloadData];
@@ -1123,7 +1355,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 
     NSString *whoami = [tableEntry objectForKey:kWhoEntry];
     NSDictionary *entity = (whoami != nil) ? [self.entities objectForKey:whoami] : nil;
-    NSString *ikon = (entity != nil) ? [entity objectForKey:kIkonEntry] : nil;
+    NSString *ikon = (entity != nil) ? [entity objectForKey:kIkonEntry] : [tableEntry objectForKey:kIkonEntry];
     NSString *imageName = (ikon != nil) ? ikon : @"place-home";
     if (ikon == nil) {
         NSString *whatami = (entity != nil) ? [entity objectForKey:kWhatAmI] : nil;
@@ -1140,11 +1372,49 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 -       (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
-    NSString *whoami = [tableEntry objectForKey:kWhoEntry];
-    DDLogVerbose(@"clicked on row %ld for %@", (long)indexPath.row, whoami);
+    NSDictionary *script = [tableEntry objectForKey:kScriptInfo];
 
+    if (script != nil) [self scripter:script];
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
+
+- (void)scripter:(NSDictionary *)script {
+    NSDictionary *action = [script objectForKey:@"perform"];
+    if (action == nil) return;
+
+    NSString *path = nil;
+    NSString *entity = [action objectForKey:@"entity"];
+    if ([entity isEqualToString:@"actor"]) {
+        NSString *prefix = [action objectForKey:@"prefix"];
+        if (prefix == nil) return;
+        path = [NSString stringWithFormat:@"/api/v1/%@/perform%@", entity, prefix];
+
+    } else {
+        NSNumber *entityID = [action objectForKey:@"id"];
+        if ((entityID == nil) || ([entityID integerValue] < 0)) return;
+        path = [NSString stringWithFormat:@"/api/v1/%@/perform/%@", entity, entityID];
+    }
+    NSUInteger requestID = [Client sharedClient].requestCounter;
+    [Client sharedClient].requestCounter = requestID + 1;
+    NSMutableDictionary *request = [[NSMutableDictionary alloc] init];
+    [request addEntriesFromDictionary:@{ @"requestID" : [NSString stringWithFormat:@"%lu", requestID]
+                                       , @"path"      : path
+                                       }];
+    NSString *perform = [action objectForKey:@"perform"];
+    if (perform != nil) [request setObject:perform forKey:@"perform"];
+    NSString *parameter = [action objectForKey:@"parameter"];
+    if (parameter != nil) [request setObject:parameter forKey:@"parameter"];
+
+    NSError *error = nil;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:request options:0 error:&error];
+    if (error != nil) {
+        [self notifyUser:@"encoding error" withTitle:kError];
+        return;
+    }
+
+    [self.service roundTrip:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+}
+
 
 // UIRefreshControl event processing
 

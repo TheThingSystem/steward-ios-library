@@ -37,7 +37,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 #define kDocumentCerts   @"Certs"
 #define kDocumentLogs    @"Logs"
-#define kDocumentRoot    @"Web"
+#define kDocumentScripts @"Scripts"
+#define kDocumentWeb     @"Web"
 
 
 -           (BOOL)application:(UIApplication *)application
@@ -80,12 +81,27 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     DDLogVerbose(@"begin");
 
+    self.documentScripts = nil;
+    if (paths.count > 0) {
+        self.documentScripts = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentScripts];
+    }
+    if ((self.documentScripts != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:self.documentScripts])) {
+        if (![[NSFileManager defaultManager]
+                   createDirectoryAtPath:self.documentScripts
+             withIntermediateDirectories:YES
+                              attributes:nil
+                                   error:&error]) {
+          DDLogError(@"create %@: %@", self.documentScripts, error);
+          self.documentScripts = nil;
+        }
+    }
+
     NSString *documentRoot = nil;
     if (paths.count > 0) {
-        documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentRoot];
+        documentRoot = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentWeb];
     }
     if ((documentRoot != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:documentRoot])) {
-        NSString *src = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:kDocumentRoot];
+        NSString *src = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:kDocumentWeb];
         error = nil;
         if (![[NSFileManager defaultManager]
                    copyItemAtPath:src

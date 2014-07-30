@@ -50,7 +50,7 @@
     // and we haven't yet made the request
     if ( self.authenticate == YES && self.opened == YES && self.followup == NO ) {
         if ( [message rangeOfString:@"error"].location == NSNotFound ) {
-            NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
+            NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%lu\",\"perform\":\"%@\",\"parameter\":%@}", self.device, (unsigned long)[Client sharedClient].requestCounter, self.request, self.parameters ];
             NSLog(@"json = %@", json);
             [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
             [webSocket send:json];
@@ -66,9 +66,9 @@
     NSLog(@"webSocketDidOpen: %@", webSocket);
     NSString *json;
     if (self.authenticate == YES && self.opened == NO ) {
-        json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/user/authenticate/%@\",\"requestID\":\"%d\",\"response\":\"%@\"}", [Client sharedClient].clientID, [Client sharedClient].requestCounter, [[Client sharedClient] generateTOTP]];
+        json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/user/authenticate/%@\",\"requestID\":\"%lu\",\"response\":\"%@\"}", [Client sharedClient].clientID, (unsigned long)[Client sharedClient].requestCounter, [[Client sharedClient] generateTOTP]];
     } else {
-        json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%d\",\"perform\":\"%@\",\"parameter\":%@}", self.device, [Client sharedClient].requestCounter, self.request, self.parameters ];
+        json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/perform/%@\",\"requestID\":\"%lu\",\"perform\":\"%@\",\"parameter\":%@}", self.device, (unsigned long)[Client sharedClient].requestCounter, self.request, self.parameters ];
     }
     NSLog(@"json = %@", json);
     [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;

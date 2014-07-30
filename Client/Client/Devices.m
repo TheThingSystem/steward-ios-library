@@ -30,16 +30,37 @@
     return self;
 }
 
-- (void)listAllDevices {
+- (NSUInteger)listAllDevices {
     if (!self.opened) {
       [self.webSocket open];
-      return;
+      return 0;
     }
 
-    NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/list\",\"requestID\":\"%d\",\"options\":{\"depth\":\"all\"}}", [Client sharedClient].requestCounter];
+    NSUInteger requestID = [Client sharedClient].requestCounter;
+    NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/actor/list\",\"requestID\":\"%lu\",\"options\":{\"depth\":\"all\"}}", (unsigned long)requestID];
+    [Client sharedClient].requestCounter = requestID + 1;
+
+    [self roundTrip:json];
+    return requestID;
+}
+
+- (NSUInteger)listAllActivities {
+    if (!self.opened) return [self listAllDevices];
+
+    NSUInteger requestID = [Client sharedClient].requestCounter;
+    NSString *json = [NSString stringWithFormat:@"{\"path\":\"/api/v1/activity/list\",\"requestID\":\"%lu\",\"options\":{\"depth\":\"all\"}}", (unsigned long)requestID];
+    [Client sharedClient].requestCounter = requestID + 1;
+
+    [self roundTrip:json];
+    return requestID;
+}
+
+- (BOOL)roundTrip:(NSString *)json {
+    if (!self.opened) return NO;
+
     NSLog(@"json = %@", json);
-    [Client sharedClient].requestCounter = [Client sharedClient].requestCounter + 1;
     [self.webSocket send:json];
+    return YES;
 }
 
 - (void)stopListingDevices {
