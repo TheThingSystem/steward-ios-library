@@ -1369,7 +1369,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *action = [script objectForKey:@"perform"];
     if (action == nil) {
         action = [script objectForKey:@"report"];
-        if (action != nil) [[TAASReport alloc] initWithDictionary:action];
+        if (action != nil) [[TAASReport singleton] generateReport:action];
 
         return;
     }

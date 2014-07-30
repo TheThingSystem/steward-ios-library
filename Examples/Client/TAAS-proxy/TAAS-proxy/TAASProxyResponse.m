@@ -24,7 +24,6 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSMutableData             *body;
 
 @property (strong, nonatomic) HTTPConnection            *upstream;
-@property (strong, nonatomic) NSURLConnection           *downstream;
 @property (        nonatomic) UInt64                     dataOffset;
 @property (        nonatomic) NSInteger                  statusCode;
 @property (strong, nonatomic) NSMutableDictionary       *headerFields;

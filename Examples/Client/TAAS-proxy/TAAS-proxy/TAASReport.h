@@ -12,6 +12,7 @@
 
 @interface TAASReport : NSObject
 
-- (id)initWithDictionary:(NSDictionary *)dictionary;
++ (TAASReport *)singleton;
+- (void)generateReport:(NSDictionary *)dictionary;
 
 @end

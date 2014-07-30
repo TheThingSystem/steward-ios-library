@@ -12,6 +12,8 @@
 
 @interface TAASProxyResponse : NSObject <HTTPResponse>
 
+@property (strong, nonatomic) NSURLConnection           *downstream;
+
 - (id)initWithURI:(NSString *)URI
     forConnection:(HTTPConnection *)connection;
 

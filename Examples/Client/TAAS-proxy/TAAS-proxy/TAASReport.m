@@ -37,7 +37,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 @interface TAASReport ()
 
-@property (strong, nonatomic) TAASProxyResponse         *downstream;
+@property (strong, nonatomic) NSMutableArray            *downstreams;
 
 @end
 
@@ -46,26 +46,39 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 @implementation TAASReport
 
-- (id)initWithDictionary:(NSDictionary *)dictionary {
-    DDLogVerbose(@"report: %@", dictionary);
++ (TAASReport *)singleton {
+    static TAASReport *shared = nil;
+    static dispatch_once_t onceToken;
 
+    dispatch_once(&onceToken, ^{ shared = [[TAASReport alloc] init]; });
+    return shared;
+}
+
+- (id) init {
     if ((self = [super init])) {
-        NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithCapacity:(dictionary.count + 1)];
-        [parameters addEntriesFromDictionary:dictionary];
-        [parameters setObject:@"report" forKey:@"behavior"];
-
-        NSString *URI = [NSString stringWithFormat:@"http://127.0.0.1:8884/oneshot?%@",
-                           [NSString URLQueryWithParameters:parameters]];
-        self.downstream = [[TAASProxyResponse alloc] initWithURI:URI forConnection:(HTTPConnection *)self];
+      self.downstreams = [NSMutableArray array];
     }
 
     return self;
 }
+- (void)generateReport:(NSDictionary *)dictionary {
+    DDLogVerbose(@"report: %@", dictionary);
 
-- (void)responseHasAvailableData:(id)parent {
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithCapacity:(dictionary.count + 1)];
+    [parameters addEntriesFromDictionary:dictionary];
+    [parameters setObject:@"report" forKey:@"behavior"];
+
+    NSString *URI = [NSString stringWithFormat:@"http://127.0.0.1:8884/oneshot?%@",
+                       [NSString URLQueryWithParameters:parameters]];
+    [self.downstreams addObject:[[TAASProxyResponse alloc] initWithURI:URI forConnection:(HTTPConnection *)self]];
 }
 
-- (void)responseDidAbort:(id)parent {
+- (void)responseHasAvailableData:(TAASProxyResponse *)child {
+    if (child.downstream == nil) [self.downstreams removeObject:child];
+}
+
+- (void)responseDidAbort:(TAASProxyResponse *)child {
+    [self.downstreams removeObject:child];
 }
 
 @end
