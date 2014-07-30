@@ -58,6 +58,7 @@
 		5F1F949B191DC4770026A14A /* TAASProxyResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F949A191DC4770026A14A /* TAASProxyResponse.m */; };
 		5F1F949E191DD5090026A14A /* TAASErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F949D191DD5090026A14A /* TAASErrorResponse.m */; };
 		5F30F088196D14FE00284415 /* TAASPrettyPrinter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F30F087196D14FE00284415 /* TAASPrettyPrinter.m */; };
+		5F5C1A7E19893F5E006ED4DF /* TAASReport.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F5C1A7D19893F5E006ED4DF /* TAASReport.m */; };
 		5F5D507319400C19002FD93B /* TAASClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F5D507219400C19002FD93B /* TAASClient.m */; };
 		5F7FA78B196F3E2100553256 /* TAASColorNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7FA78A196F3E2100553256 /* TAASColorNames.m */; };
 		5FA9D7D5196D4FEF00E94512 /* compassPoint.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5FA9D7D4196D4FEF00E94512 /* compassPoint.plist */; };
@@ -145,6 +146,8 @@
 		5F1F949D191DD5090026A14A /* TAASErrorResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASErrorResponse.m; sourceTree = "<group>"; };
 		5F30F086196D14FE00284415 /* TAASPrettyPrinter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASPrettyPrinter.h; sourceTree = "<group>"; };
 		5F30F087196D14FE00284415 /* TAASPrettyPrinter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASPrettyPrinter.m; sourceTree = "<group>"; };
+		5F5C1A7C19893F5E006ED4DF /* TAASReport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASReport.h; sourceTree = "<group>"; };
+		5F5C1A7D19893F5E006ED4DF /* TAASReport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASReport.m; sourceTree = "<group>"; };
 		5F5D507119400C19002FD93B /* TAASClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASClient.h; sourceTree = "<group>"; };
 		5F5D507219400C19002FD93B /* TAASClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASClient.m; sourceTree = "<group>"; };
 		5F7FA789196F3E2100553256 /* TAASColorNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASColorNames.h; sourceTree = "<group>"; };
@@ -237,6 +240,8 @@
 				008209A418991F6600B05498 /* ScanController.m */,
 				5F5D507119400C19002FD93B /* TAASClient.h */,
 				5F5D507219400C19002FD93B /* TAASClient.m */,
+				5F5C1A7C19893F5E006ED4DF /* TAASReport.h */,
+				5F5C1A7D19893F5E006ED4DF /* TAASReport.m */,
 				5F30F086196D14FE00284415 /* TAASPrettyPrinter.h */,
 				5F30F087196D14FE00284415 /* TAASPrettyPrinter.m */,
 				5F7FA789196F3E2100553256 /* TAASColorNames.h */,
@@ -506,6 +511,7 @@
 				5F1F948F191D9D020026A14A /* TAASConnection.m in Sources */,
 				0082099B18991DD600B05498 /* RootController.m in Sources */,
 				5F1F9460191D896C0026A14A /* GTMNSDictionary+URLArguments.m in Sources */,
+				5F5C1A7E19893F5E006ED4DF /* TAASReport.m in Sources */,
 				5F7FA78B196F3E2100553256 /* TAASColorNames.m in Sources */,
 				5F1F9465191D896C0026A14A /* GTMObjC2Runtime.m in Sources */,
 				5F1F943B191D86120026A14A /* Client.m in Sources */,

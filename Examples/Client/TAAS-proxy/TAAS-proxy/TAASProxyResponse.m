@@ -151,7 +151,6 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
     return YES;
 }
-// http://127.0.0.1:8884/oneshot?behavior=report&entity=device&id=129&properties=temperature,humidity,...
 
 - (void)connectionDidClose {
     HTTPLogTrace();

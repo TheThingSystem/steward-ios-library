@@ -10,6 +10,7 @@
 #import "RootController.h"
 #import "AppDelegate.h"
 #import "TAASPrettyPrinter.h"
+#import "TAASReport.h"
 #import "FXKeychain.h"
 #import "FXReachability.h"
 #import <ifaddrs.h>
@@ -917,6 +918,8 @@ didReceiveResponse:(NSURLResponse *)response {
 - (void)didReceiveResponse:(NSDictionary *)dictionary {
     NSDictionary *oops;
 
+    DDLogVerbose(@"didReceiveResponse: %@", dictionary);
+
     if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
         NSString *diagnostic = [oops objectForKey:@"diagnostic"];
         if (diagnostic == nil) diagnostic = @"invalid response";
@@ -1364,7 +1367,12 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 
 - (void)scripter:(NSDictionary *)script {
     NSDictionary *action = [script objectForKey:@"perform"];
-    if (action == nil) return;
+    if (action == nil) {
+        action = [script objectForKey:@"report"];
+        if (action != nil) [[TAASReport alloc] initWithDictionary:action];
+
+        return;
+    }
 
     NSString *path = nil;
     NSString *entity = [action objectForKey:@"entity"];
