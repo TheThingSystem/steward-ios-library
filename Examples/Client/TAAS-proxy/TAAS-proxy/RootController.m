@@ -1418,7 +1418,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [Client sharedClient].requestCounter = requestID + 1;
     NSMutableDictionary *request = [[NSMutableDictionary alloc] init];
     [request addEntriesFromDictionary:@{ @"requestID" : [NSString stringWithFormat:@"%lu",
-                                                                  (unsigned long)requestID
+                                                                  (unsigned long)requestID]
                                        , @"path"      : path
                                        }];
     NSString *perform = [action objectForKey:@"perform"];
