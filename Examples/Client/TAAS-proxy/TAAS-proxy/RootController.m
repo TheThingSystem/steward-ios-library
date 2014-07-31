@@ -924,8 +924,17 @@ didReceiveResponse:(NSURLResponse *)response {
     if ((dictionary != nil) && ((oops = [dictionary objectForKey:@"error"]) != nil)) {
         NSString *diagnostic = [oops objectForKey:@"diagnostic"];
         if (diagnostic == nil) diagnostic = @"invalid response";
-        [self notifyUser:diagnostic withTitle:kError];
+
+// TODO: on error put up a TSmessage
+        return;
     }
+
+/* TODO:
+
+if dictionary[@"actors"], then count number of objects with status= success out of total and message that
+
+
+ */
 }
 
 

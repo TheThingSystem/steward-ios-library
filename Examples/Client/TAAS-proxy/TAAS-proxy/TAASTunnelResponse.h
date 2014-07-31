@@ -16,8 +16,8 @@
 @property (strong, nonatomic) GCDAsyncSocket    *downstream;
 
 
-- (id)initWithAddress:(NSString *)address
-              andPort:(uint16_t)port
-        forConnection:(HTTPConnection *)connection;
+- (id)initWithPath:(NSString *)path
+        fromSocket:(GCDAsyncSocket *)socket
+     forConnection:(HTTPConnection *)connection;
 
 @end

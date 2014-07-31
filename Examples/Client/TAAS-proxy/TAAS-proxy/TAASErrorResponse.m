@@ -29,7 +29,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
     if (body == nil) body = [NSData data];
 
     if ((self = [super initWithData:body])) {
-        HTTPLogTrace();
+        HTTPLogInfo(@"%@[%p]: initWithStatusCode: %d length=%lu", THIS_FILE, self, statusCode,
+		    (unsigned long)body.length);
 
         self.statusCode = statusCode;
     }
@@ -37,7 +38,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 }
 
 - (NSInteger) status {
-    HTTPLogTrace();
+    HTTPLogTrace2(@"%@[%p]: status: %lu", THIS_FILE, self, (unsigned long)self.statusCode);
 
     return self.statusCode;
 }

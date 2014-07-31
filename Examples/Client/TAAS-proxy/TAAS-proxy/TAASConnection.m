@@ -37,36 +37,19 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (BOOL)supportsMethod:(NSString *)method
                 atPath:(NSString *)path {
-    if (![method isEqualToString:@"CONNECT"]) return [super supportsMethod:method atPath:path];
+// NB: ideally, should only get here if proxy.pac is properly written; however, be fail-friendly
 
-    NSRange range = [path rangeOfString:@".google.com"];
-    return (range.location != NSNotFound);
+    return (([method isEqualToString:@"CONNECT"]) || ([super supportsMethod:method atPath:path]));
 }
 
 - (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method
                                               URI:(NSString *)path {
     NSString *serviceURI;
 
-NSLog(@"2: method=%@ path=%@", method, path);
     if ([method isEqualToString:@"CONNECT"]) {
-        [asyncSocket writeData:[[NSString stringWithFormat:@"HTTP/1.0 200 OK"] dataUsingEncoding:NSUTF8StringEncoding]
-                   withTimeout:-1.0f
-                           tag:0];
-
-        
-	NSString *address = path;
-        uint16_t portno = 80;
-        NSRange range = [address rangeOfString:@":"];
-        if (range.location != NSNotFound) {
-            portno = [[address substringFromIndex:range.location] intValue];
-	    address = [address substringToIndex:range.location];
-	}
-
-// not ready yet!
-return nil;
-        self.tunnel = [[TAASTunnelResponse alloc] initWithAddress:address
-                                                          andPort:portno
-						    forConnection:self];
+        self.tunnel = [[TAASTunnelResponse alloc] initWithPath:path
+                                                    fromSocket:asyncSocket
+                                                    forConnection:self];
         return self.tunnel;
     }
 
@@ -161,7 +144,7 @@ static CFArrayRef  importedItems = NULL;
             data1 = [NSData dataWithContentsOfFile:path1 options:0 error:&error];
             foundP = data1 != nil;
             if (!foundP) DDLogError(@"read %@: %@", path1, error);
-	}
+        }
 
         // openssl x509 -inform pem -outform der -in proxy.crt -out proxy.cer
         NSString *path2 = [documentCerts stringByAppendingPathComponent:@"proxy.cer"];
@@ -225,7 +208,6 @@ static CFArrayRef  importedItems = NULL;
     }
 
     keysAndCerts = [NSArray arrayWithObjects:(__bridge id)identity, CFBridgingRelease(certificate), nil];
-NSLog(@"keysAndCerts=%@",keysAndCerts);
     return YES;
 }
 
@@ -236,18 +218,6 @@ NSLog(@"keysAndCerts=%@",keysAndCerts);
 
 - (NSArray *)sslIdentityAndCertificates {
     return keysAndCerts;
-}
-
-- (BOOL)supportsMethod:(NSString *)method
-                atPath:(NSString *)path {
-NSLog(@"https 1: method=%@ path=%@", method, path);
-    return [super supportsMethod:method atPath:path];
-}
-
-- (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method
-                                              URI:(NSString *)path {
-NSLog(@"https 2: method=%@ path=%@", method, path);
-    return [super httpResponseForMethod:method URI:path];
 }
 
 @end

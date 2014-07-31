@@ -13,7 +13,7 @@
 
 
 // Log levels : off, error, warn, info, verbose
-// Other flags: trace
+// Other flags: HTTP_LOG_FLAG_TRACE
 static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
 
@@ -37,7 +37,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 - (id)initWithURI:(NSString *)URI
     forConnection:(HTTPConnection *)parent {
     if ((self = [super init]))  {
-        HTTPLogInfo(@"%@[%p]: initWithURI:%@", THIS_FILE, self, URI);
+        HTTPLogInfo(@"%@[%p]: initWithURI: %@", THIS_FILE, self, URI);
 
         self.upstream = parent;
 
@@ -96,15 +96,14 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 }
 
 - (BOOL)isDone {
-    NSError *error;
-
-    HTTPLogTrace2(@"%@[%p]: isDone:%@", THIS_FILE, self,
+    HTTPLogTrace2(@"%@[%p]: isDone: %@", THIS_FILE, self,
                   (self.downstream != nil) || ((self.data != nil) && ([self.data length] > 0))
                       ? @"NO" : @"YES");
 
     if ((self.downstream != nil) || ((self.data != nil) && ([self.data length] > 0))) return NO;
     if (!self.oneshotP) return YES;
 
+    NSError *error;
     NSString *text = nil;
     const char *bytes = (const char *)[self.body bytes];
     if ((self.body.length > 3) && (bytes[0] == '{')) {
@@ -161,26 +160,26 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 #pragma mark - delayed response
 
 - (BOOL)delayResponseHeaders {
-    HTTPLogTrace2(@"%@[%p]: delayResponseHeaders:%@", THIS_FILE, self,
+    HTTPLogTrace2(@"%@[%p]: delayResponseHeaders: %@", THIS_FILE, self,
                   (self.headerFields == nil) ? @"YES" : @"NO");
 
     return (self.headerFields == nil);
 }
 
 - (NSInteger)status {
-    HTTPLogTrace2(@"%@[%p]: status:%lu", THIS_FILE, self, (unsigned long)self.statusCode);
+    HTTPLogTrace2(@"%@[%p]: status: %lu", THIS_FILE, self, (unsigned long)self.statusCode);
 
     return self.statusCode;
 }
 
 - (NSDictionary *)httpHeaders {
-    HTTPLogTrace2(@"%@[%p]: httpHeaders:%@", THIS_FILE, self, self.headerFields);
+    HTTPLogTrace2(@"%@[%p]: httpHeaders: %@", THIS_FILE, self, self.headerFields);
 
     return self.headerFields;
 }
 
 -(NSData *)readDataOfLength:(NSUInteger)length {
-    HTTPLogTrace2(@"%@[%p]: readDataOfLength:%lu", THIS_FILE, self, (unsigned long)length);
+    HTTPLogTrace2(@"%@[%p]: readDataOfLength: %lu", THIS_FILE, self, (unsigned long)length);
 
     if (!self.data) return nil;
 
@@ -211,13 +210,13 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 }
 
 - (UInt64)offset {
-    HTTPLogTrace2(@"%@[%p]: offset:%lu", THIS_FILE, self, (unsigned long)self.dataOffset);
+    HTTPLogTrace2(@"%@[%p]: offset: %lu", THIS_FILE, self, (unsigned long)self.dataOffset);
 
     return self.dataOffset;
 }
 
 - (void)setOffset:(UInt64)offset {
-    HTTPLogTrace2(@"%@[%p]: setOffset:%lu", THIS_FILE, self, (unsigned long)offset);
+    HTTPLogTrace2(@"%@[%p]: setOffset: %lu", THIS_FILE, self, (unsigned long)offset);
 }
 
 

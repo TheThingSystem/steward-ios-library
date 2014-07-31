@@ -10,46 +10,65 @@
 #import "AppDelegate.h"
 #import "RequestUtils.h"
 #import "HTTPLogging.h"
+#import "HTTPMessage.h"
 
 
 // Log levels : off, error, warn, info, verbose
-// Other flags: trace
-static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE | HTTP_LOG_FLAG_TRACE;
+// Other flags: HTTP_LOG_FLAG_TRACE
+static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
 
 @interface TAASTunnelResponse ()
 
-@property (strong, nonatomic) NSMutableData             *body;
+@property (        nonatomic) BOOL                       connectedP;
+@property (        nonatomic) BOOL                       errorP;
 
-@property (strong, nonatomic) HTTPConnection            *upstream;
-@property (        nonatomic) UInt64                     dataOffset;
-@property (strong, nonatomic) NSMutableData             *data;
+@property (strong, nonatomic) HTTPConnection            *parent;
+
+@property (strong, nonatomic) GCDAsyncSocket            *upstream;
+@property (nonatomic, weak) id<GCDAsyncSocketDelegate>   pDelegate;
+@property (        nonatomic) dispatch_queue_t           pQueue;
+
+@property (        nonatomic) dispatch_queue_t           delegateQueue;
 
 @end
 
 
 @implementation TAASTunnelResponse
 
-- (id)initWithAddress:(NSString *)address
-              andPort:(uint16_t)portno
-        forConnection:(HTTPConnection *)connection {
+- (id)initWithPath:(NSString *)path
+        fromSocket:(GCDAsyncSocket *)socket
+     forConnection:(HTTPConnection *)connection {
     if ((self = [super init]))  {
-        HTTPLogInfo(@"%@[%p]: initWithAddress:%@:%d", THIS_FILE, self, address, portno);
-
-        self.upstream = connection;
-
-
-        self.body = nil;
-
-self.downstream = nil;
-        if (self.downstream == nil) {
-	    HTTPLogWarn(@"%@[%p]: unable to create connection to %@:%d", THIS_FILE, self, address, portno);
-            return nil;
+        uint16_t port = 80;
+        NSString *host = path;
+        NSRange range = [host rangeOfString:@":"];
+        if (range.location != NSNotFound) {
+            port = [[host substringFromIndex:(range.location + 1)] intValue];
+            host = [host substringToIndex:range.location];
         }
-// set runLoop for self.downstream
+        HTTPLogInfo(@"%@[%p]: initWithPath: %@:%lu", THIS_FILE, self,
+                    host, (unsigned long)port);
+// NB: the second part of fail-friendly
+       range = [host rangeOfString:@".google.com" options:(NSBackwardsSearch | NSAnchoredSearch)];
+       if ((range.location != NSNotFound) || ([host isEqualToString:@"google.com"])) {
+           host = @"127.0.0.1";
+           port = (port == 443) ? 8883 : 8884;
+       }
 
-        self.dataOffset = 0;
-        self.data = nil;
+        self.delegateQueue = dispatch_queue_create("TAASTunnelResponse socket delegate queue", 0);
+
+        self.parent = connection;
+        self.upstream = socket;
+        self.pDelegate = self.upstream.delegate;
+        self.upstream.delegate = self;
+        self.pQueue = self.upstream.delegateQueue;
+        self.upstream.delegateQueue = self.delegateQueue;
+        self.downstream = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:self.delegateQueue];
+
+        NSError *error = nil;
+        [self.downstream connectToHost:host onPort:port error:&error];
+        self.connectedP = self.errorP = NO;
     }
 
     return self;
@@ -62,59 +81,58 @@ self.downstream = nil;
         [self.downstream disconnect];
         self.downstream = nil;
     }
-    if (self.upstream != nil) [self.upstream responseDidAbort:self];
+    if (self.parent == nil) return;
+
+    self.upstream.delegate = self.pDelegate;
+    self.upstream.delegateQueue = self.pQueue;
+    self.upstream = nil;
+    [self.parent responseDidAbort:self];
 }
 
 - (BOOL)isDone {
-    HTTPLogTrace2(@"%@[%p]: isDone:%@", THIS_FILE, self,
-                  (self.downstream != nil) || ((self.data != nil) && ([self.data length] > 0))
-                      ? @"NO" : @"YES");
+    HTTPLogTrace2(@"%@[%p]: isDone: %@", THIS_FILE, self,
+                    (self.downstream == nil) ? @"YES" : @"NO");
 
-    if ((self.downstream != nil) || ((self.data != nil) && ([self.data length] > 0))) return NO;
-    return YES;
+    return (self.downstream == nil);
 }
 
 - (void)connectionDidClose {
     HTTPLogTrace();
 
-    self.upstream = nil;
+    if (self.upstream != nil) {
+        self.upstream.delegate = self.pDelegate;
+        self.upstream.delegateQueue = self.pQueue;
+        self.upstream = nil;
+    }
+    self.parent = nil;
 }
 
 
 #pragma mark - delayed response
 
 - (BOOL)delayResponseHeaders {
-    HTTPLogTrace2(@"%@[%p]: delayResponseHeaders", THIS_FILE, self);
+    HTTPLogTrace2(@"%@[%p]: delayResponseHeaders: %@", THIS_FILE, self, self.errorP ? @"NO" : @"YES");
 
-    return YES;
+    return (!self.errorP);
 }
 
 - (NSInteger)status {
-    HTTPLogTrace2(@"%@[%p]: status", THIS_FILE, self);
+    HTTPLogTrace2(@"%@[%p]: status:%d", THIS_FILE, self, 504);
 
-    return 0;
+    return 504;
 }
 
 - (NSDictionary *)httpHeaders {
-    HTTPLogTrace2(@"%@[%p]: httpHeaders:", THIS_FILE, self);
+    HTTPLogTrace();
 
     return nil;
 }
 
 -(NSData *)readDataOfLength:(NSUInteger)length {
-    HTTPLogTrace2(@"%@[%p]: readDataOfLength:%lu", THIS_FILE, self, (unsigned long)length);
+    HTTPLogTrace2(@"%@[%p]: readDataOfLength: %lu", THIS_FILE, self,
+                  (unsigned long)length);
 
-    if (!self.data) return nil;
-
-    if (length > [self.data length]) length = [self.data length];
-
-    NSData *result = [NSData dataWithBytes:[self.data bytes] length:length];
-    [self.data replaceBytesInRange:NSMakeRange(0, length) withBytes:NULL length:0];
-    HTTPLogTrace2(@"%@[%p]: returning %lu octets, %lu octets remaining", THIS_FILE, self,
-                  (unsigned long)length, (unsigned long)[self.data length]);
-
-    self.dataOffset += length;
-    return result;
+    return nil;
 }
 
 
@@ -133,41 +151,67 @@ self.downstream = nil;
 }
 
 - (UInt64)offset {
-    HTTPLogTrace2(@"%@[%p]: offset:%lu", THIS_FILE, self, (unsigned long)self.dataOffset);
+    HTTPLogTrace();
 
-    return self.dataOffset;
+    return 0;
 }
 
 - (void)setOffset:(UInt64)offset {
-    HTTPLogTrace2(@"%@[%p]: setOffset:%lu", THIS_FILE, self, (unsigned long)offset);
+    HTTPLogTrace2(@"%@[%p]: setOffset: %lu", THIS_FILE, self,
+                  (unsigned long)offset);
 }
 
 
 #pragma mark - GCDAsyncSocket delegate methods
 
+#define TUNNEL_CONNECTED    2000
+#define TUNNEL_CONFIRMED    2001
+#define TUNNEL_READ         2002
+#define TUNNEL_WRITE        2003
+
 -   (void)socket:(GCDAsyncSocket *)sock
 didConnectToHost:(NSString *)host
-	    port:(uint16_t)port {
+            port:(uint16_t)port {
+    HTTPLogTrace2(@"%@[%p]: didConnectToHost: %@:%lu", THIS_FILE, self,
+                  host, (unsigned long)port);
+
+    [self socket:self.downstream
+     didReadData:[[NSString stringWithFormat:@"HTTP/1.0 200 OK\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]
+         withTag:TUNNEL_CONNECTED];
+    self.connectedP = YES;
 }
 
 - (void)socket:(GCDAsyncSocket *)sock
    didReadData:(NSData *)data
        withTag:(long)tag {
+    HTTPLogTrace2(@"%@[%p]: didReadData: %@ length=%lu tag=%lu", THIS_FILE, self,
+                  (sock == self.downstream) ? @"downstream" : @"upstream", (unsigned long)data.length, tag);
 
-  // give it to self.connection...
+    GCDAsyncSocket *peer = (sock == self.downstream) ? self.upstream : self.downstream;
 
+    [peer writeData:data withTimeout:-1 tag:tag];
+    [peer readDataWithTimeout:-1 tag:TUNNEL_READ];
+    [sock readDataWithTimeout:-1 tag: TUNNEL_READ];
 }
 
 -      (void)socket:(GCDAsyncSocket *)sock
 didWriteDataWithTag:(long)tag {
-    HTTPLogError(@"%@[%p] didWriteDataWIthTag: %ld", THIS_FILE, self, tag);
+    HTTPLogTrace2(@"%@[%p]: didWriteDataWithTag: %@ tag=%lu", THIS_FILE, self,
+                  (sock != self.downstream) ? @"upstream" : @"downstream", tag);
 }
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock
-		  withError:(NSError *)error {
-    HTTPLogError(@"%@[%p] socketDidDisconnect: %@", THIS_FILE, self, error);
+                  withError:(NSError *)error {
+    HTTPLogError(@"%@[%p] socketDidDisconnect: %@", THIS_FILE, self,
+                 error);
 
-    [self abort];
+    if (self.connectedP) {
+        [self abort];
+        return;
+    }
+
+    self.errorP = YES;
+    [self.parent responseHasAvailableData:self];
 }
 
 @end
