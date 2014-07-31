@@ -981,7 +981,7 @@
                        , @5288     : @"Zaffre"
                        , @2889224  : @"Zinnwaldite brown"
                        , @3778446  : @"Zomp"
-};
+        };
     }
     return self;
 }

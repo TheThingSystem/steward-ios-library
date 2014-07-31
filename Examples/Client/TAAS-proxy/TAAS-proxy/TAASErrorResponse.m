@@ -30,7 +30,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
     if ((self = [super initWithData:body])) {
         HTTPLogInfo(@"%@[%p]: initWithStatusCode: %d length=%lu", THIS_FILE, self, statusCode,
-		    (unsigned long)body.length);
+                    (unsigned long)body.length);
 
         self.statusCode = statusCode;
     }

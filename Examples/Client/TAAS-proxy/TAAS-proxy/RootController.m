@@ -536,7 +536,8 @@ didReceiveResponse:(NSURLResponse *)response {
 
         AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         if (appDelegate.documentScripts != nil) {
-            NSString *scriptPath = [[appDelegate.documentScripts stringByAppendingPathComponent:self.taasName]
+            NSString *scriptPath = [[appDelegate.documentScripts
+                                         stringByAppendingPathComponent:self.taasName]
                                         stringByAppendingPathExtension:@"json"];
             NSData *data = [[NSFileManager defaultManager] fileExistsAtPath:scriptPath]
                                ? [[NSFileManager defaultManager] contentsAtPath:scriptPath] : nil;
@@ -547,8 +548,10 @@ didReceiveResponse:(NSURLResponse *)response {
                                                   : nil;
             if (scripts != nil) {
                 [scripts enumerateKeysAndObjectsUsingBlock:^(NSString *property, id values, BOOL *stop) {
-                    if ((![property isEqualToString:@"commands"]) || (![values isKindOfClass:[NSArray class]])) return;
-                    [values enumerateObjectsUsingBlock:^(NSDictionary *value, NSUInteger idx, BOOL *stop) {
+                    if ((![property isEqualToString:@"commands"])
+                            || (![values isKindOfClass:[NSArray class]])) return;
+                    [values enumerateObjectsUsingBlock:^(NSDictionary *value, NSUInteger idx,
+                                                         BOOL *stop) {
                         [self pushDataDictionary:@{ kDataEntry  : [value objectForKey:@"name"]
                                                   , kScriptInfo : value
                                                   }
@@ -646,7 +649,11 @@ didReceiveResponse:(NSURLResponse *)response {
 
     NSDictionary *result = [dictionary objectForKey:@"result"];
     if (self.entities != nil) {
-        if (self.tasks != nil) [self didReceiveResponse:dictionary]; else [self didReceiveActivities:result];
+        if (self.tasks != nil) {
+            [self didReceiveResponse:dictionary];
+        } else {
+            [self didReceiveActivities:result];
+        }
         return;
     }
 
@@ -682,12 +689,14 @@ didReceiveResponse:(NSURLResponse *)response {
     }];
 
     if (self.groups != nil) {
-        [self.groups enumerateKeysAndObjectsUsingBlock:^(id whoami, NSMutableDictionary *group, BOOL *stop) {
+        [self.groups enumerateKeysAndObjectsUsingBlock:^(id whoami, NSMutableDictionary *group,
+                                                         BOOL *stop) {
             NSArray *members = [group valueForKey:@"members"];
             if ((members == nil) || (members.count < 1)) return;
 
             group = [group mutableCopy];
-            [group setObject:[self recurseMembers:members alreadySeen:[NSMutableArray arrayWithCapacity:self.groups.count]]
+            [group setObject:[self recurseMembers:members
+                                      alreadySeen:[NSMutableArray arrayWithCapacity:self.groups.count]]
                                            forKey:@"members"];
             [self.groups setObject:group forKey:whoami];
         }];
@@ -759,7 +768,8 @@ didReceiveResponse:(NSURLResponse *)response {
                 }
 
                 case 5:
-                    [entry setObject:[NSString stringWithFormat:@"%@-%@", components[2], components[4]] forKey:kIkonEntry];
+                    [entry setObject:[NSString stringWithFormat:@"%@-%@", components[2], components[4]]
+                              forKey:kIkonEntry];
                     break;
 
                 default:
@@ -777,7 +787,9 @@ didReceiveResponse:(NSURLResponse *)response {
         NSDictionary *group, *task;
         NSRange range;
         if ([entity isEqualToString:@"group"]) {
-            group = (self.groups != nil) ? [self.groups objectForKey:[NSString stringWithFormat:@"group/%@", entityID]] : nil;
+            group = (self.groups != nil)
+                        ? [self.groups objectForKey:[NSString stringWithFormat:@"group/%@", entityID]]
+                        : nil;
             members = (group != nil) ? [group valueForKey:@"members"] : nil;
             if ((members == nil) || (members.count < 1)) return;
 
@@ -798,7 +810,8 @@ didReceiveResponse:(NSURLResponse *)response {
         if ([entity isEqualToString:@"device"]) {
             [entry setObject:[NSString stringWithFormat:@"device/%@", entityID] forKey:kWhoEntry];
         } else if ([entity isEqualToString:@"task"]) {
-            task = (self.tasks != nil) ? [self.tasks objectForKey:[NSString stringWithFormat:@"task/%@", entityID]] : nil;
+            task = (self.tasks != nil)
+                       ? [self.tasks objectForKey:[NSString stringWithFormat:@"task/%@", entityID]] : nil;
             NSString *actor = (task != nil) ? [task objectForKey:@"actor"] : nil;
             if (actor == nil) return;
 
@@ -1279,8 +1292,9 @@ clickedButtonAtIndex:(NSInteger)buttonIndex {
 
     if (tableArray.count > 1) {
         if (options & kPushSort) {
-            array = [NSMutableArray arrayWithArray:[tableArray sortedArrayUsingComparator:^(NSDictionary *obj1,
-                                                                                            NSDictionary *obj2) {
+            array = [NSMutableArray
+                         arrayWithArray:[tableArray sortedArrayUsingComparator:^(NSDictionary *obj1,
+                                                                                 NSDictionary *obj2) {
                 NSRange range = [[obj1 objectForKey:kWhoEntry] rangeOfString:@"place/"
                                                                      options:NSAnchoredSearch];
                 BOOL placeP = range.location != NSNotFound;
@@ -1338,21 +1352,25 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 
 - (UITableViewCell *)tableView:(UITableView *)tableView
          cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    TableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MonitorCellReuseIdentifier forIndexPath:indexPath];
+    TableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MonitorCellReuseIdentifier
+                                                          forIndexPath:indexPath];
 
     if (self.currentDataTable.count <= indexPath.row) return cell;
 
     NSDictionary *tableEntry = [self.currentDataTable objectAtIndex:indexPath.row];
 
     NSString *date = [tableEntry objectForKey:kWhenEntry];
-    if (date != nil) date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
+    if (date != nil) {
+        date = [MHPrettyDate shortPrettyDateFromDate:[self.utcFormatter dateFromString:date]];
+    }
     cell.cellTimeLabel.text = date;
 
     cell.cellText1Label.text = [tableEntry objectForKey:kDataEntry];
 
     NSString *whoami = [tableEntry objectForKey:kWhoEntry];
     NSDictionary *entity = (whoami != nil) ? [self.entities objectForKey:whoami] : nil;
-    NSString *ikon = (entity != nil) ? [entity objectForKey:kIkonEntry] : [tableEntry objectForKey:kIkonEntry];
+    NSString *ikon = (entity != nil)
+                         ? [entity objectForKey:kIkonEntry] : [tableEntry objectForKey:kIkonEntry];
     NSString *imageName = (ikon != nil) ? ikon : @"place-home";
     if (ikon == nil) {
         NSString *whatami = (entity != nil) ? [entity objectForKey:kWhatAmI] : nil;
@@ -1399,7 +1417,8 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSUInteger requestID = [Client sharedClient].requestCounter;
     [Client sharedClient].requestCounter = requestID + 1;
     NSMutableDictionary *request = [[NSMutableDictionary alloc] init];
-    [request addEntriesFromDictionary:@{ @"requestID" : [NSString stringWithFormat:@"%lu", (unsigned long)requestID]
+    [request addEntriesFromDictionary:@{ @"requestID" : [NSString stringWithFormat:@"%lu",
+                                                                  (unsigned long)requestID
                                        , @"path"      : path
                                        }];
     NSString *perform = [action objectForKey:@"perform"];

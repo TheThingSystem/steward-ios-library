@@ -292,7 +292,8 @@ enum PPenum {
                                                 forKey:@"altitude"]];
                   }
                   vstring = [self valuesPP:array withIndentLevel:2];
-                  return [vstring stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                  return [vstring
+                           stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
               }
             }
             return [NSString stringWithFormat:@"(%@)", [value componentsJoinedByString:@", "]];

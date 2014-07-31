@@ -70,7 +70,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
     NSString *URI = [NSString stringWithFormat:@"http://127.0.0.1:8884/oneshot?%@",
                        [NSString URLQueryWithParameters:parameters]];
-    [self.downstreams addObject:[[TAASProxyResponse alloc] initWithURI:URI forConnection:(HTTPConnection *)self]];
+    [self.downstreams addObject:[[TAASProxyResponse alloc] initWithURI:URI
+                                                         forConnection:(HTTPConnection *)self]];
 }
 
 - (void)responseHasAvailableData:(TAASProxyResponse *)child {

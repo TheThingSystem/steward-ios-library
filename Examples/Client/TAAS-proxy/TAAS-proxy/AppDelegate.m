@@ -86,7 +86,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if (paths.count > 0) {
         self.documentScripts = [[paths objectAtIndex:0] stringByAppendingPathComponent:kDocumentScripts];
     }
-    if ((self.documentScripts != nil) && (![[NSFileManager defaultManager] fileExistsAtPath:self.documentScripts])) {
+    if ((self.documentScripts != nil)
+            && (![[NSFileManager defaultManager] fileExistsAtPath:self.documentScripts])) {
         if (![[NSFileManager defaultManager]
                    createDirectoryAtPath:self.documentScripts
              withIntermediateDirectories:YES

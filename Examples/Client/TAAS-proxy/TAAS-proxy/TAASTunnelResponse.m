@@ -47,8 +47,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
             port = [[host substringFromIndex:(range.location + 1)] intValue];
             host = [host substringToIndex:range.location];
         }
-        HTTPLogInfo(@"%@[%p]: initWithPath: %@:%lu", THIS_FILE, self,
-                    host, (unsigned long)port);
+        HTTPLogInfo(@"%@[%p]: initWithPath: %@:%lu", THIS_FILE, self, host, (unsigned long)port);
 // NB: the second part of fail-friendly
        range = [host rangeOfString:@".google.com" options:(NSBackwardsSearch | NSAnchoredSearch)];
        if ((range.location != NSNotFound) || ([host isEqualToString:@"google.com"])) {
@@ -90,8 +89,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 }
 
 - (BOOL)isDone {
-    HTTPLogTrace2(@"%@[%p]: isDone: %@", THIS_FILE, self,
-                    (self.downstream == nil) ? @"YES" : @"NO");
+    HTTPLogTrace2(@"%@[%p]: isDone: %@", THIS_FILE, self, (self.downstream == nil) ? @"YES" : @"NO");
 
     return (self.downstream == nil);
 }
@@ -129,8 +127,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 }
 
 -(NSData *)readDataOfLength:(NSUInteger)length {
-    HTTPLogTrace2(@"%@[%p]: readDataOfLength: %lu", THIS_FILE, self,
-                  (unsigned long)length);
+    HTTPLogTrace2(@"%@[%p]: readDataOfLength: %lu", THIS_FILE, self, (unsigned long)length);
 
     return nil;
 }
@@ -157,8 +154,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 }
 
 - (void)setOffset:(UInt64)offset {
-    HTTPLogTrace2(@"%@[%p]: setOffset: %lu", THIS_FILE, self,
-                  (unsigned long)offset);
+    HTTPLogTrace2(@"%@[%p]: setOffset: %lu", THIS_FILE, self, (unsigned long)offset);
 }
 
 
@@ -172,11 +168,11 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 -   (void)socket:(GCDAsyncSocket *)sock
 didConnectToHost:(NSString *)host
             port:(uint16_t)port {
-    HTTPLogTrace2(@"%@[%p]: didConnectToHost: %@:%lu", THIS_FILE, self,
-                  host, (unsigned long)port);
+    HTTPLogTrace2(@"%@[%p]: didConnectToHost: %@:%lu", THIS_FILE, self, host, (unsigned long)port);
 
     [self socket:self.downstream
-     didReadData:[[NSString stringWithFormat:@"HTTP/1.0 200 OK\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]
+     didReadData:[[NSString stringWithFormat:@"HTTP/1.0 200 OK\r\n\r\n"]
+                   dataUsingEncoding:NSUTF8StringEncoding]
          withTag:TUNNEL_CONNECTED];
     self.connectedP = YES;
 }
@@ -185,7 +181,8 @@ didConnectToHost:(NSString *)host
    didReadData:(NSData *)data
        withTag:(long)tag {
     HTTPLogTrace2(@"%@[%p]: didReadData: %@ length=%lu tag=%lu", THIS_FILE, self,
-                  (sock == self.downstream) ? @"downstream" : @"upstream", (unsigned long)data.length, tag);
+                  (sock == self.downstream) ? @"downstream" : @"upstream", (unsigned long)data.length,
+                  tag);
 
     GCDAsyncSocket *peer = (sock == self.downstream) ? self.upstream : self.downstream;
 
@@ -202,8 +199,7 @@ didWriteDataWithTag:(long)tag {
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock
                   withError:(NSError *)error {
-    HTTPLogError(@"%@[%p] socketDidDisconnect: %@", THIS_FILE, self,
-                 error);
+    HTTPLogError(@"%@[%p] socketDidDisconnect: %@", THIS_FILE, self, error);
 
     if (self.connectedP) {
         [self abort];

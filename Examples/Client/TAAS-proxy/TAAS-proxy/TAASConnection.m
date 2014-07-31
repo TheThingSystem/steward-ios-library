@@ -169,11 +169,13 @@ static CFArrayRef  importedItems = NULL;
     if ((data1 == nil) || (data2 == nil)) return NO;
 
     NSString  *name = @"TAAS-Proxy";
-    NSData *identityTag = [[NSData alloc] initWithBytes:(const void*)[name UTF8String] length:[name length]];
+    NSData *identityTag = [[NSData alloc] initWithBytes:(const void*)[name UTF8String]
+                                                 length:[name length]];
     NSMutableDictionary *pkcsOptions = [[NSMutableDictionary alloc] init];
     [pkcsOptions setObject:@"" forKey:(__bridge id<NSCopying>)(kSecImportExportPassphrase)];
 
-    OSStatus status = SecPKCS12Import((__bridge CFDataRef)data1, (__bridge CFDictionaryRef)pkcsOptions, &importedItems);
+    OSStatus status = SecPKCS12Import((__bridge CFDataRef)data1, (__bridge CFDictionaryRef)pkcsOptions,
+                                        &importedItems);
     if (status != noErr) {
         DDLogError(@"problem decoding pkcs12: OSStatus=%ld", (long)status);
         return NO;
@@ -181,7 +183,8 @@ static CFArrayRef  importedItems = NULL;
 
     SecIdentityRef identity = NULL;
     for (NSDictionary * itemDict in (__bridge id) importedItems) {
-        identity = (__bridge SecIdentityRef) [itemDict objectForKey:(__bridge NSString *) kSecImportItemIdentity];
+        identity = (__bridge SecIdentityRef) [itemDict objectForKey:
+                                                       (__bridge NSString *) kSecImportItemIdentity];
         NSMutableDictionary *namedIdentityAttr = [[NSMutableDictionary alloc] init];
         [namedIdentityAttr setObject:(__bridge id)identity forKey:(__bridge id)kSecValueRef];
         [namedIdentityAttr setObject:identityTag forKey:(__bridge id)kSecAttrLabel];
