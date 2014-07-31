@@ -347,6 +347,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                            range:NSMakeRange(0, refreshString.length)];
     self.refreshControl.attributedTitle = refreshString;
 
+    [self deleteAllTableData:NO];
+
     if (self.service == nil) return;
 
     if (self.taasConnection != nil) {
@@ -526,7 +528,6 @@ didReceiveResponse:(NSURLResponse *)response {
         [refreshString addAttributes:@{ NSForegroundColorAttributeName: [UIColor grayColor] }
                                range:NSMakeRange(0, refreshString.length)];
         self.refreshControl.attributedTitle = refreshString;
-        [self deleteAllTableData:NO];
         [self notifyUser:self.taasName withTitle:kConnected];
         self.entities = nil;
         self.groups = nil;
@@ -1389,7 +1390,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSUInteger requestID = [Client sharedClient].requestCounter;
     [Client sharedClient].requestCounter = requestID + 1;
     NSMutableDictionary *request = [[NSMutableDictionary alloc] init];
-    [request addEntriesFromDictionary:@{ @"requestID" : [NSString stringWithFormat:@"%lu", requestID]
+    [request addEntriesFromDictionary:@{ @"requestID" : [NSString stringWithFormat:@"%lu", (unsigned long)requestID]
                                        , @"path"      : path
                                        }];
     NSString *perform = [action objectForKey:@"perform"];
