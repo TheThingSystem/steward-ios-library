@@ -27,6 +27,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (        nonatomic) UIBackgroundTaskIdentifier backgroundTaskID;
 @property (        nonatomic) UIBackgroundTaskIdentifier notifyTaskID;
 @property (strong, nonatomic) HTTPServer                *httpServer;
+@property (strong, nonatomic) HTTPServer                *httpsServer;
 @property (strong, nonatomic) NSMutableArray            *lastNotifications;
 @property (strong, nonatomic) CLLocationManager         *locationManager;
 
@@ -189,6 +190,20 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
         self.httpServer = nil;
     }
 
+    if ([TAASSecureConnection hasKeys:documentCerts]) {
+        self.httpsServer = [[HTTPServer alloc] init];
+        [self.httpsServer setConnectionClass:[TAASSecureConnection class]];
+        [self.httpsServer setInterface:@"lo0"];
+        [self.httpsServer setPort:8883];
+        if (documentRoot != nil) [self.httpsServer setDocumentRoot:documentRoot];
+
+        error = nil;
+        if (![self.httpsServer start:&error]) {
+            DDLogError(@"error starting HTTPS Server: %@", error);
+            self.httpsServer = nil;
+        }
+    }
+
     self.audioSession = [AVAudioSession sharedInstance];
 
     error = nil;
@@ -277,6 +292,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     DDLogVerbose(@"applicationWillTerminate");
 
     if (self.httpServer != nil) [self.httpServer stop:NO];
+    if (self.httpsServer != nil) [self.httpsServer stop:NO];
 
     if (self.notifyTaskID != UIBackgroundTaskInvalid) {
         [application endBackgroundTask:self.notifyTaskID];

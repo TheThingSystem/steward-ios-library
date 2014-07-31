@@ -89,8 +89,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
     HTTPLogTrace();
 
     if (self.downstream != nil) {
-      [self.downstream cancel];
-      self.downstream = nil;
+        [self.downstream cancel];
+        self.downstream = nil;
     }
     if (self.upstream != nil) [self.upstream responseDidAbort:self];
 }

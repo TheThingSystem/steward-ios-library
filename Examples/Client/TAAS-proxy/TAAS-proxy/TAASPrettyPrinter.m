@@ -49,9 +49,11 @@ enum PPenum {
 
 
 @interface  TAASPrettyPrinter ()
+
 @property (strong, nonatomic) NSDictionary    *alias;
 @property (strong, nonatomic) NSDictionary    *enums;
 @property (strong, nonatomic) NSDateFormatter *utcFormatter;
+
 @end
 
 

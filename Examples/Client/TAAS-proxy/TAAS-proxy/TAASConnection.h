@@ -12,3 +12,10 @@
 @interface TAASConnection : HTTPConnection
 
 @end
+
+
+@interface TAASSecureConnection : TAASConnection
+
++ (BOOL)hasKeys:(NSString *)documentCerts;
+
+@end

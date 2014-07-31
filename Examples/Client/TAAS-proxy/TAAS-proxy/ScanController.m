@@ -11,9 +11,11 @@
 
 #import "ScanController.h"
 
+
 @interface ScanController ()
 
 @end
+
 
 @implementation ScanController
 
