@@ -1,0 +1,40 @@
+{
+    "error": {
+        "backgroundImageName": "NotificationBackgroundMessage.png",
+        "borderColor": "#727C83",
+        "borderHeight": 1,
+        "buttonBackgroundImageName": "NotificationButtonBackground.png",
+        "buttonTitleTextColor": "#727C83",
+        "buttonTitleShadowColor": "#EBEEF1",
+        "buttonTitleShadowOffsetX": 0,
+        "buttonTitleShadowOffsetY": 1,
+        "contentFontSize": 12,
+        "contentTextColor": "#727C83",
+        "imageName": "NotificationBackgroundErrorIcon.png",
+        "shadowColor": "#EBEEF1",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 1,
+        "textColor": "#727C83",
+        "titleFontSize": 14,
+        "backgroundColor": "#D4DDDF"
+    },
+    "success": {
+        "backgroundImageName": "NotificationBackgroundMessage.png",
+        "borderColor": "#727C83",
+        "borderHeight": 1,
+        "buttonBackgroundImageName": "NotificationButtonBackground.png",
+        "buttonTitleTextColor": "#727C83",
+        "buttonTitleShadowColor": "#EBEEF1",
+        "buttonTitleShadowOffsetX": 0,
+        "buttonTitleShadowOffsetY": 1,
+        "contentFontSize": 12,
+        "contentTextColor": "#727C83",
+        "imageName": "NotificationBackgroundSuccessIcon.png",
+        "shadowColor": "#EBEEF1",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 1,
+        "textColor": "#727C83",
+        "titleFontSize": 14,
+        "backgroundColor": "#D4DDDF"
+    }
+}

@@ -11,6 +11,7 @@
 #import "HTTPFileResponse.h"
 #import "TAASClient.h"
 #import "TAASErrorResponse.h"
+#import "TAASGoogleResponse.h"
 #import "TAASProxyResponse.h"
 #import "TAASTunnelResponse.h"
 #import "TAASWebSocket.h"
@@ -65,8 +66,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
         }
 
         DDLogError(@"filePath is a directory: %@", filePath);
-        return [[TAASErrorResponse alloc] initWithStatusCode:403
-                                                     andBody:[self dataForBody:@"403 Forbidden"]];
+        return [[TAASErrorResponse alloc] initWithStatusCode:403 andBody:@"403 Forbidden"];
       }
     }
 
@@ -74,15 +74,16 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     TAASClient *service = [appDelegate rootController].service;
     serviceURI = [service serviceURI:path];
     if (serviceURI == nil) {
-        return [[TAASErrorResponse alloc] initWithStatusCode:503
-                                                     andBody:[self dataForBody:@"503 Not Connected"]];
+        return [[TAASErrorResponse alloc] initWithStatusCode:503 andBody:@"503 Not Connected"];
     }
 
     NSRange range = [path rangeOfString:@"/search?q="];
     if (range.location != NSNotFound) {
-        DDLogVerbose(@"interpret %@", [path substringFromIndex:(range.location + range.length)]);
-        return [[TAASErrorResponse alloc] initWithStatusCode:500
-                                                     andBody:[self dataForBody:@"not implemented"]];
+        id response =  [[TAASGoogleResponse alloc] initWithPath:path];
+        if (response == nil) {
+            response = [[TAASErrorResponse alloc] initWithStatusCode:404 andBody:@"404 Nothing defined"];
+        }
+        return response;
     }
 
     self.response = [[TAASProxyResponse alloc] initWithURI:serviceURI
@@ -108,12 +109,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
                                            andSocket:asyncSocket
                                          forResource:URLrequest];
     return self.ws;
-}
-
-- (NSData *)dataForBody:(NSString *)reason {
-  return [[NSString stringWithFormat:@"<html><head><title>%@</title></head><body>%@</body></html>",
-                    reason, reason]
-              dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 @end

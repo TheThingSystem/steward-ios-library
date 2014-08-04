@@ -25,12 +25,14 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 @implementation TAASErrorResponse
 
 - (id)initWithStatusCode:(int)statusCode
-                 andBody:(NSData *)body {
-    if (body == nil) body = [NSData data];
+                 andBody:(NSString *)string {
+    if (string == nil) string = @"";
+    NSData *body =
+                [[NSString stringWithFormat:@"<html><head><title>%@</title></head><body>%@</body></html>",
+                      string, string] dataUsingEncoding:NSUTF8StringEncoding];
 
     if ((self = [super initWithData:body])) {
-        HTTPLogInfo(@"%@[%p]: initWithStatusCode: %d length=%lu", THIS_FILE, self, statusCode,
-                    (unsigned long)body.length);
+      HTTPLogInfo(@"%@[%p]: initWithStatusCode: %d", THIS_FILE, self, statusCode);
 
         self.statusCode = statusCode;
     }

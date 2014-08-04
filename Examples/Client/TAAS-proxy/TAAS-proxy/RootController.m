@@ -17,6 +17,7 @@
 #import <net/if.h>
 #import <arpa/inet.h>
 #import "RequestUtils.h"
+#import "TSMessage.h"
 #import "DDLog.h"
 
 
@@ -174,6 +175,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             [keyChain removeObjectForKey:kLastSteward];
             DDLogVerbose(@"removing lastSteward=%@", lastSteward);
         }
+
+        [TSMessage addCustomDesignFromFileWithName:@"AlternativeDesign.json"];
     }
     return self;
 };
@@ -547,12 +550,16 @@ didReceiveResponse:(NSURLResponse *)response {
                                                                                       error:&error]
                                                   : nil;
             if (scripts != nil) {
-                [scripts enumerateKeysAndObjectsUsingBlock:^(NSString *property, id values, BOOL *stop) {
+                [scripts enumerateKeysAndObjectsUsingBlock:^(NSString *property, NSArray* values,
+                                                             BOOL *stop) {
                     if ((![property isEqualToString:@"commands"])
                             || (![values isKindOfClass:[NSArray class]])) return;
+                    self.commands = [NSMutableDictionary dictionaryWithCapacity:values.count];
                     [values enumerateObjectsUsingBlock:^(NSDictionary *value, NSUInteger idx,
                                                          BOOL *stop) {
-                        [self pushDataDictionary:@{ kDataEntry  : [value objectForKey:@"name"]
+                        NSString *name = [value objectForKey:@"name"];
+                        [self.commands setObject:value forKey:name];
+                        [self pushDataDictionary:@{ kDataEntry  : name
                                                   , kScriptInfo : value
                                                   }
                                        ontoTable:self.tableTasksData
@@ -938,9 +945,18 @@ didReceiveResponse:(NSURLResponse *)response {
         NSString *diagnostic = [oops objectForKey:@"diagnostic"];
         if (diagnostic == nil) diagnostic = @"invalid response";
 
-// TODO: on error put up a TSmessage
+        [TSMessage showNotificationInViewController:self
+                                              title:@"Error"
+                                           subtitle:diagnostic
+                                               type:TSMessageNotificationTypeError];
         return;
     }
+
+    [TSMessage showNotificationInViewController:self
+                                          title:@"Done."
+                                       subtitle:@""
+                                           type:TSMessageNotificationTypeSuccess
+                                       duration:0.75f];
 
 /* TODO:
 

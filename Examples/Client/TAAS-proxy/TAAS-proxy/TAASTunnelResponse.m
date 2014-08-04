@@ -2,7 +2,7 @@
 //  TAASTunnelResponse.m
 //  TAAS-proxy
 //
-//  Created by Marshall Rose on 7/31/14.
+//  Created by Marshall Rose on 7/30/14.
 //  Copyright (c) 2014 The Thing System. All rights reserved.
 //
 
@@ -199,7 +199,10 @@ didWriteDataWithTag:(long)tag {
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock
                   withError:(NSError *)error {
-    HTTPLogError(@"%@[%p] socketDidDisconnect: %@", THIS_FILE, self, error);
+    if ((error != nil)
+            && ((![error.domain isEqualToString:@"GCDAsyncSocketErrorDomain"]) || (error.code != 7))) {
+        HTTPLogError(@"%@[%p] socketDidDisconnect: %@", THIS_FILE, self, error);
+    }
 
     if (self.connectedP) {
         [self abort];

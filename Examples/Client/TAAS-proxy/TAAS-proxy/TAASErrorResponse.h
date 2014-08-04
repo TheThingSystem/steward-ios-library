@@ -11,6 +11,6 @@
 
 @interface TAASErrorResponse : HTTPDataResponse
 
-- (id)initWithStatusCode:(int)statusCode andBody:(NSData *)body;
+- (id)initWithStatusCode:(int)statusCode andBody:(NSString *)body;
 
 @end

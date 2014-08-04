@@ -27,4 +27,9 @@
 @property (strong, nonatomic) NSMutableDictionary     *entities;
 @property (        nonatomic) BOOL                     customaryP;
 
+
+@property (strong, nonatomic) NSMutableDictionary     *commands;
+
+- (void)scripter:(NSDictionary *)script;
+
 @end

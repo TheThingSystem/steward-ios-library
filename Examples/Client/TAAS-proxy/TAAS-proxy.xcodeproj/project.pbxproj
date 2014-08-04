@@ -30,6 +30,7 @@
 		00820C631899228900B05498 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 00820C621899228900B05498 /* libicucore.dylib */; };
 		3C1B89B3196214D500AAF455 /* TableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3C1B89B1196214D500AAF455 /* TableViewCell.xib */; };
 		3C1B89B4196214D500AAF455 /* TableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1B89B2196214D500AAF455 /* TableViewCell.m */; };
+		5F1C3C66198B72EA00AE4163 /* TAASGoogleResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1C3C65198B72EA00AE4163 /* TAASGoogleResponse.m */; };
 		5F1F93D5191D7DED0026A14A /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1F93D4191D7DED0026A14A /* libxml2.dylib */; };
 		5F1F943A191D86120026A14A /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9425191D86120026A14A /* Util.m */; };
 		5F1F943B191D86120026A14A /* Client.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1F9426191D86120026A14A /* Client.m */; };
@@ -60,6 +61,7 @@
 		5F30F088196D14FE00284415 /* TAASPrettyPrinter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F30F087196D14FE00284415 /* TAASPrettyPrinter.m */; };
 		5F5C1A7E19893F5E006ED4DF /* TAASReport.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F5C1A7D19893F5E006ED4DF /* TAASReport.m */; };
 		5F5D507319400C19002FD93B /* TAASClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F5D507219400C19002FD93B /* TAASClient.m */; };
+		5F5E0B45198F4DE600A6B5AD /* AlternativeDesign.json in Resources */ = {isa = PBXBuildFile; fileRef = 5F5E0B44198F4DE600A6B5AD /* AlternativeDesign.json */; };
 		5F7FA78B196F3E2100553256 /* TAASColorNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7FA78A196F3E2100553256 /* TAASColorNames.m */; };
 		5F99D8FE198A23850087FB55 /* TAASTunnelResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F99D8FD198A23850087FB55 /* TAASTunnelResponse.m */; };
 		5FA9D7D5196D4FEF00E94512 /* compassPoint.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5FA9D7D4196D4FEF00E94512 /* compassPoint.plist */; };
@@ -98,6 +100,8 @@
 		3C1B89B0196214D500AAF455 /* TableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewCell.h; sourceTree = "<group>"; };
 		3C1B89B1196214D500AAF455 /* TableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TableViewCell.xib; sourceTree = "<group>"; };
 		3C1B89B2196214D500AAF455 /* TableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewCell.m; sourceTree = "<group>"; };
+		5F1C3C64198B72EA00AE4163 /* TAASGoogleResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASGoogleResponse.h; sourceTree = "<group>"; };
+		5F1C3C65198B72EA00AE4163 /* TAASGoogleResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASGoogleResponse.m; sourceTree = "<group>"; };
 		5F1F93D4191D7DED0026A14A /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		5F1F9424191D86120026A14A /* Client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Client.h; path = ../../../../Client/Client/Client.h; sourceTree = "<group>"; };
 		5F1F9425191D86120026A14A /* Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Util.m; path = ../../../../Client/Client/Util.m; sourceTree = "<group>"; };
@@ -151,6 +155,7 @@
 		5F5C1A7D19893F5E006ED4DF /* TAASReport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASReport.m; sourceTree = "<group>"; };
 		5F5D507119400C19002FD93B /* TAASClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASClient.h; sourceTree = "<group>"; };
 		5F5D507219400C19002FD93B /* TAASClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASClient.m; sourceTree = "<group>"; };
+		5F5E0B44198F4DE600A6B5AD /* AlternativeDesign.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = AlternativeDesign.json; sourceTree = "<group>"; };
 		5F7FA789196F3E2100553256 /* TAASColorNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASColorNames.h; sourceTree = "<group>"; };
 		5F7FA78A196F3E2100553256 /* TAASColorNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TAASColorNames.m; sourceTree = "<group>"; };
 		5F99D8FC198A23850087FB55 /* TAASTunnelResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TAASTunnelResponse.h; sourceTree = "<group>"; };
@@ -361,6 +366,7 @@
 		5F1F9482191D93630026A14A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				5F5E0B44198F4DE600A6B5AD /* AlternativeDesign.json */,
 				5FA9D7D4196D4FEF00E94512 /* compassPoint.plist */,
 				0082097118991D8400B05498 /* TAAS-proxy-Info.plist */,
 				0082097218991D8400B05498 /* InfoPlist.strings */,
@@ -376,6 +382,8 @@
 		5F1F948C191D9CBD0026A14A /* HTTP server */ = {
 			isa = PBXGroup;
 			children = (
+				5F1C3C64198B72EA00AE4163 /* TAASGoogleResponse.h */,
+				5F1C3C65198B72EA00AE4163 /* TAASGoogleResponse.m */,
 				5F1F948D191D9D020026A14A /* TAASConnection.h */,
 				5F1F948E191D9D020026A14A /* TAASConnection.m */,
 				5F1F9499191DC4770026A14A /* TAASProxyResponse.h */,
@@ -457,6 +465,7 @@
 				008209A718991F6600B05498 /* ScanController.xib in Resources */,
 				0082097418991D8400B05498 /* InfoPlist.strings in Resources */,
 				5F1F947A191D898E0026A14A /* README.md in Resources */,
+				5F5E0B45198F4DE600A6B5AD /* AlternativeDesign.json in Resources */,
 				3C1B89B3196214D500AAF455 /* TableViewCell.xib in Resources */,
 				0082099C18991DD600B05498 /* RootController.xib in Resources */,
 				0082097C18991D8500B05498 /* Images.xcassets in Resources */,
@@ -504,6 +513,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F1C3C66198B72EA00AE4163 /* TAASGoogleResponse.m in Sources */,
 				5F1F9464191D896C0026A14A /* GTMMethodCheck.m in Sources */,
 				5F1F943D191D86120026A14A /* Devices.m in Sources */,
 				5F1F9462191D896C0026A14A /* GTMNSScanner+Unsigned.m in Sources */,
