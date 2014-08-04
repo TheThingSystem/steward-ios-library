@@ -1,13 +1,33 @@
 The TAAS-proxy Example
 ======================
 
-This example shows how to operate a background proxy to the steward,
-which may be useful if running a program that talks to the steward,
-but the steward isn't available locally.
-
-Please note that this program is **NOT** intended to be submitted to the AppStore.
-It is for testing and demonstration purposes only!
 Also, the app requires iOS 7.0 or later.
+
+This app, which requires iOS 7.1 or later, does three things:
+
+- It lets you tell the steward to perform tasks or report status
+
+- It operates as a background proxy to the steward
+
+- It provides a mechanism for you to have [Siri](http://en.wikipedia.org/wiki/Siri) tell the steward to perform tasks or report status
+
+The first function is used when the app is running in the foreground;
+the other two functions require that the app be running in the background as a proxy to the steward.
+The latter two functions are not consistent with the Apple's current view on app behavior.
+As such, this app will be rejected if submitted to the AppStore,
+and is intended for testing and demonstration purposes only!
+
+
+Configuration
+-------------
+
+**TODO: discuss QRcode, cert files (Certs/), and json files (Scripts/)**
+
+Advanced Configuration
+----------------------
+
+**TODO: discuss proxy.pac (Web/) and self-signed cert (Certs/)**
+
 
 A Persient Proxy to the Steward
 -------------------------------
@@ -90,11 +110,19 @@ it is possible that either:
 Time will tell -- but for now, enjoy!
 
 
-
 Acknowledgements
 ----------------
 Many thanks to the folks at [CocoaPods](http://cocoapods.org) for their fine package management system.
 
-A special thanks to Robbie Hanson for his excellent [CocoaHTTPServer](https://github.com/robbiehanson/CocoaHTTPServer) library.
+A special thanks to [Robbie Hanson](https://github.com/robbiehanson) for his excellent [CocoaHTTPServer](https://github.com/robbiehanson/CocoaHTTPServer) library.
 
 A super thanks to [Nick Lockwood](https://github.com/nicklockwood) for his many excellent packages.
+
+And many thanks to the contributors of all the other CocoaPods packages used by this example:
+
+* [MDCDamerauLevenshtein](https://github.com/modocache/MDCDamerauLevenshtein) by [@modocache](https://github.com/modocache)
+* [MHPrettyDate](https://github.com/bobjustbob/MHPrettyDate) by [@bobjustbob](https://github.com/bobjustbob)
+* [RNPinnedCertValidator](https://github.com/rnapier/RNPinnedCertValidator) by [@rnapier](https://github.com/rnapier)
+* [TSMessages/](https://github.com/toursprung/TSMessages/) by [@toursprung](https://github.com/toursprung)
+* [ZFCardinalDirection](https://github.com/flightblog/ZFCardinalDirection) by [@flightblog](https://github.com/flightblog)
+* [ZXingObjC](https://github.com/TheLevelUp/ZXingObjC) by [@TheLevelUp](https://github.com/TheLevelUp)
