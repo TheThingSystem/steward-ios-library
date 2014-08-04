@@ -44,7 +44,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
         NSString *host = path;
         NSRange range = [host rangeOfString:@":"];
         if (range.location != NSNotFound) {
-            port = [[host substringFromIndex:(range.location + 1)] intValue];
+            port = [[host substringFromIndex:(range.location + range.length)] intValue];
             host = [host substringToIndex:range.location];
         }
         HTTPLogInfo(@"%@[%p]: initWithPath: %@:%lu", THIS_FILE, self, host, (unsigned long)port);

@@ -25,6 +25,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 - (id)initWithPath:(NSString *)path {
     NSDictionary *parameters = [path URLQueryParameters];
     NSString *q = [parameters objectForKey:@"q"];
+    NSRange range = [q rangeOfString:@"trigger " options:NSAnchoredSearch];
+    if (range.location != NSNotFound) q = [q substringFromIndex:(range.location + range.length)];
 
     AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
     RootController *rootController = appDelegate.rootController;
