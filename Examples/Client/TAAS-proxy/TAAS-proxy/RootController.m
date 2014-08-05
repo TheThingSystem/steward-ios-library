@@ -956,14 +956,7 @@ didReceiveResponse:(NSURLResponse *)response {
                                           title:@"Done."
                                        subtitle:@""
                                            type:TSMessageNotificationTypeSuccess
-                                       duration:0.75f];
-
-/* TODO:
-
-if dictionary[@"actors"], then count number of objects with status= success out of total and message that
-
-
- */
+                                       duration:1.0f];
 }
 
 
