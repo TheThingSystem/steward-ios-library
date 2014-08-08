@@ -176,7 +176,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             DDLogVerbose(@"removing lastSteward=%@", lastSteward);
         }
 
-        [TSMessage addCustomDesignFromFileWithName:@"AlternativeDesign.json"];
+// use the defaults for now...
+//      [TSMessage addCustomDesignFromFileWithName:@"AlternativeDesign.json"];
     }
     return self;
 };

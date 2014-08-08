@@ -1,4 +1,5 @@
 platform :ios,                  '7.0'
+pod 'CBZSplashView'          '~> 1.0.0'
 pod 'CocoaHTTPServer',       '~> 2.3'
 pod 'FXKeychain',            '~> 1.5.1'
 pod 'FXReachability',        '~> 1.1.1'
