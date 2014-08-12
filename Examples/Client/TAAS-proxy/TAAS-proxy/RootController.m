@@ -9,6 +9,7 @@
 #import <CoreTelephony/CTCallCenter.h>
 #import "RootController.h"
 #import "AppDelegate.h"
+#import "TAASNetwork.h"
 #import "TAASPrettyPrinter.h"
 #import "TAASReport.h"
 #import "FXKeychain.h"
@@ -287,8 +288,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     UIView *refreshView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [self.tableView insertSubview:refreshView atIndex:0];
     [refreshView addSubview:self.refreshControl];
-
-    [self notifyUser:@"scanning network..." withTitle:kDiscovery];
 }
 
 - (IBAction)scanQRcode:(id)sender {
@@ -1095,6 +1094,12 @@ didReceiveResponse:(NSURLResponse *)response {
             && ((addresses == nil) || ([self.fxAddresses isEqualToArray:addresses]))) return;
 
     self.fxAddresses = addresses;
+
+    if (prev == FXReachabilityStatusUnknown) {
+        [self notifyUser:(self.fxReachabilityStatus == FXReachabilityStatusReachableViaWiFi)
+                             ? @"scanning network..." : @"waiting for network"
+               withTitle:kDiscovery];
+    }
 
     if (self.timer != nil) return;
 
