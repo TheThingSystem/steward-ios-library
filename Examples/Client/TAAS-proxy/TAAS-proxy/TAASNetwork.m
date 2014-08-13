@@ -7,16 +7,16 @@
 //
 
 #import "TAASNetwork.h"
-#include <sys/sysctl.h>
-#include <net/if.h>
-#include <net/if_types.h>
-#include <net/route.h>
-#include <net/if_dl.h>
-#include <net/ethernet.h>
-#include <netinet/if_ether.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <strings.h>
+#import <sys/sysctl.h>
+#import <net/if.h>
+#import "if_types.h"
+#import "route.h"
+#import <net/if_dl.h>
+#import <net/ethernet.h>
+#import "if_ether.h"
+#import <netinet/in.h>
+#import <arpa/inet.h>
+#import <strings.h>
 #import "DDLog.h"
 
 
@@ -53,6 +53,7 @@
     mib[4] = NET_RT_FLAGS;
     mib[5] = RTF_GATEWAY;
     needed = fetch(mib, sizeof mib / sizeof mib[0], "routing table", &buf);
+    if (needed == 0) return nil;
 
     lim = buf + needed;
     struct rt_msghdr *rtm = NULL;
@@ -92,6 +93,8 @@
     mib[4] = NET_RT_FLAGS;
     mib[5] = RTF_LLINFO;
     needed = fetch(mib, sizeof mib / sizeof mib[0], "routing table", &buf);
+    if (needed == 0) return nil;
+
     lim = buf + needed;
     rtm = NULL;
     for (next = buf; next < lim; next += rtm->rtm_msglen) {

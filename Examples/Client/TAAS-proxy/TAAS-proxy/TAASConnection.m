@@ -198,11 +198,9 @@ static CFArrayRef  importedItems = NULL;
     if (foundP) {
         [keyChain setObject:[NSArray arrayWithObjects:data1, data2, nil] forKey:kKeysAndCerts];
 
-/*
         if (![[NSFileManager defaultManager] removeItemAtPath:path1 error:&error]) {
             DDLogError(@"delete %@: %@", path1, error);
         }
- */NSLog(@"delete %@", path1);
     }
 
     keysAndCerts = [NSArray arrayWithObjects:(__bridge id)identity, CFBridgingRelease(certificate), nil];

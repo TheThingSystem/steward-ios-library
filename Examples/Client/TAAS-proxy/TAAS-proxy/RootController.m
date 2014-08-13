@@ -72,10 +72,11 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSMutableDictionary       *groups;
 @property (strong, nonatomic) NSMutableDictionary       *tasks;
 
-// network reachability
+// network
 @property (        nonatomic) FXReachabilityStatus       fxReachabilityStatus;
 @property (strong, nonatomic) NSArray                   *fxAddresses;
 @property (strong, nonatomic) CTCallCenter              *ctCallCenter;
+@property (strong, nonatomic) NSDictionary              *routingInfo;
 
 // UI
 @property (weak,   nonatomic) IBOutlet UILabel            *statusLabel;
@@ -239,16 +240,29 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     }
 
     // ditto
-    if ((self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN)
-            || ([self issuer:info] != nil)) {
+    BOOL foundP, *fptr;
+    fptr = &foundP;
+    if ((self.fxReachabilityStatus == FXReachabilityStatusReachableViaWiFi) && (self.routingInfo != nil)) {
+        foundP = NO;
+        NSArray *gatewayMACs = [info objectForKey:kGatewayMACs] ?: [NSArray array];
+        [self.routingInfo enumerateKeysAndObjectsUsingBlock:^(NSString *property, NSDictionary* values, BOOL *stop) {
+            NSString *mac = [values objectForKey:@"mac"];
+            if ((mac == nil) || (![gatewayMACs containsObject:mac])) return;
+            *fptr = YES;
+            *stop = YES;
+        }];
+        if (!foundP) info = nil;
+    }
+
+    if ((info != nil)
+            && ((self.fxReachabilityStatus != FXReachabilityStatusReachableViaWWAN)
+                    || ([self issuer:info] != nil))) {
         [self connectToSteward:info localP:NO];
         return;
     }
 
     // find a steward for which we have credentials
-    BOOL foundP, *fptr;
     foundP = NO;
-    fptr = &foundP;
     NSArray *allStewards = [keyChain objectForKey:kAllStewards];
     if (allStewards != nil) {
         [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
@@ -489,10 +503,14 @@ didReceiveResponse:(NSURLResponse *)response {
     FXKeychain *keyChain = [FXKeychain defaultKeychain];
     NSString *name = [self hostName:info];
 
+    BOOL diffP = NO;
     NSDictionary *prev = [keyChain objectForKey:name];
     if (prev != nil) {
         NSString *authURI = [prev objectForKey:kAuthURL];
-        if (authURI != nil) [info setObject:authURI forKey:kAuthURL];
+        if (authURI != nil) {
+            diffP = YES;
+            [info setObject:authURI forKey:kAuthURL];
+        }
     }
 
     name = [self serverName:info];
@@ -501,11 +519,23 @@ didReceiveResponse:(NSURLResponse *)response {
         [self notifyUser:[NSString stringWithFormat:@"no addresses for %@", name] withTitle:kError];
         return;
     }
+    NSArray *prevIPs = [prev objectForKey:kIpAddresses];
+    if ((prevIPs == nil) || (![prevIPs isEqualToArray:ipaddrs])) diffP = YES;
 
+    NSMutableArray *gatewayMACs = [NSMutableArray arrayWithCapacity:self.routingInfo.count];
+    [self.routingInfo enumerateKeysAndObjectsUsingBlock:^(NSString *property, NSDictionary* values, BOOL *stop) {
+        NSString *mac = [values objectForKey:@"mac"];
+        if (mac != nil) [gatewayMACs addObject:mac];
+    }];
+    NSArray *prevMACs = [prev objectForKey:kGatewayMACs];
+    if ((prevMACs == nil) || (![prevMACs isEqualToArray:gatewayMACs])) {
+        diffP = YES;
+        [info setObject:gatewayMACs forKey:kGatewayMACs];
+    }
+
+    if (diffP) diffP = [self rememberSteward:info lastP:NO];
     if (self.service != nil) {
-        if ([self rememberSteward:info lastP:NO]) {
-            [self notifyUser:[NSString stringWithFormat:@"found %@", name] withTitle:kDiscovery];
-        }
+        if (diffP) [self notifyUser:[NSString stringWithFormat:@"found %@", name] withTitle:kDiscovery];
         return;
     }
 
@@ -1094,6 +1124,8 @@ didReceiveResponse:(NSURLResponse *)response {
             && ((addresses == nil) || ([self.fxAddresses isEqualToArray:addresses]))) return;
 
     self.fxAddresses = addresses;
+    self.routingInfo = [[TAASNetwork singleton] routingInfo];
+    DDLogVerbose(@"routingInfo=%@",self.routingInfo);
 
     if (prev == FXReachabilityStatusUnknown) {
         [self notifyUser:(self.fxReachabilityStatus == FXReachabilityStatusReachableViaWiFi)

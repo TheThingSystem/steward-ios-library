@@ -38,6 +38,7 @@
 #define kPort        @"port"
 #define kTXT         @"txt"
 #define kIssuer      @"issuer"
+#define kGatewayMACs @"gatewayMACs"
 
 #define kAuthURL     @"authURL"
 
