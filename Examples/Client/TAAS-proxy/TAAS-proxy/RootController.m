@@ -12,6 +12,7 @@
 #import "TAASNetwork.h"
 #import "TAASPrettyPrinter.h"
 #import "TAASReport.h"
+#import "CBZSplashView.h"
 #import "FXKeychain.h"
 #import "FXReachability.h"
 #import <ifaddrs.h>
@@ -19,7 +20,6 @@
 #import <arpa/inet.h>
 #import "RequestUtils.h"
 #import "TSMessage.h"
-#import "DDLog.h"
 
 
 #define kAllStewards     @"_allStewards"
@@ -79,6 +79,8 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSDictionary              *routingInfo;
 
 // UI
+@property (strong, nonatomic) UIView                      *initialView;
+@property (strong, nonatomic) CBZSplashView               *splashView;
 @property (weak,   nonatomic) IBOutlet UILabel            *statusLabel;
 @property (weak,   nonatomic) IBOutlet UISegmentedControl *modeControl;
 @property (strong, nonatomic) UIRefreshControl            *refreshControl;
@@ -279,6 +281,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)viewDidLoad {
+/*
+    self.initialView = [[UIView alloc] initWithFrame:[UIApplication sharedApplication].keyWindow.frame];
+    self.initialView.backgroundColor = [UIColor blackColor];
+    [self.view addSubview:self.initialView];
+*/
+
     self.tableConsoleData = [NSMutableArray arrayWithCapacity:100];
     self.tableDevicesData = [NSMutableArray arrayWithCapacity:100];
     self.tableTasksData   = [NSMutableArray arrayWithCapacity:100];
@@ -302,6 +310,24 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     UIView *refreshView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [self.tableView insertSubview:refreshView atIndex:0];
     [refreshView addSubview:self.refreshControl];
+
+/*
+    self.splashView = [[CBZSplashView alloc] initWithIcon:[UIImage imageNamed:@"ThingSystemSplash"]
+                                          backgroundColor:[UIColor blackColor]];
+    self.splashView.animationDuration = 1.4;  
+    [self.view addSubview:self.splashView];
+ */
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+  
+/*
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.splashView startAnimation];
+        [self.initialView removeFromSuperview];
+    });
+ */
 }
 
 - (IBAction)scanQRcode:(id)sender {

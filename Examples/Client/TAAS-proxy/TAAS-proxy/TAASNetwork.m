@@ -7,17 +7,21 @@
 //
 
 #import "TAASNetwork.h"
+#import "AppDelegate.h"
 #import <sys/sysctl.h>
 #import <net/if.h>
 #import "if_types.h"
-#import "route.h"
+#if TARGET_IPHONE_SIMULATOR
+#include <net/route.h>
+#else
+#include "route.h"
+#endif
 #import <net/if_dl.h>
 #import <net/ethernet.h>
 #import "if_ether.h"
 #import <netinet/in.h>
 #import <arpa/inet.h>
 #import <strings.h>
-#import "DDLog.h"
 
 
 // Log levels: off, error, warn, info, verbose

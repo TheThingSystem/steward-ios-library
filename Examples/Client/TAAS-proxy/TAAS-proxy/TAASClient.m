@@ -8,7 +8,6 @@
 
 #import "TAASClient.h"
 #import "AppDelegate.h"
-#import "DDLog.h"
 
 
 // Log levels: off, error, warn, info, verbose

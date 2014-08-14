@@ -9,6 +9,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import <UIKit/UIKit.h>
+#import "CocoaLumberjack.h"
 #import "RNPinnedCertValidator.h"
 #import "RootController.h"
 
