@@ -79,7 +79,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (strong, nonatomic) NSDictionary              *routingInfo;
 
 // UI
-@property (strong, nonatomic) UIView                      *initialView;
 @property (strong, nonatomic) CBZSplashView               *splashView;
 @property (weak,   nonatomic) IBOutlet UILabel            *statusLabel;
 @property (weak,   nonatomic) IBOutlet UISegmentedControl *modeControl;
@@ -281,12 +280,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (void)viewDidLoad {
-/*
-    self.initialView = [[UIView alloc] initWithFrame:[UIApplication sharedApplication].keyWindow.frame];
-    self.initialView.backgroundColor = [UIColor blackColor];
-    [self.view addSubview:self.initialView];
-*/
-
     self.tableConsoleData = [NSMutableArray arrayWithCapacity:100];
     self.tableDevicesData = [NSMutableArray arrayWithCapacity:100];
     self.tableTasksData   = [NSMutableArray arrayWithCapacity:100];
@@ -311,23 +304,16 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     [self.tableView insertSubview:refreshView atIndex:0];
     [refreshView addSubview:self.refreshControl];
 
-/*
-    self.splashView = [[CBZSplashView alloc] initWithIcon:[UIImage imageNamed:@"ThingSystemSplash"]
+    self.splashView = [CBZSplashView splashViewWithIcon:[UIImage imageNamed:@"ThingSystemSplash"]
                                           backgroundColor:[UIColor blackColor]];
-    self.splashView.animationDuration = 1.4;  
+    self.splashView.animationDuration = 1.4;
     [self.view addSubview:self.splashView];
- */
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-  
-/*
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.splashView startAnimation];
-        [self.initialView removeFromSuperview];
-    });
- */
+
+    [self.splashView startAnimation];
 }
 
 - (IBAction)scanQRcode:(id)sender {
