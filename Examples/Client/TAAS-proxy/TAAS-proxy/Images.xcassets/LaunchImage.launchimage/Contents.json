@@ -5,16 +5,14 @@
       "idiom" : "iphone",
       "extent" : "full-screen",
       "minimum-system-version" : "7.0",
-      "filename" : "TAASLaunch-iPhone3.5-inch.png",
       "scale" : "2x"
     },
     {
-      "extent" : "full-screen",
+      "orientation" : "portrait",
       "idiom" : "iphone",
+      "extent" : "full-screen",
+      "minimum-system-version" : "7.0",
       "subtype" : "retina4",
-      "filename" : "TAASLaunch-iPhone4-inch.png",
-      "minimum-system-version" : "7.0",
-      "orientation" : "portrait",
       "scale" : "2x"
     },
     {
@@ -22,7 +20,6 @@
       "idiom" : "ipad",
       "extent" : "full-screen",
       "minimum-system-version" : "7.0",
-      "filename" : "TAASLaunch-iPadPortrait.png",
       "scale" : "1x"
     },
     {
@@ -30,7 +27,6 @@
       "idiom" : "ipad",
       "extent" : "full-screen",
       "minimum-system-version" : "7.0",
-      "filename" : "TAASLaunch-iPadLandscape.png",
       "scale" : "1x"
     },
     {
@@ -38,7 +34,6 @@
       "idiom" : "ipad",
       "extent" : "full-screen",
       "minimum-system-version" : "7.0",
-      "filename" : "TAASLaunch-iPadPortrait@2.png",
       "scale" : "2x"
     },
     {
@@ -46,7 +41,6 @@
       "idiom" : "ipad",
       "extent" : "full-screen",
       "minimum-system-version" : "7.0",
-      "filename" : "TAASLaunch-iPadLandscape@2.png",
       "scale" : "2x"
     }
   ],
