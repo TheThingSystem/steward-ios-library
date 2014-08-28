@@ -405,15 +405,23 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if (!foundP) {
       [allStewards insertObject:name atIndex:0];
       [keyChain setObject:allStewards forKey:kAllStewards];
+      DDLogVerbose(@"allStewards: %@", allStewards);
     }
 
-    if (lastP) [keyChain setObject:name forKey:kLastSteward];
+    if (lastP) {
+        [keyChain setObject:name forKey:kLastSteward];
+        DDLogVerbose(@"lastSteward: %@", name);
+    }
 
     [keyChain setObject:info forKey:name];
+    DDLogVerbose(@"%@: %@", name, info);
 
     NSDictionary *txt = [info objectForKey:kTXT];
     name = (txt != nil) ? [txt objectForKey:kName] : nil;
-    if (name != nil) [keyChain setObject:info forKey:name];
+    if (name != nil) {
+        [keyChain setObject:info forKey:name];
+        DDLogVerbose(@"%@: %@", name, info);
+    }
 
     return (!foundP);
 }
@@ -1059,6 +1067,43 @@ didReceiveResponse:(NSURLResponse *)response {
                                                   nil],                                      kTXT,
                                             URI,                                             kAuthURL,
                                            nil];
+
+    BOOL didP, *dptr;
+    dptr = &didP;
+    didP = NO;
+
+    BOOL foundP, *fptr;
+    fptr = &foundP;
+    foundP = NO;
+
+    FXKeychain *keyChain = [FXKeychain defaultKeychain];
+    NSArray *allStewards = [keyChain objectForKey:kAllStewards];
+    if (allStewards != nil) {
+        [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
+            NSMutableDictionary *props = [keyChain objectForKey:value];
+            if (props == nil) return;
+
+            NSDictionary *txt = [props objectForKey:kTXT];
+            NSString *thisName = (txt != nil) ? [txt objectForKey:kName] : nil;
+            if ((thisName != nil) && ([thisName isEqualToString:issuer])) {
+                *fptr = YES;
+                *stop = YES;
+            } else {
+              thisName = [self hostName:props];
+              if ((thisName == nil) || (![thisName isEqualToString:name])) return;
+            }
+            *dptr = YES;
+
+            props = [props mutableCopy];
+            [props setObject:URI forKey:kAuthURL];
+            if ([self rememberSteward:props lastP:NO]) {
+                [self notifyUser:[NSString stringWithFormat:@"updating %@", name] withTitle:kDiscovery];
+            }
+
+        }];
+    }
+    if (didP) return;
+
     if (self.service != nil) {
         if ([self rememberSteward:info lastP:NO]) {
             [self notifyUser:[NSString stringWithFormat:@"found %@", name] withTitle:kDiscovery];
@@ -1265,7 +1310,9 @@ didReceiveResponse:(NSURLResponse *)response {
         self.actionSheetChoices = [NSMutableDictionary dictionaryWithCapacity:allStewards.count];
         [allStewards enumerateObjectsUsingBlock:^(id value, NSUInteger idx, BOOL *stop) {
             NSDictionary *info = [keyChain objectForKey:value];
-            if (info == nil) return;
+            if ((info == nil)
+                    || ((self.fxReachabilityStatus == FXReachabilityStatusReachableViaWWAN)
+                            && ([self issuer:info] == nil))) return;
 
             NSInteger offset = [actionSheet addButtonWithTitle:
                                                 [NSString stringWithFormat:@"Connect to %@",
