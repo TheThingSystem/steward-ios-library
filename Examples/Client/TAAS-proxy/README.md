@@ -1,8 +1,6 @@
 The TAAS-proxy Example
 ======================
 
-Also, the app requires iOS 7.0 or later.
-
 This app, which requires iOS 7.1 or later, does three things:
 
 - It lets you tell the steward to perform tasks or report status
