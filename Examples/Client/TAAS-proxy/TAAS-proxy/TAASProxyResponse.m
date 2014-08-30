@@ -19,6 +19,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
 @interface TAASProxyResponse ()
 
+@property (strong, nonatomic) NSString                  *server;
+
 @property (        nonatomic) BOOL                       oneshotP;
 @property (strong, nonatomic) NSString                  *behavior;
 @property (strong, nonatomic) NSMutableData             *body;
@@ -41,6 +43,7 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 
         self.upstream = parent;
 
+        self.server = [[URI stringByDeletingLastURLPathComponent] stringByDeletingURLQuery];
         NSURL *url = [NSURL URLWithString:URI];
         if (url == nil) {
             HTTPLogWarn(@"%@[%p]: invalid URI: %@", THIS_FILE, self, URI);
@@ -225,6 +228,8 @@ static const int httpLogLevel = HTTP_LOG_LEVEL_VERBOSE;
 -                        (void)connection:(NSURLConnection *)connection
 willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+NSLog(@"appDelegate.pinnedCertValidator=%@",appDelegate.pinnedCertValidator);
+
     if (appDelegate.pinnedCertValidator != nil) {
         [appDelegate.pinnedCertValidator validateChallenge:challenge];
         return;
@@ -273,6 +278,15 @@ didReceiveResponse:(NSURLResponse *)response {
 - (void)connection:(NSURLConnection *)theConnection
   didFailWithError:(NSError *)error {
     HTTPLogError(@"%@[%p] didFailWithError: %@", THIS_FILE, self, error);
+
+    AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
+    RootController *rootController = appDelegate.rootController;
+    NSString *format = ([[error domain] isEqualToString:@"NSURLErrorDomain"] && ([error code] == -1012))
+                       ? @"unwilling to trust %@"
+                       : @"failed to connect to %@";
+    [rootController notifyUser:[NSString stringWithFormat:format, self.server]
+                                                withTitle:kError];
+
 
     [self abort];
 }

@@ -32,4 +32,7 @@
 
 - (void)scripter:(NSDictionary *)script;
 
+- (void)notifyUser:(NSString *)message
+         withTitle:(NSString *)title;
+
 @end
