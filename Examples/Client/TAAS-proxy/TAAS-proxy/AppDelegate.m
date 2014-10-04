@@ -169,6 +169,12 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
         }
     }
 
+    UIUserNotificationSettings *settings =
+    [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge | UIUserNotificationTypeSound
+                                                      | UIUserNotificationTypeAlert) categories:nil];
+    [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+
+
     [self reportLaunch:application withOptions:launchOptions];
 
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
