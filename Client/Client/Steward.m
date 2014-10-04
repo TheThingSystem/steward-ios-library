@@ -7,6 +7,7 @@
 //
 
 #import "Client.h"
+#include <arpa/inet.h>
 
 @implementation Steward
 
@@ -128,8 +129,6 @@
 
 
 @implementation NSNetService(ipAddresses)
-
-#include <arpa/inet.h>
 
 - (NSArray *)ipAddresses {
     NSArray *addrs = [self addresses];
